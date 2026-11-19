@@ -1,4 +1,5 @@
 import { MockAuthService } from './auth/MockAuthService'
+import { withLocalDataParticipants } from './composeLocalData'
 import { createDatabase, DEFAULT_DB_NAME } from './dexie/db'
 import { DexieLocalDataService } from './dexie/DexieLocalDataService'
 import { createRepositories } from './dexie/repositories'
@@ -29,7 +30,13 @@ export function createServices(options: CreateServicesOptions = {}): AppServices
     now,
     onChange: (change) => sync.recordLocalChange(change),
   })
-  const localData = new DexieLocalDataService(db, now)
   const social = new MockSocialService({ auth, now, ...options.social })
+  const localData = withLocalDataParticipants(new DexieLocalDataService(db, now), [
+    {
+      key: 'social',
+      exportData: () => social.exportLocalData(),
+      clearData: () => social.clearLocalData(),
+    },
+  ])
   return { repositories, auth, sync, localData, social }
 }

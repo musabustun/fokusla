@@ -195,19 +195,6 @@ topuz açık temada `fill` üzerinde 1.3:1 kaldığı (ve koyu temada `accent` �
 durumda farklı topuz rengi kullanılır; durum ayrıca topuzun konumuyla anlatılır (yalnızca renk değil).
 SwiftUI: sistem `Toggle` + `.tint(Color("Accent"))`; topuz rengini sistem çizer.
 
-### `Toggle` → `Toggle(isOn:)`
-
-```tsx
-<ListRow
-  title="iCloud senkronu"
-  accessory={<Toggle aria-label="iCloud senkronu" checked={on} onChange={setOn} />}
-/>
-```
-
-`{ checked: boolean; onChange: (checked: boolean) => void; 'aria-label': string (zorunlu);
-disabled?; className? }`. `role="switch"` + `aria-checked`; Boşluk/Enter ile değişir. Görsel boyut 51×31,
-dokunma alanı ≥44px. Hareket azaltma tercihinde geçiş animasyonu kapanır.
-
 ### `ProgressRing` → `Circle().trim(from: 0, to: value).stroke(…).rotationEffect(.degrees(-90))`
 
 `{ value: number (0–1, sınırlanır; NaN → 0); size? = 120; strokeWidth? = 10; label?: string;

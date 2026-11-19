@@ -1,6 +1,6 @@
 import { Cloud, RefreshCw } from 'lucide-react'
 import { useServices, useSyncState, type AuthSession } from '@/data'
-import { ListRow, ListSection, Toggle } from '@/ui'
+import { ListRow, ListSection, Switch } from '@/ui'
 import { ICON_CLASS } from './constants'
 import { formatSyncStatus } from './formatSyncStatus'
 import { useAsyncAction } from './useAsyncAction'
@@ -58,7 +58,7 @@ export function SyncSection({ session }: SyncSectionProps) {
         subtitle={<span role="status">{formatSyncStatus(state)}</span>}
         icon={<Cloud className={ICON_CLASS} />}
         accessory={
-          <Toggle
+          <Switch
             aria-label="iCloud senkronu"
             checked={isEnabled}
             disabled={!canToggle}

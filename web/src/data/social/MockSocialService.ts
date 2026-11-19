@@ -11,11 +11,14 @@
 import { effectivePresenceState, normalizeInviteCode, validateUsername } from '@/domain/calc/social'
 import { newId, toISODateTime, type SocialPresence } from '@/domain'
 import type { AuthService } from '../auth/AuthService'
-import { defaultStorage, wait, type KeyValueStorage } from '../storage'
+import { defaultStorage, safeGetItem, safeRemoveItem, wait, type KeyValueStorage } from '../storage'
 import { buildSnapshot, emptySnapshot, sortFriends, type PresenceMap } from './mockSocialSnapshot'
 import {
+  parseStoredDocument,
   readAccount,
+  SOCIAL_MOCK_STORAGE_KEY,
   writeAccount,
+  type StoredDocument,
   type StoredAccount,
   type StoredFriend,
   type StoredRoom,
@@ -293,6 +296,21 @@ export class MockSocialService implements SocialService {
     if (!account?.room) return
     this.clearRoomTimer(account.room)
     this.updateAccount({ ...account, room: null })
+  }
+
+  // -------------------------------------------------------------------------
+  // Yerel veri (Ayarlar > Veri)
+  // -------------------------------------------------------------------------
+
+  /** Bu cihazda saklanan sosyal mock verisi (dışa aktarma için). Bozuk veri boş belge döner. */
+  async exportLocalData(): Promise<StoredDocument> {
+    return parseStoredDocument(safeGetItem(this.storage, SOCIAL_MOCK_STORAGE_KEY))
+  }
+
+  /** Saklanan sosyal mock verisini siler ve bellekteki hesabı/zamanlayıcıları sıfırlar. */
+  async clearLocalData(): Promise<void> {
+    safeRemoveItem(this.storage, SOCIAL_MOCK_STORAGE_KEY)
+    this.load(this.appleUserId)
   }
 
   // -------------------------------------------------------------------------

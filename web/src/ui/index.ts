@@ -22,7 +22,6 @@ export {
 } from './components/SegmentedControl'
 export { Sheet, type SheetProps } from './components/Sheet'
 export { Switch, type SwitchProps } from './components/Switch'
-export { Toggle, type ToggleProps } from './components/Toggle'
 export { cx } from './cx'
 export { ThemeProvider } from './theme/ThemeProvider'
 export {

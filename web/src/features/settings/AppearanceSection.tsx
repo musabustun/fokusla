@@ -1,7 +1,8 @@
-import { Palette } from 'lucide-react'
+import { Sun } from 'lucide-react'
 import {
   ListRow,
   ListSection,
+  PalettePicker,
   SegmentedControl,
   useTheme,
   type SegmentedOption,
@@ -16,24 +17,27 @@ const THEME_OPTIONS: readonly SegmentedOption<ThemePreference>[] = [
 ]
 
 export function AppearanceSection() {
-  const { preference, setPreference } = useTheme()
+  const { preference, setPreference, palette, setPalette, resolved } = useTheme()
   return (
     <ListSection
       header="Görünüm"
-      footer="Gece mesaisi koyu temayla tasarlandı. Sistem, cihazının açık/koyu ayarını izler."
+      footer="Renk teması ve mod birbirinden bağımsızdır. Sistem, cihazının açık/koyu ayarını izler."
     >
       <ListRow
-        title="Tema"
-        icon={<Palette className={ICON_CLASS} />}
+        title="Mod"
+        icon={<Sun className={ICON_CLASS} />}
         accessory={
           <SegmentedControl
-            aria-label="Tema"
+            aria-label="Mod"
             options={THEME_OPTIONS}
             value={preference}
             onChange={setPreference}
           />
         }
       />
+      <li className="relative px-2 py-4 before:absolute before:top-0 before:right-2 before:left-2 before:h-px before:bg-separator">
+        <PalettePicker value={palette} onChange={setPalette} mode={resolved} legend="Renk teması" />
+      </li>
     </ListSection>
   )
 }

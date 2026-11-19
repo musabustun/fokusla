@@ -28,7 +28,18 @@ describe('onboardingReducer', () => {
       },
     )
     expect(selected.field).toBe('EA')
-    expect(onboardingReducer(selected, { type: 'next' }).step).toBe('account')
+    expect(onboardingReducer(selected, { type: 'next' }).step).toBe('theme')
+  })
+
+  it('tema adımı her zaman ilerleyebilir ve hesap adımına geçer', () => {
+    const state: OnboardingState = { step: 'theme', field: 'SAY' }
+    expect(canAdvance(state)).toBe(true)
+    expect(onboardingReducer(state, { type: 'next' }).step).toBe('account')
+  })
+
+  it('tema adımından geri alan adımına döner ve alanı korur', () => {
+    const back = onboardingReducer({ step: 'theme', field: 'EA' }, { type: 'back' })
+    expect(back).toEqual({ step: 'field', field: 'EA' })
   })
 
   it('son adımda ileri gitmez, ilk adımda geri gitmez', () => {
@@ -37,9 +48,9 @@ describe('onboardingReducer', () => {
     expect(onboardingReducer(initialOnboardingState, { type: 'back' }).step).toBe('welcome')
   })
 
-  it('geri gidince seçilen alanı korur', () => {
+  it('hesap adımından geri tema adımına döner ve alanı korur', () => {
     const back = onboardingReducer({ step: 'account', field: 'DIL' }, { type: 'back' })
-    expect(back).toEqual({ step: 'field', field: 'DIL' })
+    expect(back).toEqual({ step: 'theme', field: 'DIL' })
   })
 
   it('girdi durumunu değiştirmez', () => {
@@ -50,6 +61,8 @@ describe('onboardingReducer', () => {
 
   it('adım numarasını 1 tabanlı verir', () => {
     expect(stepNumber('welcome')).toBe(1)
-    expect(stepNumber('account')).toBe(3)
+    expect(stepNumber('field')).toBe(2)
+    expect(stepNumber('theme')).toBe(3)
+    expect(stepNumber('account')).toBe(4)
   })
 })

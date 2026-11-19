@@ -11,6 +11,8 @@ async function onboardAndOpenSettings(page: Page) {
   await page.getByRole('button', { name: 'Başla' }).click()
   await page.getByRole('radio', { name: /Sayısal/ }).check()
   await page.getByRole('button', { name: 'Devam' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Temanı seç' })).toBeVisible()
+  await page.getByRole('button', { name: 'Devam' }).click()
   await page.getByRole('button', { name: 'Şimdilik atla' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Bugün' })).toBeVisible()
   await page.goto('/ayarlar')
@@ -40,14 +42,33 @@ test('tema koyuya geçer ve kalıcıdır', async ({ page }) => {
   await expect(page.getByRole('radio', { name: 'Koyu' })).toBeChecked()
 })
 
-test('varsayılan tema koyudur; açığa geçer ve kalıcıdır', async ({ page }) => {
+test('varsayılan mod cihazı izler; açığa geçer ve kalıcıdır', async ({ page }) => {
+  await page.emulateMedia({ colorScheme: 'dark' })
   await onboardAndOpenSettings(page)
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await expect(page.getByRole('radio', { name: 'Sistem' })).toBeChecked()
+
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+
   await page.getByRole('radio', { name: 'Açık' }).click()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await page.reload()
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
   await expect(page.getByRole('radio', { name: 'Açık' })).toBeChecked()
+})
+
+test('renk teması anında uygulanır ve kalıcıdır', async ({ page }) => {
+  await onboardAndOpenSettings(page)
+  await page.getByRole('radio', { name: 'Limonata' }).check()
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'lemonade')
+
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'lemonade')
+  await expect(page.getByRole('radio', { name: 'Limonata' })).toBeChecked()
+
+  await page.getByRole('radio', { name: 'Tek renk' }).check()
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'mono')
 })
 
 test('Apple ile Giriş, senkron ve çıkış akışı', async ({ page }) => {

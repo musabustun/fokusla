@@ -48,6 +48,8 @@ async function seedBook() {
 
 beforeEach(() => {
   window.localStorage.clear()
+  delete document.documentElement.dataset.palette
+  delete document.documentElement.dataset.theme
   vi.mocked(downloadJson).mockClear()
   ctx = createTestServices()
   services = ctx.services
@@ -58,12 +60,35 @@ afterEach(async () => {
 })
 
 describe('SettingsScreen · görünüm', () => {
-  it('switches the theme from the Görünüm section', async () => {
+  it('switches the mode from the Görünüm section', async () => {
     const user = renderSettings()
     expect(screen.getByRole('heading', { level: 1, name: 'Ayarlar' })).toBeInTheDocument()
-    await user.click(screen.getByRole('radio', { name: 'Koyu' }))
-    expect(screen.getByRole('radio', { name: 'Koyu' })).toBeChecked()
+    const mode = screen.getByRole('radiogroup', { name: 'Mod' })
+    await user.click(within(mode).getByRole('radio', { name: 'Koyu' }))
+    expect(within(mode).getByRole('radio', { name: 'Koyu' })).toBeChecked()
     expect(document.documentElement).toHaveAttribute('data-theme', 'dark')
+    await user.click(within(mode).getByRole('radio', { name: 'Açık' }))
+    expect(document.documentElement).toHaveAttribute('data-theme', 'light')
+  })
+
+  it('lists all six palettes with Kahve selected by default', () => {
+    renderSettings()
+    const group = screen.getByRole('group', { name: 'Renk teması' })
+    for (const label of ['Kahve', 'Tek renk', 'Çilek', 'Matcha', 'Yaban mersini', 'Limonata']) {
+      expect(within(group).getByRole('radio', { name: label })).toBeInTheDocument()
+    }
+    expect(within(group).getAllByRole('radio')).toHaveLength(6)
+    expect(within(group).getByRole('radio', { name: 'Kahve' })).toBeChecked()
+  })
+
+  it('applies and persists the chosen palette immediately', async () => {
+    const user = renderSettings()
+    await user.click(screen.getByRole('radio', { name: 'Matcha' }))
+    expect(screen.getByRole('radio', { name: 'Matcha' })).toBeChecked()
+    expect(document.documentElement.dataset.palette).toBe('matcha')
+    expect(window.localStorage.getItem('fokus.palette')).toBe('matcha')
+    await user.click(screen.getByRole('radio', { name: 'Kahve' }))
+    expect(document.documentElement.dataset.palette).toBe('coffee')
   })
 })
 

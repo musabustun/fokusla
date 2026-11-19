@@ -1,10 +1,10 @@
 /**
  * Onboarding adım makinesi — saf, React'tan bağımsız.
- * Hoş geldin → alan seçimi → hesap (Apple ile Giriş / Şimdilik atla).
+ * Hoş geldin → alan seçimi → tema seçimi → hesap (Apple ile Giriş / Şimdilik atla).
  */
 import type { YksField } from '@/domain'
 
-export const ONBOARDING_STEPS = ['welcome', 'field', 'account'] as const
+export const ONBOARDING_STEPS = ['welcome', 'field', 'theme', 'account'] as const
 
 export type OnboardingStep = (typeof ONBOARDING_STEPS)[number]
 
@@ -43,7 +43,7 @@ export function onboardingReducer(
   }
 }
 
-/** 1 tabanlı adım numarası (ör. "Adım 2 / 3"). */
+/** 1 tabanlı adım numarası (ör. "Adım 2 / 4"). */
 export function stepNumber(step: OnboardingStep): number {
   return ONBOARDING_STEPS.indexOf(step) + 1
 }

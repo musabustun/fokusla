@@ -275,7 +275,7 @@ Oda önerisi: odayı public DB'de tutmak yerine oda sahibinin özel bölgesi + `
 | `SyncService` / `MockSyncService`                                | `ModelConfiguration(cloudKitDatabase: .private("iCloud.<bundle>"))`; durum için `NSPersistentCloudKitContainer.eventChangedNotification` (doğrulanmadı) veya `CKSyncEngine` |
 | `SocialService` / `MockSocialService`                            | Swift protokolü + `CloudKitSocialService` (public DB + `CKShare`, `CKQuerySubscription`; bkz. 4.7)                                                                          |
 | `recordLocalChange()`                                            | Otomatik mirroring'de gereksiz (SwiftData kendisi izler); `CKSyncEngine`'de `state.add(pendingRecordZoneChanges:)`                                                          |
-| `ThemeProvider` / `useTheme` (zustand)                           | `@Environment(\.colorScheme)` + `.preferredColorScheme(_:)`; tercih `@AppStorage("fokus.theme")`, kayıt yoksa `.dark` (bkz. 4.9)                                            |
+| `ThemeProvider` / `useTheme` (zustand)                           | `@Environment(\.colorScheme)` + `.preferredColorScheme(_:)`; mod `@AppStorage("fokus.theme")` (kayıt yoksa sistem), palet `@AppStorage("fokus.palette")` (bkz. 4.9, 4.10)   |
 | Tasarım tokenları (`ui/`)                                        | Asset Catalog renkleri (Any/Dark), gömülü fontlar + `Font.custom(_:size:relativeTo:)` (Dynamic Type), boşluk/hareket sabitleri — ayrıntı 4.9                                |
 | `app/layout/` (tab bar / kenar çubuğu)                           | iPhone: `TabView`; iPad: `NavigationSplitView` (`horizontalSizeClass` ile seçim)                                                                                            |
 | `ROUTES` / React Router                                          | `NavigationStack` + `navigationDestination`; sekme seçimi için enum                                                                                                         |
@@ -300,7 +300,34 @@ tek kehribar vurgulu, yüzeyleri kart yerine 1px çizgiyle ayıran bir sistemdir
 | `ProgressRing` (ince iz `separator`, yay `accent-ink`/`success`)                    | `Circle().trim(from: 0, to: value).stroke(style: .init(lineWidth: 6, lineCap: .round)).rotationEffect(.degrees(-90))`                                                                                                     |
 | `inputStyles()` (şeffaf, 1px `separator-strong`)                                    | `TextField(...).textFieldStyle(.plain).padding().overlay(RoundedRectangle(cornerRadius: 10).stroke(Color("SeparatorStrong")))`                                                                                            |
 | Hareket: basınca `scale 0.97`, ekran girişi 240ms, ilerleme akışı 700ms             | `.scaleEffect(isPressed ? 0.97 : 1)` (`ButtonStyle`), `.transition(.opacity.combined(with: .offset(y: 6)))`, `.animation(.smooth(duration: 0.7), value:)`; `@Environment(\.accessibilityReduceMotion)` iken animasyon yok |
-| Varsayılan tema koyu (`DEFAULT_THEME_PREFERENCE = 'dark'`)                          | `@AppStorage("fokus.theme") var theme = "dark"` → `.preferredColorScheme(.dark)`                                                                                                                                          |
+| Mod varsayılanı cihazı izler (`DEFAULT_THEME_PREFERENCE = 'system'`)                | `@AppStorage("fokus.theme") var theme = "system"` → `"system"` iken `.preferredColorScheme(nil)`, aksi hâlde `.light`/`.dark`                                                                                             |
+
+### 4.10 Renk temaları (paletler) → SwiftUI
+
+Mod (açık/koyu) ve palet iki bağımsız seçimdir. Web: `<html data-theme="light|dark" data-palette="…">`; her
+palet tüm renk token'larını yeniden tanımlar (`tokens.ts` → `PALETTES`, `tokens.css` → `[data-palette]` blokları).
+Her palet+mod çifti için WCAG AA kontrastı ve vurgu/mola/hata ayrımı `tokens.test.ts`'te doğrulanır.
+
+| Palet (`PaletteName`) | Arayüz adı    | Vurgu                       | Mola/başarı (`success`) |
+| --------------------- | ------------- | --------------------------- | ----------------------- |
+| `coffee` (varsayılan) | Kahve         | Kehribar/karamel            | Adaçayı yeşili          |
+| `mono`                | Tek renk      | Yok: siyah/beyaz (nötr yay) | Soluk adaçayı           |
+| `strawberry`          | Çilek         | Kırmızı-pembe               | Adaçayı yeşili          |
+| `matcha`              | Matcha        | Matcha yeşili               | Camgöbeği-mavi          |
+| `blueberry`           | Yaban mersini | Mavi (mora kaymaz)          | Adaçayı yeşili          |
+| `lemonade`            | Limonata      | Sarı (açıkta koyu mürekkep) | Adaçayı yeşili          |
+
+| Web                                                                | SwiftUI                                                                                                                                                                                                            |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PALETTES[palette][mode][token]`                                   | Asset Catalog'da palet başına bir klasör (Namespace açık), içinde token başına **Any + Dark** görünümlü renk seti: `Color("Strawberry/AccentInk")` — ad `swiftUIPaletteColorName()` ile üretilir                   |
+| `useTheme().palette` / `setPalette`                                | `@AppStorage("fokus.palette") var palette: Palette = .coffee` (`enum Palette: String, CaseIterable`; raw value'lar web ile aynı: `coffee`, `mono`, `strawberry`, `matcha`, `blueberry`, `lemonade`)                |
+| Token sınıfları (`bg-accent`, `text-label`…) paleti otomatik izler | `extension Color { static func token(_ name: String, in palette: Palette) -> Color }` + `EnvironmentValues.palette`; ekranlar `Color.token("Accent", in: palette)` yerine `@Environment(\.palette)` üzerinden okur |
+| `PalettePicker` / `PalettePreview` (`data-palette` ile kapsamlı)   | `LazyVGrid` + seçim; önizleme `.environment(\.palette, p)` ve o anki `colorScheme` ile çizilir                                                                                                                     |
+| `index.html` ilk boyama betiği                                     | Gerek yok: `@AppStorage` ilk karede okunur                                                                                                                                                                         |
+
+Tercih şimdilik **cihaza özeldir** (localStorage / `@AppStorage`). İleride iPhone ↔ iPad arasında aynı görünüm
+istenirse palet ve mod `NSUbiquitousKeyValueStore` ya da CloudKit private database'de küçük bir `UserPreferences`
+kaydı olarak senkronlanabilir (yalnızca ekleme; `UserProfile`'a `palette: String | null` alanı da bir seçenek).
 
 ## 5. Alan ekleme kontrol listesi
 

@@ -4,10 +4,11 @@ import { useCurrentProfile } from '@/data'
 import { AccountStep } from './AccountStep'
 import { FieldStep } from './FieldStep'
 import { isOnboarded } from './completeOnboarding'
+import { ThemeStep } from './ThemeStep'
 import { useOnboarding } from './useOnboarding'
 import { WelcomeStep } from './WelcomeStep'
 
-/** Hoş geldin → alan seçimi → Apple ile Giriş (mock) / Şimdilik atla → Bugün. */
+/** Hoş geldin → alan seçimi → tema seçimi → Apple ile Giriş (mock) / Şimdilik atla → Bugün. */
 export function OnboardingScreen() {
   const profileState = useCurrentProfile()
   const { state, dispatch, pending, error, finish } = useOnboarding()
@@ -33,6 +34,8 @@ export function OnboardingScreen() {
           onBack={back}
         />
       )
+    case 'theme':
+      return <ThemeStep onNext={next} onBack={back} />
     case 'account':
       return <AccountStep pending={pending} error={error} onChoose={finish} onBack={back} />
   }

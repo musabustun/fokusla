@@ -29,7 +29,8 @@ kontrastını doğrular. Yeni renk eklerken **her iki dosyaya** ve gerekiyorsa `
 
 ### Renkler (`bg-*`, `text-*`, `border-*`, `stroke-*`)
 
-Varsayılan tema **koyu** ("gece"); açık tema ("gündüz") kullanıcı seçimidir.
+Aşağıdaki tablo varsayılan palet **Kahve**'nin değerleridir. Diğer paletler (Tek renk, Çilek, Matcha,
+Yaban mersini, Limonata) aynı token'ları kendi açık/koyu değerleriyle yeniden tanımlar — bkz. **Tema**.
 
 | Token              | Gündüz      | Gece        | Kullanım                                                        | SwiftUI                    |
 | ------------------ | ----------- | ----------- | --------------------------------------------------------------- | -------------------------- |
@@ -295,6 +296,20 @@ kapanır. Renkler: açık → ray `accent` (kehribar), topuz `accent-contrast`; 
 `separator-strong` çizgi, topuz `switch-thumb-off`. Durum ayrıca topuzun konumuyla anlatılır.
 SwiftUI: sistem `Toggle` + `.tint(Color("Accent"))`; topuz rengini sistem çizer.
 
+### `PalettePicker` → `LazyVGrid` + seçim
+
+`{ value: PaletteName; onChange; mode: 'light' | 'dark'; legend?: string; className? }` — renk teması
+seçici. `<fieldset>` (legend varsayılan "Renk teması") içinde her palet için gerçek bir radyo
+(erişilebilir ad: "Kahve", "Tek renk", "Çilek"…; ok tuşlarıyla gezinilir), canlı önizleme ve ad. iPhone'da
+2, iPad'de 3 sütun; seçili kart `accent-ink` çerçeve + onay. Onboarding'in "Temanı seç" adımı ve
+Ayarlar > Görünüm aynı bileşeni kullanır.
+
+### `PalettePreview`
+
+`{ palette: PaletteName; mode: 'light' | 'dark'; className? }` — dekoratif (`aria-hidden`) küçük
+önizleme: o paletin zemini, ilerleme halkası ve ana düğme hapı. Ham renk yok: kutu
+`data-palette`/`data-theme` taşır, içindeki token sınıfları o paleti kullanır.
+
 ### `ProgressRing` → `Circle().trim(from: 0, to: value).stroke(…).rotationEffect(.degrees(-90))`
 
 İnce iz (`separator`) + yuvarlak uçlu yay (`accent-ink` ya da `success`); değer değişince yay 700ms akar.
@@ -328,18 +343,44 @@ Ortalanmış; ikon ince çizgili bir dairede, başlık `<h2>` (`text-title3`, Br
 
 ## Tema
 
-`ThemeProvider` (uygulamada bir kez, `App.tsx`'te) çözümlenen temayı `<html data-theme>` ve
-`color-scheme` olarak uygular, sistem temasını (`prefers-color-scheme`) izler. `index.html`'deki
-satır içi betik ilk boyamada doğru temayı ayarlar. **Kayıtlı tercih yoksa koyu**
-(`DEFAULT_THEME_PREFERENCE = 'dark'`); "Sistem" seçilirse cihazı izler.
+İki bağımsız seçim vardır: **mod** (açık/koyu) ve **renk teması (palet)**. `ThemeProvider`
+(uygulamada bir kez, `App.tsx`'te) çözümlenen modu `<html data-theme>` + `color-scheme`, paleti
+`<html data-palette>` olarak uygular ve sistem modunu (`prefers-color-scheme`) izler. `index.html`'deki
+satır içi betik ilk boyamada ikisini de ayarlar. **Kayıtlı tercih yoksa mod cihazı izler**
+(`DEFAULT_THEME_PREFERENCE = 'system'`), palet **Kahve**'dir (`DEFAULT_PALETTE = 'coffee'`).
 
 ```ts
-const { preference, resolved, setPreference } = useTheme()
+const { preference, resolved, setPreference, palette, setPalette } = useTheme()
 // preference: 'system' | 'light' | 'dark'  ·  resolved: 'light' | 'dark'
+// palette: 'coffee' | 'mono' | 'strawberry' | 'matcha' | 'blueberry' | 'lemonade'
 ```
 
-Tercih cihaza özeldir (senkronize edilmez): `localStorage['fokus.theme']` (`THEME_STORAGE_KEY`).
-SwiftUI: `@AppStorage("fokus.theme")` + `.preferredColorScheme(...)`.
+| Palet        | Ad            | Açık zemin / vurgu mürekkebi | Koyu zemin / vurgu    |
+| ------------ | ------------- | ---------------------------- | --------------------- |
+| `coffee`     | Kahve         | `#F5F2EA` / `#955500`        | `#0E0F0C` / `#FFB547` |
+| `mono`       | Tek renk      | `#FFFFFF` / `#0A0A0A`        | `#050505` / `#F5F5F5` |
+| `strawberry` | Çilek         | `#FBF2F3` / `#B42357`        | `#120C0E` / `#FF7FA1` |
+| `matcha`     | Matcha        | `#F1F4EA` / `#4A6E12`        | `#0C100B` / `#B4D677` |
+| `blueberry`  | Yaban mersini | `#F1F4F9` / `#1F5CC7`        | `#0A0E14` / `#7DB1FF` |
+| `lemonade`   | Limonata      | `#F8F6E6` / `#785F00`        | `#0F0E08` / `#F7DA4F` |
+
+Her palet zemini ve yüzeyleri de kendi rengine hafifçe çeker. `success` (mola) her palette vurgudan
+ayırt edilir (Matcha'da camgöbeği-mavi); Tek renk'te vurgu ve ilerleme yayı nötrdür. Yeni palet eklerken:
+`tokens.ts` → `PaletteName`/`PALETTE_NAMES`/`PALETTE_LABELS`/`PALETTES`, `tokens.css` → iki blok,
+`index.html` → palet listesi; `tokens.test.ts` senkronu, AA kontrastını ve renk ayrımını doğrular.
+
+Seçiciler yalnızca `<html>`'e değil her öğeye uyar: `data-palette`/`data-theme` taşıyan bir kutunun
+içindeki token sınıfları o paleti kullanır. `PalettePreview` ve `PalettePicker` bunu kullanır:
+
+```tsx
+const { palette, setPalette, resolved } = useTheme()
+<PalettePicker value={palette} onChange={setPalette} mode={resolved} legend="Renk teması" />
+```
+
+Tercihler cihaza özeldir (şimdilik senkronize edilmez): `localStorage['fokus.theme']`
+(`THEME_STORAGE_KEY`) ve `localStorage['fokus.palette']` (`PALETTE_STORAGE_KEY`). SwiftUI:
+`@AppStorage("fokus.theme")` + `.preferredColorScheme(...)`, `@AppStorage("fokus.palette")` + palet
+başına Any/Dark renk setleri (bkz. `docs/ARCHITECTURE.md` 4.10).
 
 ## Yardımcılar
 
@@ -347,4 +388,5 @@ SwiftUI: `@AppStorage("fokus.theme")` + `.preferredColorScheme(...)`.
 - `tokens` — `import { tokens } from '@/ui'` → `tokens.COLORS`, `tokens.TYPE_SCALE`, `tokens.RADII`,
   `tokens.MOTION`, `tokens.FONT_FAMILIES`…
 - Yardımcı sınıflar (`tokens.css`): `numeric` (mono + tabular rakam), `eyebrow` (bölüm etiketi).
-- `contrastRatio()` (`src/ui/contrast.ts`) — WCAG kontrast oranı (testlerde kullanılır).
+- `contrastRatio()` (`src/ui/contrast.ts`) — WCAG kontrast oranı; `colorDistance()` — algısal renk
+  farkı (CIE76 ΔE). İkisi de testlerde kullanılır.

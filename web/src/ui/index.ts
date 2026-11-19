@@ -21,6 +21,8 @@ export { ListSection, type ListSectionProps } from './components/ListSection'
 export { Metric, type MetricProps, type MetricSize, type MetricTone } from './components/Metric'
 export { clampProgress } from './components/clampProgress'
 export { ProgressBar, type ProgressBarProps } from './components/ProgressBar'
+export { PalettePicker, type PalettePickerProps } from './components/PalettePicker'
+export { PalettePreview, type PalettePreviewProps } from './components/PalettePreview'
 export { ProgressRing, type ProgressRingProps } from './components/ProgressRing'
 export { RadioRow, type RadioRowProps } from './components/RadioRow'
 export { ScreenHeader, type ScreenHeaderProps } from './components/ScreenHeader'
@@ -35,6 +37,7 @@ export { cx } from './cx'
 export { ThemeProvider } from './theme/ThemeProvider'
 export {
   DEFAULT_THEME_PREFERENCE,
+  PALETTE_STORAGE_KEY,
   THEME_PREFERENCES,
   THEME_STORAGE_KEY,
   type ResolvedTheme,
@@ -42,3 +45,10 @@ export {
 } from './theme/themeStorage'
 export { useTheme, type UseThemeResult } from './theme/useTheme'
 export * as tokens from './tokens'
+export {
+  DEFAULT_PALETTE,
+  isPaletteName,
+  PALETTE_LABELS,
+  PALETTE_NAMES,
+  type PaletteName,
+} from './tokens'

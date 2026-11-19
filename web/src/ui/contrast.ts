@@ -34,3 +34,23 @@ export function contrastRatio(foreground: string, background: string): number {
   const darker = Math.min(a, b)
   return (lighter + 0.05) / (darker + 0.05)
 }
+
+function labComponent(t: number): number {
+  return t > 0.008856 ? Math.cbrt(t) : 7.787 * t + 16 / 116
+}
+
+/** sRGB hex → CIELAB (D65). */
+export function toLab(hex: string): [number, number, number] {
+  const [r, g, b] = parseHex(hex).map(linearize) as [number, number, number]
+  const x = labComponent((0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047)
+  const y = labComponent(0.2126 * r + 0.7152 * g + 0.0722 * b)
+  const z = labComponent((0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883)
+  return [116 * y - 16, 500 * (x - y), 200 * (y - z)]
+}
+
+/** İki renk arasındaki algısal fark (CIE76 ΔE). ~2.3 fark edilebilir, ≥30 belirgin farklı renk. */
+export function colorDistance(a: string, b: string): number {
+  const [l1, a1, b1] = toLab(a)
+  const [l2, a2, b2] = toLab(b)
+  return Math.hypot(l1 - l2, a1 - a2, b1 - b2)
+}

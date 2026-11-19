@@ -19,7 +19,8 @@ export function SettingsScreen() {
   const openWipe = () => setWipeOpen(true)
 
   return (
-    <>
+    // Tek sütunlu liste: geniş iPad/masaüstünde satırlar okunaklı genişlikte kalsın.
+    <div className="max-w-3xl">
       <ScreenHeader title="Ayarlar" />
       {profile ? <ProfileSection profile={profile} /> : null}
       <AccountSection session={session} onSessionChange={setSession} onRequestWipe={openWipe} />
@@ -28,6 +29,6 @@ export function SettingsScreen() {
       <DataSection onRequestWipe={openWipe} />
       <AboutSection />
       <WipeDataSheet open={wipeOpen} onClose={() => setWipeOpen(false)} />
-    </>
+    </div>
   )
 }

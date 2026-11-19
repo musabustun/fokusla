@@ -41,8 +41,8 @@ export function TodayScreen() {
   return (
     <>
       <TodayHeader now={now} />
-      <div className="grid items-start gap-4 md:grid-cols-2">
-        <FocusCard today={today} className="md:col-span-2" />
+      <div className="grid items-start gap-4 lg:grid-cols-2">
+        <FocusCard today={today} className="lg:col-span-2" />
         <TasksCard today={today} />
         <TestsCard today={today} />
         <BooksCard today={today} />

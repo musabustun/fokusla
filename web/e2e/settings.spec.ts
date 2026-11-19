@@ -40,6 +40,16 @@ test('tema koyuya geçer ve kalıcıdır', async ({ page }) => {
   await expect(page.getByRole('radio', { name: 'Koyu' })).toBeChecked()
 })
 
+test('varsayılan tema koyudur; açığa geçer ve kalıcıdır', async ({ page }) => {
+  await onboardAndOpenSettings(page)
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark')
+  await page.getByRole('radio', { name: 'Açık' }).click()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await page.reload()
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await expect(page.getByRole('radio', { name: 'Açık' })).toBeChecked()
+})
+
 test('Apple ile Giriş, senkron ve çıkış akışı', async ({ page }) => {
   await onboardAndOpenSettings(page)
 

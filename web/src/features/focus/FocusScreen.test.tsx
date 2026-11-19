@@ -142,7 +142,8 @@ describe('FocusScreen', () => {
       '17 dk',
     )
     expect(screen.getByRole('region', { name: 'Ortalama mola' })).toHaveTextContent('5 dk')
-    expect(screen.getByRole('region', { name: 'Bugün toplam' })).toHaveTextContent('35 dk')
+    expect(screen.getByTestId('today-total')).toHaveTextContent('35 dk')
+    expect(screen.queryByRole('region', { name: 'Bugün toplam' })).toBeNull()
     const week = screen.getByRole('list', { name: 'Son 7 gün' })
     const days = within(week).getAllByRole('listitem')
     expect(days).toHaveLength(7)

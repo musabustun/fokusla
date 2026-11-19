@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  check:
+    name: Lint, biçim, tip, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Biçim kontrolü
+        run: npm run format:check
+
+      - name: Tip kontrolü
+        run: npm run typecheck
+
+      - name: Birim testleri
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: E2E (Playwright)
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Bağımlılıklar
+        run: npm ci
+
+      - name: Playwright tarayıcısı
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E testleri
+        run: npm run e2e
+
+      - name: Playwright raporu
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: |
+            web/playwright-report
+            web/test-results
+          if-no-files-found: ignore
+          retention-days: 7

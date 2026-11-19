@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Fokus</title>
+    <meta
+      name="description"
+      content="Fokus — YKS'ye hazırlananlar için ücretsiz, reklamsız ve açık kaynak çalışma takip uygulaması."
+    />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Fokus" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <script>
+      // İlk boyamadan önce kayıtlı temayı uygula (yanlış tema parlamasını önler).
+      // Anahtar: src/ui/theme/themeStorage.ts → THEME_STORAGE_KEY
+      try {
+        var pref = localStorage.getItem('fokus.theme')
+        var dark =
+          pref === 'dark' ||
+          (pref !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

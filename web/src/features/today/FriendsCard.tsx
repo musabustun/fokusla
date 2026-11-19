@@ -37,7 +37,7 @@ function FocusingFriends({ friends }: { friends: readonly SocialFriend[] }) {
         {visible.map((friend) => (
           <li
             key={friend.userId}
-            className="flex max-w-full items-center gap-1.5 rounded-full bg-accent-subtle px-3 py-1 text-subheadline text-accent"
+            className="flex max-w-full items-center gap-1.5 rounded-full border border-separator-strong px-3 py-1 text-subheadline text-label"
           >
             <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-success" />
             <span className="truncate">@{friend.username}</span>

@@ -1,5 +1,11 @@
 import { cx } from '../cx'
 
+/**
+ * - `filled`: ana eylem — kehribar hap (ekranda bir tane).
+ * - `tinted`: ikincil eylem — çizgili hap (1px `separator-strong` sınır).
+ * - `plain`: sessiz, nötr metin eylemi (araç çubuğu, "Tümü", geri) — kehribar değil.
+ * - `destructive`: yıkıcı eylem — kırmızı çizgili hap.
+ */
 export type ButtonVariant = 'filled' | 'tinted' | 'plain' | 'destructive'
 export type ButtonSize = 'small' | 'medium' | 'large'
 
@@ -9,20 +15,25 @@ export interface ButtonStyleOptions {
   fullWidth?: boolean
 }
 
-const BASE =
-  'inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-md font-semibold transition-opacity select-none active:opacity-70 disabled:cursor-not-allowed disabled:opacity-40 aria-busy:cursor-progress'
+// Basınca hafif küçülme (scale 0.97, 120ms); renk geçişleri 200ms. Hareket azaltmada durur.
+const BASE = [
+  'inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full font-semibold select-none',
+  'transition-[transform,background-color,border-color,color,opacity] duration-200 ease-standard',
+  'active:scale-97 active:duration-100 motion-reduce:active:scale-100',
+  'disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 aria-busy:cursor-progress',
+].join(' ')
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  filled: 'bg-accent text-accent-contrast',
-  tinted: 'bg-accent-subtle text-accent',
-  plain: 'bg-transparent text-accent',
-  destructive: 'bg-danger-subtle text-danger',
+  filled: 'bg-accent text-accent-contrast hover:opacity-90',
+  tinted: 'border border-separator-strong text-label hover:bg-fill',
+  plain: 'text-label hover:bg-fill',
+  destructive: 'border border-danger text-danger hover:bg-danger-subtle',
 }
 
 const SIZES: Record<ButtonSize, string> = {
-  small: 'px-3 text-subheadline',
-  medium: 'px-4 text-body',
-  large: 'min-h-13 rounded-lg px-5 text-headline',
+  small: 'px-3.5 text-subheadline',
+  medium: 'px-5 text-callout',
+  large: 'min-h-14 px-7 text-headline',
 }
 
 /**

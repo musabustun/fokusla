@@ -1,6 +1,6 @@
-import { FIELD_DESCRIPTIONS, FIELD_LABELS } from '@/curriculum'
+import { FIELD_DESCRIPTIONS, FIELD_LABELS, FIELD_SHORT_LABELS } from '@/curriculum'
 import type { YksField } from '@/domain'
-import { Button, cx } from '@/ui'
+import { Button, RadioRow } from '@/ui'
 import { OnboardingStepLayout } from './OnboardingStepLayout'
 
 interface FieldStepProps {
@@ -31,51 +31,21 @@ export function FieldStep({ value, onChange, onNext, onBack }: FieldStepProps) {
     >
       <fieldset>
         <legend className="sr-only">YKS alanı</legend>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col border-t border-separator">
           {FIELDS.map((field) => (
-            <FieldOption
+            <RadioRow
               key={field}
-              field={field}
+              name="yks-field"
+              value={field}
+              code={FIELD_SHORT_LABELS[field]}
+              title={FIELD_LABELS[field]}
+              description={FIELD_DESCRIPTIONS[field]}
               checked={value === field}
-              onSelect={() => onChange(field)}
+              onChange={() => onChange(field)}
             />
           ))}
         </div>
       </fieldset>
     </OnboardingStepLayout>
-  )
-}
-
-interface FieldOptionProps {
-  field: YksField
-  checked: boolean
-  onSelect: () => void
-}
-
-function FieldOption({ field, checked, onSelect }: FieldOptionProps) {
-  const descriptionId = `field-${field}-description`
-  return (
-    <label
-      className={cx(
-        'flex min-h-11 cursor-pointer gap-3 rounded-lg border-2 bg-surface p-4 transition-colors has-focus-visible:outline-2 has-focus-visible:outline-accent',
-        checked ? 'border-accent' : 'border-transparent',
-      )}
-    >
-      <input
-        type="radio"
-        name="yks-field"
-        value={field}
-        checked={checked}
-        onChange={onSelect}
-        aria-describedby={descriptionId}
-        className="mt-0.5 size-5 shrink-0 accent-accent focus-visible:outline-none"
-      />
-      <span>
-        <span className="block text-headline">{FIELD_LABELS[field]}</span>
-        <span id={descriptionId} className="mt-1 block text-subheadline text-secondary-label">
-          {FIELD_DESCRIPTIONS[field]}
-        </span>
-      </span>
-    </label>
   )
 }

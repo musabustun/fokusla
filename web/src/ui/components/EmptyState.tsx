@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { cx } from '../cx'
 
 export interface EmptyStateProps {
-  /** Büyük, dekoratif ikon (lucide-react). */
+  /** Dekoratif ikon (lucide-react); ince çizgili bir dairede gösterilir. */
   icon?: ReactNode
   title: string
   message?: ReactNode
@@ -21,7 +21,10 @@ export function EmptyState({ icon, title, message, action, className }: EmptySta
       )}
     >
       {icon && (
-        <div aria-hidden className="mb-4 text-tertiary-label [&_svg]:size-12">
+        <div
+          aria-hidden
+          className="mb-5 flex size-16 items-center justify-center rounded-full border border-separator text-secondary-label [&_svg]:size-7 [&_svg]:stroke-[1.5]"
+        >
           {icon}
         </div>
       )}

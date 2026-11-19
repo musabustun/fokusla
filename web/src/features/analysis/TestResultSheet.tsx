@@ -10,7 +10,7 @@ import {
   type UUID,
 } from '@/domain'
 import { accuracyOf, computeNet } from '@/domain/calc/tests'
-import { Button, Sheet } from '@/ui'
+import { Button, FIELD_ERROR_CLASS, Sheet } from '@/ui'
 import { DeleteConfirm } from './DeleteConfirm'
 import { FormField } from './FormField'
 import { fieldA11y, INPUT_CLASS, SAVE_FAILED_MESSAGE } from './formStyles'
@@ -199,7 +199,7 @@ function TestResultSheetContent({
       footer={
         <div className="flex flex-col gap-3">
           {saveError && (
-            <p role="alert" className="text-footnote text-danger">
+            <p role="alert" className={FIELD_ERROR_CLASS}>
               {saveError}
             </p>
           )}
@@ -352,7 +352,7 @@ function TestResultSheetContent({
 
         <output
           htmlFor={NUMBER_FIELDS.map(({ key }) => fieldId(key)).join(' ')}
-          className="rounded-md bg-accent-subtle px-3 py-2 text-headline text-label"
+          className="flex items-baseline border-t border-separator pt-3 numeric text-numeral text-label"
         >
           {preview ?? 'Net: —'}
         </output>

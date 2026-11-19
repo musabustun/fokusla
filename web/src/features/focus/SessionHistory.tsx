@@ -18,7 +18,7 @@ export function SessionHistory({ rows }: SessionHistoryProps) {
             key={row.id}
             title={row.title}
             subtitle={row.subtitle}
-            value={formatDurationText(row.focusMs)}
+            value={<span className="numeric">{formatDurationText(row.focusMs)}</span>}
           />
         ))
       )}

@@ -5,7 +5,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useServices } from '@/data'
 import type { Book, BookKind, BookUnit, ExamType, Subject, UUID } from '@/domain'
-import { Button, SegmentedControl, Sheet } from '@/ui'
+import { Button, FIELD_LABEL_CLASS, SegmentedControl, Sheet } from '@/ui'
 import { BookValidationError, createBook, updateBook, type BookInput } from './bookActions'
 import {
   BOOK_KIND_LABELS,
@@ -180,7 +180,7 @@ function BookForm({ formId, book, subjects, onSavingChange, onDone }: BookFormPr
         ))}
       </SelectField>
       <div className="flex flex-col gap-1.5">
-        <span aria-hidden className="text-subheadline font-semibold text-label">
+        <span aria-hidden className={FIELD_LABEL_CLASS}>
           İlerleme birimi
         </span>
         <SegmentedControl

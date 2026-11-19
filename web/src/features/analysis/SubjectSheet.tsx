@@ -1,7 +1,14 @@
 import { useId, useState, type FormEvent } from 'react'
 import { useServices } from '@/data'
 import type { ExamType, Subject, UUID, YksField } from '@/domain'
-import { Button, SegmentedControl, Sheet, type SegmentedOption } from '@/ui'
+import {
+  Button,
+  FIELD_ERROR_CLASS,
+  FIELD_LABEL_CLASS,
+  SegmentedControl,
+  Sheet,
+  type SegmentedOption,
+} from '@/ui'
 import { deleteSubjectCascade } from './cascade'
 import { DeleteConfirm } from './DeleteConfirm'
 import { MAX_SUBJECT_NAME_LENGTH, validateEntityName } from './entityName'
@@ -113,7 +120,7 @@ function SubjectSheetContent({
       footer={
         <div className="flex flex-col gap-3">
           {saveError && (
-            <p role="alert" className="text-footnote text-danger">
+            <p role="alert" className={FIELD_ERROR_CLASS}>
               {saveError}
             </p>
           )}
@@ -148,7 +155,7 @@ function SubjectSheetContent({
           />
         </FormField>
         <div className="flex flex-col gap-1.5">
-          <span aria-hidden className="text-subheadline text-secondary-label">
+          <span aria-hidden className={FIELD_LABEL_CLASS}>
             Sınav
           </span>
           <SegmentedControl

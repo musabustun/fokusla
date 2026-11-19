@@ -1,9 +1,8 @@
-import { UserPlus } from 'lucide-react'
 import { useState } from 'react'
 import { useServices, type SocialFriend } from '@/data'
 import type { PresenceState } from '@/domain'
 import { effectivePresenceState, liveStateMs, liveTodayFocusMs } from '@/domain/calc/social'
-import { Button, ListRow, ListSection, Sheet } from '@/ui'
+import { Button, Card, cx, ListRow, Sheet } from '@/ui'
 import { formatDurationShort, formatPresenceLine } from './format'
 import { PresenceDot } from './PresenceDot'
 import { socialErrorMessage } from './socialErrors'
@@ -28,40 +27,47 @@ export function FriendsSection({ friends, now, onAddFriend }: FriendsSectionProp
 
   return (
     <>
-      <ListSection
-        header={`Arkadaşlar (${friends.length})`}
-        footer={
-          friends.length === 0
-            ? 'Henüz arkadaşın yok. Kullanıcı adı ya da davet koduyla ekleyebilirsin.'
-            : `${focusingCount} arkadaşın şu an odakta. Sağdaki süre bugünkü toplam odak süresidir.`
+      <Card
+        title={`Arkadaşlar (${friends.length})`}
+        className="mb-10"
+        trailing={
+          <Button size="small" onClick={onAddFriend}>
+            Arkadaş ekle
+          </Button>
         }
       >
-        <ListRow
-          title="Arkadaş ekle"
-          icon={<UserPlus className="size-5.5" />}
-          onClick={onAddFriend}
-          chevron={false}
-        />
-        {rows.map(({ friend, state }) => (
-          <ListRow
-            key={friend.userId}
-            title={
-              <span className="flex items-center gap-2">
-                <PresenceDot state={state} />
-                <span className="truncate">@{friend.username}</span>
-              </span>
-            }
-            subtitle={formatPresenceLine(state, liveStateMs(friend.presence, now))}
-            value={
-              <span className="tabular-nums">
-                <span className="sr-only">Bugün </span>
-                {formatDurationShort(liveTodayFocusMs(friend.presence, now))}
-              </span>
-            }
-            onClick={() => setSelectedId(friend.userId)}
-          />
-        ))}
-      </ListSection>
+        <ul role="list" className="border-b border-separator">
+          {rows.map(({ friend, state }) => (
+            <ListRow
+              key={friend.userId}
+              title={
+                <span className="flex items-center gap-2">
+                  <PresenceDot state={state} />
+                  <span className="truncate">@{friend.username}</span>
+                </span>
+              }
+              subtitle={formatPresenceLine(state, liveStateMs(friend.presence, now))}
+              value={
+                <span
+                  className={cx(
+                    'numeric text-callout',
+                    state === 'focusing' ? 'text-label' : 'text-secondary-label',
+                  )}
+                >
+                  <span className="sr-only">Bugün </span>
+                  {formatDurationShort(liveTodayFocusMs(friend.presence, now))}
+                </span>
+              }
+              onClick={() => setSelectedId(friend.userId)}
+            />
+          ))}
+        </ul>
+        <p className="mt-2 text-footnote text-secondary-label">
+          {friends.length === 0
+            ? 'Henüz arkadaşın yok. Kullanıcı adı ya da davet koduyla ekleyebilirsin.'
+            : `${focusingCount} arkadaşın şu an odakta. Sağdaki süre bugünkü toplam odak süresidir.`}
+        </p>
+      </Card>
       <FriendSheet friend={selected} onClose={() => setSelectedId(null)} now={now} />
     </>
   )
@@ -121,9 +127,7 @@ function FriendSheet({ friend, onClose, now }: FriendSheetProps) {
             {formatPresenceLine(state, liveStateMs(friend.presence, now))}
           </dd>
           <dt className="text-secondary-label">Bugün</dt>
-          <dd className="tabular-nums">
-            {formatDurationShort(liveTodayFocusMs(friend.presence, now))}
-          </dd>
+          <dd className="numeric">{formatDurationShort(liveTodayFocusMs(friend.presence, now))}</dd>
         </dl>
       )}
       {error && (

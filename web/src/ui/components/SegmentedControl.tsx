@@ -27,7 +27,7 @@ function targetIndex(key: string, current: number, count: number): number | null
   return null
 }
 
-/** iOS segmented picker; `radiogroup` semantiği ve ok tuşlarıyla gezinme (roving tabindex). */
+/** Hap biçimli segment seçici (seçili = ters renk); `radiogroup` semantiği ve ok tuşlarıyla gezinme (roving tabindex). */
 export function SegmentedControl<T extends string>({
   options,
   value,
@@ -54,7 +54,7 @@ export function SegmentedControl<T extends string>({
       role="radiogroup"
       aria-label={ariaLabel}
       className={cx(
-        'inline-flex gap-0.5 rounded-md bg-fill p-0.5',
+        'inline-flex gap-0.5 rounded-full border border-separator p-0.5',
         fullWidth && 'flex w-full',
         className,
       )}
@@ -74,10 +74,12 @@ export function SegmentedControl<T extends string>({
             onClick={() => onChange(option.value)}
             onKeyDown={(event) => handleKeyDown(event, index)}
             className={cx(
-              'min-h-11 flex-1 rounded-sm px-3 text-subheadline whitespace-nowrap transition-colors',
+              'min-h-11 flex-1 rounded-full px-4 text-subheadline font-medium whitespace-nowrap',
+              'transition-[background-color,color,transform] duration-200 ease-standard',
+              'active:scale-97 motion-reduce:active:scale-100',
               isSelected
-                ? 'bg-control-thumb font-semibold text-label shadow-sm'
-                : 'text-label active:opacity-70',
+                ? 'bg-control-thumb font-semibold text-background'
+                : 'text-secondary-label hover:bg-fill hover:text-label',
             )}
           >
             {option.label}

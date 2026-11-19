@@ -1,5 +1,3 @@
-import { BookOpen, ChartColumn, Timer } from 'lucide-react'
-import type { ReactNode } from 'react'
 import { Button } from '@/ui'
 import { OnboardingStepLayout } from './OnboardingStepLayout'
 
@@ -8,35 +6,21 @@ interface WelcomeStepProps {
 }
 
 interface Highlight {
-  icon: ReactNode
   title: string
   text: string
 }
 
-const ICON_CLASS = 'size-6 shrink-0 text-accent'
-
 const HIGHLIGHTS: readonly Highlight[] = [
-  {
-    icon: <Timer className={ICON_CLASS} aria-hidden="true" />,
-    title: 'Odaklan',
-    text: 'Kronometreyle çalış, molalarını ve günlük toplamını gör.',
-  },
-  {
-    icon: <ChartColumn className={ICON_CLASS} aria-hidden="true" />,
-    title: 'Analiz et',
-    text: 'Konu konu testlerini, doğru-yanlışlarını ve netlerini takip et.',
-  },
-  {
-    icon: <BookOpen className={ICON_CLASS} aria-hidden="true" />,
-    title: 'Planla',
-    text: 'Kitaplarında nerede kaldığını, rutinlerini ve ödevlerini tut.',
-  },
+  { title: 'Odaklan', text: 'Kronometreyle çalış, molalarını ve günlük toplamını gör.' },
+  { title: 'Analiz et', text: 'Konu konu testlerini, doğru-yanlışlarını ve netlerini takip et.' },
+  { title: 'Planla', text: 'Kitaplarında nerede kaldığını, rutinlerini ve ödevlerini tut.' },
 ]
 
 export function WelcomeStep({ onNext }: WelcomeStepProps) {
   return (
     <OnboardingStepLayout
       step="welcome"
+      brand
       title="Fokus'a hoş geldin"
       subtitle="YKS hazırlığın için ücretsiz, reklamsız ve açık kaynak çalışma takibi. Verilerin cihazında kalır."
       actions={
@@ -45,14 +29,11 @@ export function WelcomeStep({ onNext }: WelcomeStepProps) {
         </Button>
       }
     >
-      <ul className="flex flex-col gap-5">
+      <ul className="border-t border-separator">
         {HIGHLIGHTS.map((item) => (
-          <li key={item.title} className="flex gap-4">
-            {item.icon}
-            <div>
-              <p className="text-headline">{item.title}</p>
-              <p className="text-subheadline text-secondary-label">{item.text}</p>
-            </div>
+          <li key={item.title} className="border-b border-separator py-5">
+            <p className="text-headline">{item.title}</p>
+            <p className="mt-1 text-subheadline text-secondary-label">{item.text}</p>
           </li>
         ))}
       </ul>

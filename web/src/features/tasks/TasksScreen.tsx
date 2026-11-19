@@ -5,13 +5,15 @@ import {
   Button,
   Card,
   EmptyState,
+  Metric,
+  ProgressBar,
   ScreenHeader,
   SegmentedControl,
   Sheet,
   type SegmentedOption,
 } from '@/ui'
 import { AddTaskSheet } from './AddTaskSheet'
-import { formatDayTitle } from './format'
+import { formatDayTitle, formatNumber } from './format'
 import type { RowContext, TaskRowModel } from './rowModel'
 import { subjectGroups as buildSubjectGroups } from './subjectOptions'
 import { TaskDetail } from './TaskDetail'
@@ -23,6 +25,17 @@ import { useMediaQuery } from './useMediaQuery'
 import { useTasksData } from './useTasksData'
 import { useToday } from './useToday'
 import { allView, todayView, type ViewResult } from './views'
+
+const TODAY_SECTION_KEYS = new Set(['routines', 'overdue', 'dueToday'])
+
+/** Bugünün planındaki (rutin + geciken + bugün teslim) tamamlanan / toplam görev sayısı. */
+function todaySummary(tasks: Parameters<typeof todayView>[0], ctx: RowContext) {
+  const rows = todayView(tasks, ctx, false)
+    .sections.filter((section) => TODAY_SECTION_KEYS.has(section.key))
+    .flatMap((section) => section.rows)
+  const done = rows.filter((row) => row.done).length
+  return { done, total: rows.length }
+}
 
 type ViewMode = 'today' | 'all'
 
@@ -84,6 +97,7 @@ export function TasksScreen() {
     mode === 'today'
       ? todayView(data.tasks, ctx, hideCompleted)
       : allView(data.tasks, ctx, hideCompleted)
+  const summary = todaySummary(data.tasks, ctx)
   const selectedTask = data.tasks.find((task) => task.id === selectedId) ?? null
   const groups = buildSubjectGroups(data.subjects, data.field, selectedTask?.subjectId)
 
@@ -110,7 +124,6 @@ export function TasksScreen() {
         subtitle={formatDayTitle(today)}
         actions={
           <Button
-            variant="plain"
             aria-label="Görev ekle"
             icon={<Plus aria-hidden className="size-5" strokeWidth={2.5} />}
             onClick={() => setIsAdding(true)}
@@ -120,7 +133,20 @@ export function TasksScreen() {
         }
       />
 
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+      <div className="mb-10 flex flex-col gap-4">
+        <Metric
+          label="Bugün tamamlanan"
+          value={`${formatNumber(summary.done)}/${formatNumber(summary.total)}`}
+          size="xl"
+          tone={summary.total > 0 && summary.done === summary.total ? 'success' : 'default'}
+        />
+        <ProgressBar
+          value={summary.total === 0 ? 0 : summary.done / summary.total}
+          tone={summary.total > 0 && summary.done === summary.total ? 'success' : 'accent'}
+        />
+      </div>
+
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
         <SegmentedControl
           aria-label="Görünüm"
           options={VIEW_OPTIONS}
@@ -154,7 +180,7 @@ export function TasksScreen() {
         </p>
       )}
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-6">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-start lg:gap-10">
         <div className="min-w-0">
           {data.isLoading ? (
             <p role="status" className="py-12 text-center text-subheadline text-secondary-label">
@@ -179,12 +205,12 @@ export function TasksScreen() {
         {isWide && (
           <aside
             aria-label="Görev ayrıntıları"
-            className="sticky top-6 max-h-[calc(100dvh-3rem)] overflow-y-auto rounded-lg"
+            className="sticky top-6 max-h-[calc(100dvh-3rem)] overflow-y-auto"
           >
             <Card>
               {detail || (
                 <div className="flex flex-col items-center gap-3 py-10 text-center">
-                  <MousePointerClick aria-hidden className="size-8 text-tertiary-label" />
+                  <MousePointerClick aria-hidden className="size-8 text-secondary-label" />
                   <p className="text-subheadline text-secondary-label">
                     Ayrıntıları görmek için bir görev seç
                   </p>

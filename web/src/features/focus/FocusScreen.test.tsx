@@ -102,7 +102,7 @@ describe('FocusScreen', () => {
 
     await user.click(screen.getByRole('button', { name: 'Mola ver' }))
     expect(await screen.findByRole('timer', { name: 'Mola süresi' })).toBeInTheDocument()
-    expect(screen.getByText('Molada')).toBeInTheDocument()
+    expect(screen.getByText('Mola')).toBeInTheDocument()
     expect(status()).toHaveTextContent('Mola başladı')
 
     await advance(5 * MINUTE)

@@ -1,11 +1,11 @@
-import { DoorOpen, KeyRound, Plus } from 'lucide-react'
+import { DoorOpen } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
 import { ROUTES } from '@/app/routes'
 import { useServices, type RoomSummary, type SocialRoom } from '@/data'
 import type { SocialPresence } from '@/domain'
 import { effectivePresenceState, liveSessionMs, liveStateMs } from '@/domain/calc/social'
-import { Button, buttonStyles, Card, ListRow, ListSection } from '@/ui'
+import { Button, buttonStyles, Card, Metric } from '@/ui'
 import { formatClock, formatClockLabel, formatPresenceLine } from './format'
 import { PresenceDot } from './PresenceDot'
 import { CreateRoomSheet, JoinRoomSheet } from './RoomSheets'
@@ -45,40 +45,33 @@ function RoomLobby({ friendRooms }: { friendRooms: readonly RoomSummary[] }) {
 
   return (
     <>
-      <ListSection
-        header="Paralel odak"
-        footer="Odada herkes kendi kronometresiyle çalışır; yalnızca durumlar ve süreler görünür."
-      >
-        <ListRow
-          title="Oda oluştur"
-          icon={<Plus className="size-5.5" />}
-          onClick={() => setSheet('create')}
-          chevron={false}
-        />
-        <ListRow
-          title="Kodla katıl"
-          icon={<KeyRound className="size-5.5" />}
-          onClick={() => setSheet('join')}
-          chevron={false}
-        />
-      </ListSection>
-      <section aria-labelledby="friend-rooms-heading" className="mb-8">
-        <h2
-          id="friend-rooms-heading"
-          className="mb-1.5 px-4 text-footnote text-secondary-label uppercase"
-        >
+      <Card title="Paralel odak" className="mb-10">
+        <p className="mb-4 text-footnote text-secondary-label">
+          Odada herkes kendi kronometresiyle çalışır; yalnızca durumlar ve süreler görünür.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="tinted" onClick={() => setSheet('create')}>
+            Oda oluştur
+          </Button>
+          <Button variant="plain" onClick={() => setSheet('join')}>
+            Kodla katıl
+          </Button>
+        </div>
+      </Card>
+      <section aria-labelledby="friend-rooms-heading" className="mb-10">
+        <h2 id="friend-rooms-heading" className="mb-2 eyebrow">
           Arkadaşlarının odaları
         </h2>
         {friendRooms.length === 0 ? (
-          <p className="rounded-lg bg-surface px-4 py-3 text-subheadline text-secondary-label">
+          <p className="border-y border-separator py-3 text-subheadline text-secondary-label">
             Şu an açık oda yok. Bir oda oluşturup arkadaşlarını çağırabilirsin.
           </p>
         ) : (
-          <ul role="list" className="overflow-hidden rounded-lg bg-surface">
+          <ul role="list" className="border-y border-separator">
             {friendRooms.map((summary) => (
               <li
                 key={summary.id}
-                className="flex min-h-11 items-center gap-3 px-4 py-2.5 not-first:border-t not-first:border-separator"
+                className="flex min-h-13 items-center gap-3 py-2.5 not-first:border-t not-first:border-separator"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-body">{summary.name}</p>
@@ -101,7 +94,7 @@ function RoomLobby({ friendRooms }: { friendRooms: readonly RoomSummary[] }) {
           </ul>
         )}
         {error && (
-          <p role="alert" className="mt-1.5 px-4 text-footnote text-danger">
+          <p role="alert" className="mt-2 text-footnote text-danger">
             {error}
           </p>
         )}
@@ -126,6 +119,12 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
   const self = room.members.find((member) => member.isSelf)
   const isHost = self?.isHost ?? false
   const ownState = effectivePresenceState(ownPresence, now)
+  const memberStates = room.members.map((member) => {
+    const presence = member.isSelf ? ownPresence : member.presence
+    return { state: effectivePresenceState(presence, now), sessionMs: liveSessionMs(presence, now) }
+  })
+  const focusingCount = memberStates.filter((m) => m.state === 'focusing').length
+  const roomMs = Math.max(0, ...memberStates.map((m) => m.sessionMs))
 
   async function handleLeave() {
     setLeaving(true)
@@ -141,13 +140,18 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
   return (
     <Card
       title={room.name}
-      className="mb-8"
-      trailing={<DoorOpen aria-hidden className="size-5 text-accent" />}
+      className="mb-10"
+      trailing={<DoorOpen aria-hidden className="size-5 text-secondary-label" />}
     >
-      <div className="mb-4 flex items-center justify-between gap-3 rounded-md bg-fill px-3 py-2">
+      <div className="mb-6 grid grid-cols-3 gap-4">
+        <Metric label="Katılımcı" value={room.members.length} size="lg" />
+        <Metric label="Odakta" value={focusingCount} size="lg" tone="success" />
+        <Metric label="Oda süresi" value={formatClock(roomMs)} size="lg" />
+      </div>
+      <div className="mb-6 flex items-center justify-between gap-3 border-y border-separator py-2">
         <div className="min-w-0">
-          <p className="text-footnote text-secondary-label">Oda davet kodu</p>
-          <p className="font-mono text-headline tracking-widest">{room.inviteCode}</p>
+          <p className="eyebrow">Oda davet kodu</p>
+          <p className="tracking-widest numeric text-numeral-sm">{room.inviteCode}</p>
         </div>
         <Button
           size="small"
@@ -159,9 +163,7 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
         </Button>
       </div>
 
-      <h3 className="mb-1.5 text-footnote text-secondary-label uppercase">
-        Odadakiler ({room.members.length})
-      </h3>
+      <h3 className="mb-1.5 eyebrow">Odadakiler ({room.members.length})</h3>
       <ul role="list" aria-label="Odadakiler" className="mb-4">
         {room.members.map((member) => {
           const presence = member.isSelf ? ownPresence : member.presence
@@ -178,7 +180,7 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
                   @{member.username}
                   {member.isSelf && <span className="text-secondary-label"> (sen)</span>}
                   {member.isHost && (
-                    <span className="ml-1.5 rounded-sm bg-accent-subtle px-1.5 py-0.5 text-caption text-accent">
+                    <span className="ml-1.5 rounded-sm bg-accent-subtle px-1.5 py-0.5 text-caption text-accent-ink">
                       Ev sahibi
                     </span>
                   )}
@@ -189,7 +191,7 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
               </div>
               {state !== 'offline' && (
                 <span
-                  className="text-headline tabular-nums"
+                  className="numeric text-numeral-sm"
                   aria-label={`Oturum ${formatClockLabel(sessionMs)}`}
                 >
                   {formatClock(sessionMs)}
@@ -206,7 +208,7 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
             ? 'Henüz başlamadın. Kronometreni Odak ekranında başlat; durumun burada görünür.'
             : 'Süren Odak ekranındaki kronometreden gelir.'}
         </p>
-        <Link to={ROUTES.focus} className={buttonStyles({ variant: 'filled', fullWidth: true })}>
+        <Link to={ROUTES.focus} className={buttonStyles({ variant: 'tinted', fullWidth: true })}>
           Odak'a git
         </Link>
         <Button variant="destructive" fullWidth loading={leaving} onClick={handleLeave}>

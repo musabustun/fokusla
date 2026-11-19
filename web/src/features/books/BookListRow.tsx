@@ -24,6 +24,22 @@ function rowValue({ status, ratio }: BookSummary): string | undefined {
   return ratio === null ? undefined : formatPercent(ratio)
 }
 
+function RowValue({ summary }: { summary: BookSummary }) {
+  const value = rowValue(summary)
+  if (value === undefined) return null
+  const isStatus = summary.status === 'completed' || summary.status === 'archived'
+  return (
+    <span
+      className={cx(
+        isStatus ? 'text-subheadline font-medium' : 'numeric text-numeral-sm text-label',
+        summary.status === 'completed' && 'text-success',
+      )}
+    >
+      {value}
+    </span>
+  )
+}
+
 /** "34 / 120 test · haftada ~12 test" (hız yoksa yalnızca ilerleme). */
 function rowProgress({ book, reachedUnit, weeklyPace }: BookSummary): string {
   return [
@@ -54,7 +70,8 @@ export function BookListRow({ summary, isSelected }: BookListRowProps) {
       title={<span className="block truncate">{book.title}</span>}
       subtitle={
         <>
-          <span className="block truncate">{rowProgress(summary)}</span>
+          {book.publisher && <span className="block truncate">{book.publisher}</span>}
+          <span className="block truncate numeric text-footnote">{rowProgress(summary)}</span>
           <span className="block truncate text-footnote">{rowTimeline(summary, now)}</span>
           {ratio !== null && (
             <ProgressBar
@@ -66,7 +83,7 @@ export function BookListRow({ summary, isSelected }: BookListRowProps) {
           )}
         </>
       }
-      value={rowValue(summary)}
+      value={<RowValue summary={summary} />}
       render={(props) => (
         <Link
           to={bookPath(book.id)}

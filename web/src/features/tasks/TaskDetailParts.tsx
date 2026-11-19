@@ -1,6 +1,6 @@
 import { Flame, Trash2 } from 'lucide-react'
 import { useId, useState, type FormEvent } from 'react'
-import { Button, ProgressRing } from '@/ui'
+import { Button, FIELD_ERROR_CLASS, FIELD_LABEL_CLASS, Metric, ProgressRing } from '@/ui'
 import type { CompletionRate } from '@/domain/calc/tasks'
 import { formatNumber, streakText } from './format'
 import { INPUT_CLASS } from './styles'
@@ -16,7 +16,7 @@ export interface RoutineStatsProps {
 /** Rutin istatistiği: son 7 gün halkası + seri. */
 export function RoutineStats({ rate, streak }: RoutineStatsProps) {
   return (
-    <div className="flex items-center gap-4 rounded-md bg-background p-3">
+    <div className="flex items-center gap-6 border-y border-separator py-4">
       <ProgressRing
         value={rate.rate ?? 0}
         size={84}
@@ -25,19 +25,23 @@ export function RoutineStats({ rate, streak }: RoutineStatsProps) {
         label="Son 7 gün tamamlama oranı"
       >
         <span className="flex flex-col items-center leading-none">
-          <span className="text-headline">
+          <span className="numeric text-numeral-sm">
             {formatNumber(rate.completed)}/{formatNumber(rate.scheduled)}
           </span>
           <span className="mt-1 text-caption text-secondary-label">gün</span>
         </span>
       </ProgressRing>
-      <div className="min-w-0">
-        <p className="text-footnote text-secondary-label">Son 7 gün</p>
-        <p className="mt-1 flex items-center gap-1.5 text-headline">
-          <Flame aria-hidden className="size-5 shrink-0 text-warning" />
-          {streak > 0 ? streakText(streak) : 'Henüz seri yok'}
-        </p>
-      </div>
+      <Metric
+        label="Seri"
+        size="md"
+        value={
+          <span className="inline-flex items-center gap-2">
+            <Flame aria-hidden className="size-5 shrink-0 text-warning" />
+            {streak > 0 ? streakText(streak) : 'Henüz seri yok'}
+          </span>
+        }
+        caption="Son 7 gün"
+      />
     </div>
   )
 }
@@ -68,7 +72,7 @@ export function QuantityForm({ initial, unit, pending, onSave }: QuantityFormPro
 
   return (
     <form noValidate onSubmit={handleSubmit} className="flex flex-col gap-1.5">
-      <label htmlFor={`${id}-input`} className="text-subheadline font-semibold">
+      <label htmlFor={`${id}-input`} className={FIELD_LABEL_CLASS}>
         Gerçekleşen miktar
       </label>
       <div className="flex items-center gap-2">
@@ -99,7 +103,7 @@ export function QuantityForm({ initial, unit, pending, onSave }: QuantityFormPro
         </Button>
       </div>
       {error && (
-        <p id={`${id}-error`} className="text-footnote text-danger">
+        <p id={`${id}-error`} className={FIELD_ERROR_CLASS}>
           {error}
         </p>
       )}
@@ -132,7 +136,7 @@ export function DeleteControl({ pending, onConfirm }: DeleteControlProps) {
     <div
       role="group"
       aria-labelledby={promptId}
-      className="flex w-full flex-col gap-2 rounded-md bg-background p-3"
+      className="flex w-full flex-col gap-2 rounded-md border border-danger p-3"
     >
       <p id={promptId} className="text-subheadline font-semibold text-danger">
         Bu görev silinsin mi?

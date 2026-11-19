@@ -21,22 +21,29 @@ export function WeeklyChart({ totals }: WeeklyChartProps) {
   const maxMs = Math.max(0, ...totals.map((total) => total.focusMs))
   const lastIndex = totals.length - 1
   return (
-    <ul role="list" aria-label="Son 7 gün" className="flex h-36 items-stretch gap-2">
+    <ul role="list" aria-label="Son 7 gün" className="flex h-36 items-stretch gap-3">
       {totals.map((total, index) => {
         const isToday = index === lastIndex
         return (
           <li key={total.day} className="flex min-w-0 flex-1 flex-col items-center gap-1.5">
-            <div aria-hidden className="flex w-full flex-1 items-end rounded-sm bg-fill">
+            <div aria-hidden className="flex w-full flex-1 items-end">
               <div
-                className="w-full rounded-sm bg-accent motion-safe:transition-[height]"
+                className={cx(
+                  'w-full rounded-sm motion-safe:transition-[height]',
+                  isToday
+                    ? 'bg-accent'
+                    : total.focusMs > 0
+                      ? 'bg-separator-strong'
+                      : 'bg-separator',
+                )}
                 style={{ height: `${barPercent(total.focusMs, maxMs)}%` }}
               />
             </div>
             <span
               aria-hidden
               className={cx(
-                'text-caption',
-                isToday ? 'font-semibold text-label' : 'text-secondary-label',
+                'numeric text-caption',
+                isToday ? 'text-label' : 'text-secondary-label',
               )}
             >
               {formatWeekdayShort(total.day)}

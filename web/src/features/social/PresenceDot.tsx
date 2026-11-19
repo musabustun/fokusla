@@ -3,8 +3,8 @@ import { cx } from '@/ui'
 
 const DOT_CLASS: Record<PresenceState, string> = {
   focusing: 'bg-success',
-  onBreak: 'bg-warning',
-  offline: 'border-2 border-tertiary-label',
+  onBreak: 'bg-tertiary-label',
+  offline: 'border-2 border-separator-strong',
 }
 
 /** Durum noktası — dekoratif; durum her zaman metinle de verilir (yalnızca renge dayanmaz). */

@@ -5,7 +5,11 @@ import { APP_VERSION, ICON_CLASS, PRIVACY_SUMMARY, REPOSITORY_URL } from './cons
 export function AboutSection() {
   return (
     <ListSection header="Hakkında" footer="Fokus ücretsiz, reklamsız ve açık kaynaktır.">
-      <ListRow title="Sürüm" icon={<Info className={ICON_CLASS} />} value={APP_VERSION} />
+      <ListRow
+        title="Sürüm"
+        icon={<Info className={ICON_CLASS} />}
+        value={<span className="numeric">{APP_VERSION}</span>}
+      />
       <ListRow title="Lisans" icon={<Scale className={ICON_CLASS} />} value="MIT" />
       <ListRow
         title="Açık kaynak — GitHub"

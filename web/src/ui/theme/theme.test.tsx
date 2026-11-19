@@ -48,7 +48,7 @@ afterEach(() => {
 })
 
 describe('theme', () => {
-  it('applies the light theme by default when the system is light', () => {
+  it('applies the light theme when following a light system', () => {
     render(
       <ThemeProvider>
         <ThemeProbe />
@@ -57,6 +57,21 @@ describe('theme', () => {
     expect(screen.getByText('system/light')).toBeInTheDocument()
     expect(document.documentElement).toHaveAttribute('data-theme', 'light')
     expect(document.documentElement.style.colorScheme).toBe('light')
+  })
+
+  it('keeps the theme-color meta in sync with the background token', async () => {
+    const meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.append(meta)
+    render(
+      <ThemeProvider>
+        <ThemeProbe />
+      </ThemeProvider>,
+    )
+    expect(meta).toHaveAttribute('content', '#F5F2EA')
+    await userEvent.click(screen.getByRole('button', { name: 'Koyu' }))
+    expect(meta).toHaveAttribute('content', '#0E0F0C')
+    meta.remove()
   })
 
   it('persists an explicit preference and applies data-theme', async () => {
@@ -83,12 +98,16 @@ describe('theme', () => {
     expect(screen.getByText('system/dark')).toBeInTheDocument()
   })
 
+  it('defaults to the dark preference when nothing is stored', () => {
+    expect(readStoredPreference()).toBe('dark')
+  })
+
   it('ignores invalid stored values and survives storage errors', () => {
     window.localStorage.setItem(THEME_STORAGE_KEY, 'neon')
-    expect(readStoredPreference()).toBe('system')
+    expect(readStoredPreference()).toBe('dark')
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('blocked')
     })
-    expect(readStoredPreference()).toBe('system')
+    expect(readStoredPreference()).toBe('dark')
   })
 })

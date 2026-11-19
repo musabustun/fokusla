@@ -21,10 +21,17 @@ describe('ProgressRing', () => {
     expect(screen.getByRole('progressbar')).toHaveAttribute('aria-valuenow', expected)
   })
 
-  it('is hidden from assistive tech when no label is given', () => {
-    const { container } = render(<ProgressRing value={0.5} />)
+  it('hides only the ring graphic when no label is given; children stay accessible', () => {
+    const { container } = render(
+      <ProgressRing value={0.5}>
+        <span role="timer" aria-label="Oturum süresi">
+          12:00
+        </span>
+      </ProgressRing>,
+    )
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-    expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true')
+    expect(container.querySelector('svg')).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByRole('timer', { name: 'Oturum süresi' })).toHaveTextContent('12:00')
   })
 
   it('clampProgress handles infinities', () => {

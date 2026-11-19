@@ -7,11 +7,12 @@ export interface ProgressRingProps {
   value: number
   /** Piksel cinsinden çap. Varsayılan 120. */
   size?: number
-  /** Halka kalınlığı (px). Varsayılan 10. */
+  /** Halka kalınlığı (px). Varsayılan 6 — ince yay, büyük rakam. */
   strokeWidth?: number
   /**
    * Erişilebilir ad (ör. "Günlük odak hedefi"). Verilirse `role="progressbar"`; verilmezse
-   * halka dekoratif kabul edilir (`aria-hidden`) ve değer metin olarak başka yerde verilmelidir.
+   * halka (SVG) dekoratif kabul edilir ve değer metin olarak verilmelidir. `children` her iki
+   * durumda da erişilebilir kalır (ör. ortadaki `role="timer"` saat).
    */
   label?: string
   /** Ortadaki içerik (ör. "45 dk"). */
@@ -20,11 +21,15 @@ export interface ProgressRingProps {
   className?: string
 }
 
-/** SVG ilerleme halkası (SwiftUI: `Circle().trim(from: 0, to: value)`). */
+/**
+ * İnce SVG ilerleme halkası: iz `separator`, yay `accent-ink` (koyu temada kehribar, açıkta AA
+ * uyumlu koyu kehribar) veya `success`. Değer değişince yay 700ms akar (hareket azaltmada anında).
+ * SwiftUI: `Circle().trim(from: 0, to: value).stroke(style: .init(lineCap: .round))`.
+ */
 export function ProgressRing({
   value,
   size = 120,
-  strokeWidth = 10,
+  strokeWidth = 6,
   label,
   children,
   tone = 'accent',
@@ -41,7 +46,7 @@ export function ProgressRing({
         'aria-valuemax': 100,
         'aria-valuenow': Math.round(progress * 100),
       }
-    : { 'aria-hidden': true }
+    : {}
 
   return (
     <div
@@ -49,14 +54,20 @@ export function ProgressRing({
       className={cx('relative inline-flex shrink-0 items-center justify-center', className)}
       style={{ width: size, height: size }}
     >
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+      <svg
+        aria-hidden
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className="-rotate-90"
+      >
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
           strokeWidth={strokeWidth}
-          className="stroke-fill"
+          className="stroke-separator"
         />
         {progress > 0 && (
           <circle
@@ -69,8 +80,8 @@ export function ProgressRing({
             strokeDasharray={circumference}
             strokeDashoffset={circumference * (1 - progress)}
             className={cx(
-              'motion-safe:transition-[stroke-dashoffset] motion-safe:duration-500',
-              tone === 'success' ? 'stroke-success' : 'stroke-accent',
+              'motion-safe:transition-[stroke-dashoffset] motion-safe:duration-700 motion-safe:ease-emphasized',
+              tone === 'success' ? 'stroke-success' : 'stroke-accent-ink',
             )}
           />
         )}

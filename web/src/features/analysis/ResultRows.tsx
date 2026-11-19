@@ -18,7 +18,7 @@ export function ResultRows({ results, booksById, onSelect }: ResultRowsProps) {
       key={result.id}
       title={resultTitle(result, booksById)}
       subtitle={resultSubtitle(result)}
-      value={<span className="tabular-nums">{formatNetValue(computeNet(result))}</span>}
+      value={<span className="numeric text-label">{formatNetValue(computeNet(result))}</span>}
       onClick={() => onSelect(result)}
     />
   ))

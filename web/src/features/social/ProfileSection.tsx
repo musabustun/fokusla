@@ -64,7 +64,7 @@ export function ProfileSection({ profile }: { profile: SocialProfile }) {
           title="Davet kodu"
           icon={<Ticket className={ICON} />}
           subtitle={
-            <span className="font-mono tracking-widest text-label">{profile.inviteCode}</span>
+            <span className="tracking-widest font-mono text-label">{profile.inviteCode}</span>
           }
           accessory={copyButton('code', profile.inviteCode, 'Davet kodunu kopyala')}
         />

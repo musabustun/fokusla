@@ -16,7 +16,7 @@ const HEADER_REFRESH_MS = 60_000
 /** Tab bar'da olmayan modüllere iPhone'da kısayol (iPad'de kenar çubuğu zaten gösterir). */
 function MoreSection() {
   return (
-    <ListSection header="Diğer" className="mt-8 md:hidden">
+    <ListSection header="Diğer" className="mt-10 md:hidden">
       <ListRow
         title="Kitaplar"
         icon={<BookOpen className="size-5.5" />}
@@ -33,7 +33,7 @@ function MoreSection() {
 
 /**
  * Bugün: günün bir bakışta özeti ve tek dokunuşla işe başlama.
- * iPhone: tek sütun, Odak en üstte. iPad (≥768px): iki sütunlu ızgara, Odak tam genişlikte.
+ * iPhone: tek sütun, Odak en üstte. iPad yatay (lg): Odak tam genişlikte, altında iki sütunlu editoryal düzen.
  */
 export function TodayScreen() {
   const today = useLocalToday()
@@ -41,12 +41,16 @@ export function TodayScreen() {
   return (
     <>
       <TodayHeader now={now} />
-      <div className="grid items-start gap-4 lg:grid-cols-2">
-        <FocusCard today={today} className="lg:col-span-2" />
-        <TasksCard today={today} />
-        <TestsCard today={today} />
-        <BooksCard today={today} />
-        <FriendsCard today={today} />
+      <div className="flex flex-col gap-10">
+        <FocusCard today={today} />
+        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-x-16">
+          <TasksCard today={today} />
+          <div className="flex flex-col gap-10">
+            <TestsCard today={today} />
+            <BooksCard today={today} />
+            <FriendsCard today={today} />
+          </div>
+        </div>
       </div>
       <MoreSection />
     </>

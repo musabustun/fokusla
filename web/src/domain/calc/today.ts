@@ -152,6 +152,37 @@ export function recentFocusTotals(
   return dailyFocusTotals(sessions, segments, list, now)
 }
 
+/** Odak halkasının canlı oturumdaki tur uzunluğu (ms): 1 saat. */
+export const FOCUS_RING_LAP_MS = 3_600_000
+
+/** Halkanın neyi gösterdiği: canlı oturumun saatlik turu ya da bugünün son 7 günün en iyisine oranı. */
+export type FocusRingKind = 'sessionLap' | 'weekBest'
+
+export interface FocusRingProgress {
+  kind: FocusRingKind
+  /** 0–1. */
+  value: number
+}
+
+/**
+ * Bugün odak halkası. Açık oturum varsa (`activeSessionMs` ≥ 0): oturum süresinin saatlik turu
+ * (dakika / 60; tam saatte tur başa sarar). Yoksa `todayMs` / `totals` içindeki en iyi gün
+ * (bugün dahil; en iyi 0 ise 0). Değer her zaman 0–1 arasıdır.
+ */
+export function focusRingProgress(
+  todayMs: number,
+  totals: readonly DailyFocusTotal[],
+  activeSessionMs: number | null,
+): FocusRingProgress {
+  if (activeSessionMs !== null) {
+    const lap = Math.max(0, activeSessionMs) % FOCUS_RING_LAP_MS
+    return { kind: 'sessionLap', value: lap / FOCUS_RING_LAP_MS }
+  }
+  const today = Math.max(0, todayMs)
+  const best = Math.max(today, ...totals.map((total) => total.focusMs))
+  return { kind: 'weekBest', value: best > 0 ? today / best : 0 }
+}
+
 // ---------------------------------------------------------------------------
 // Görevler
 // ---------------------------------------------------------------------------

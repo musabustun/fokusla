@@ -1,7 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { useServices } from '@/data'
 import type { Topic, UUID } from '@/domain'
-import { Button, Sheet } from '@/ui'
+import { Button, FIELD_ERROR_CLASS, Sheet } from '@/ui'
 import { deleteTopicKeepingResults } from './cascade'
 import { DeleteConfirm } from './DeleteConfirm'
 import { MAX_TOPIC_NAME_LENGTH, validateEntityName } from './entityName'
@@ -105,7 +105,7 @@ function TopicSheetContent({
       footer={
         <div className="flex flex-col gap-3">
           {saveError && (
-            <p role="alert" className="text-footnote text-danger">
+            <p role="alert" className={FIELD_ERROR_CLASS}>
               {saveError}
             </p>
           )}

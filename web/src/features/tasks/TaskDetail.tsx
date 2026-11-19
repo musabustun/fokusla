@@ -41,7 +41,7 @@ function TaskFacts({ task, ctx }: { task: Task; ctx: RowContext }) {
   const model = buildRowModel(task, ctx)
   const target = quantityText(task.targetQuantity, null, task.quantityUnit)
   return (
-    <dl className="divide-y divide-separator">
+    <dl className="divide-y divide-separator border-y border-separator py-3">
       <Fact label="Tür">{task.kind === 'routine' ? 'Rutin' : 'Ödev'}</Fact>
       {task.recurrence && <Fact label="Tekrar">{recurrenceText(task.recurrence)}</Fact>}
       {task.dueDate && (
@@ -61,7 +61,11 @@ function TaskFacts({ task, ctx }: { task: Task; ctx: RowContext }) {
         </Fact>
       )}
       {model.subjectName && <Fact label="Ders">{model.subjectName}</Fact>}
-      {target && <Fact label="Hedef">{target}</Fact>}
+      {target && (
+        <Fact label="Hedef">
+          <span className="numeric">{target}</span>
+        </Fact>
+      )}
       {task.notes && (
         <Fact label="Not">
           <span className="whitespace-pre-wrap">{task.notes}</span>
@@ -135,7 +139,7 @@ export function TaskDetail({
     <div className="flex flex-col gap-5">
       {showTitle && (
         <header className="flex items-start gap-3">
-          <KindIcon aria-hidden className="mt-1 size-5 shrink-0 text-accent" />
+          <KindIcon aria-hidden className="mt-1 size-5 shrink-0 text-secondary-label" />
           <h2 className="min-w-0 text-title3 break-words">{task.title}</h2>
         </header>
       )}

@@ -1,11 +1,8 @@
 /** Analiz formlarının (sheet'ler) ortak giriş stilleri ve erişilebilirlik nitelikleri. */
+import { inputStyles } from '@/ui'
 
 /** Metin/sayı/tarih girişi ve <select> için ortak sınıf (≥44px, yalnızca token sınıfları). */
-export const INPUT_CLASS = [
-  'min-h-11 w-full rounded-md bg-fill px-3 text-body text-label',
-  'placeholder:text-secondary-label read-only:text-secondary-label',
-  'aria-invalid:outline-2 aria-invalid:outline-danger',
-].join(' ')
+export const INPUT_CLASS = inputStyles()
 
 /** Alan hatasının DOM id'si. */
 export function errorIdFor(id: string): string {

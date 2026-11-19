@@ -56,7 +56,7 @@ export function TodayTaskRow({ item, today, pending, onToggle }: TodayTaskRowPro
           aria-hidden
           className={cx(
             'flex size-6 items-center justify-center rounded-full border-2 motion-safe:transition-colors',
-            done ? 'border-success bg-success text-surface' : 'border-tertiary-label',
+            done ? 'border-success bg-success text-success-contrast' : 'border-separator-strong',
           )}
         >
           {done && <Check className="size-4" strokeWidth={3} />}

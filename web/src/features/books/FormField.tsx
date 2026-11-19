@@ -9,10 +9,7 @@ import {
   type SelectHTMLAttributes,
   type TextareaHTMLAttributes,
 } from 'react'
-import { cx } from '@/ui'
-
-const CONTROL =
-  'min-h-11 w-full rounded-md bg-fill px-3 py-2 text-body text-label placeholder:text-secondary-label disabled:opacity-60'
+import { cx, FIELD_HINT_CLASS, FIELD_LABEL_CLASS, FIELD_ERROR_CLASS, inputStyles } from '@/ui'
 
 interface FieldShellProps {
   label: string
@@ -25,12 +22,12 @@ function FieldShell({ label, hint, children }: FieldShellProps) {
   const hintId = useId()
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={inputId} className="text-subheadline font-semibold text-label">
+      <label htmlFor={inputId} className={FIELD_LABEL_CLASS}>
         {label}
       </label>
       {children({ inputId, hintId: hint ? hintId : undefined })}
       {hint && (
-        <p id={hintId} className="text-footnote text-secondary-label">
+        <p id={hintId} className={FIELD_HINT_CLASS}>
           {hint}
         </p>
       )}
@@ -51,7 +48,7 @@ export function TextField({ label, hint, className, ...rest }: TextFieldProps) {
         <input
           id={inputId}
           aria-describedby={hintId}
-          className={cx(CONTROL, className)}
+          className={cx(inputStyles(), className)}
           {...rest}
         />
       )}
@@ -75,7 +72,7 @@ export function TextAreaField({ label, hint, className, rows = 3, ...rest }: Tex
           id={inputId}
           rows={rows}
           aria-describedby={hintId}
-          className={cx(CONTROL, 'resize-y', className)}
+          className={cx(inputStyles({ multiline: true }), 'resize-y', className)}
           {...rest}
         />
       )}
@@ -97,7 +94,7 @@ export function SelectField({ label, hint, className, children, ...rest }: Selec
         <select
           id={inputId}
           aria-describedby={hintId}
-          className={cx(CONTROL, 'appearance-auto', className)}
+          className={cx(inputStyles(), 'appearance-auto', className)}
           {...rest}
         >
           {children}
@@ -110,7 +107,7 @@ export function SelectField({ label, hint, className, children, ...rest }: Selec
 /** Form hatası (ekran okuyucuya duyurulur). */
 export function FormError({ children }: { children: ReactNode }) {
   return (
-    <p role="alert" className="text-subheadline text-danger">
+    <p role="alert" className={FIELD_ERROR_CLASS}>
       {children}
     </p>
   )

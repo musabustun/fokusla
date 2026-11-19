@@ -52,7 +52,7 @@ export function SubjectDetail({
                 key={topic.id}
                 title={topic.name}
                 subtitle={topicDetailText(summary)}
-                value={<span className="tabular-nums">{topicStatText(summary)}</span>}
+                value={<span className="numeric text-label">{topicStatText(summary)}</span>}
                 render={(props) => (
                   <Link
                     to={analysisHref({ subjectId: subject.id, topicId: topic.id })}

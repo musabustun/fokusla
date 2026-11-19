@@ -1,6 +1,7 @@
 import { useId, type ChangeEvent } from 'react'
 import { useLiveData, useServices } from '@/data'
 import type { Subject, UUID } from '@/domain'
+import { cx, FIELD_LABEL_CLASS, inputStyles } from '@/ui'
 import { groupByExam } from './subjects'
 
 export interface SubjectSelection {
@@ -15,9 +16,8 @@ export interface SubjectPickerProps {
   onChange: (value: SubjectSelection) => void
 }
 
-const SELECT_CLASS =
-  'min-h-11 w-full rounded-md bg-fill px-3 text-body text-label disabled:cursor-not-allowed disabled:opacity-40'
-const LABEL_CLASS = 'mb-1.5 block px-1 text-subheadline text-secondary-label'
+const SELECT_CLASS = cx(inputStyles(), 'disabled:cursor-not-allowed')
+const LABEL_CLASS = cx(FIELD_LABEL_CLASS, 'mb-1.5 block')
 
 /** Opsiyonel ders ve konu seçimi; konu yalnızca ders seçildikten sonra etkinleşir. */
 export function SubjectPicker({ subjects, value, onChange }: SubjectPickerProps) {

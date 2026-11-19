@@ -59,7 +59,7 @@ function ProgressHeader({ doneCount, totalCount }: { doneCount: number; totalCou
   const isAllDone = doneCount === totalCount
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-subheadline text-secondary-label tabular-nums">
+      <p className="numeric text-subheadline text-secondary-label">
         {formatInteger(doneCount)} / {formatInteger(totalCount)} tamamlandı
       </p>
       <ProgressBar
@@ -95,7 +95,7 @@ export function TasksCard({ today, className }: TasksCardProps) {
     const visible = overview.items.slice(0, TODAY_TASK_LIMIT)
     const hiddenCount = overview.items.length - visible.length
     return (
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         <ProgressHeader doneCount={overview.doneCount} totalCount={overview.totalCount} />
         <ul className="flex flex-col">
           {visible.map((item) => (

@@ -33,14 +33,14 @@ export function ProgressHistory({ entries, unit, now, onDelete }: ProgressHistor
         return (
           <ListRow
             key={entry.id}
-            title={position}
+            title={<span className="numeric">{position}</span>}
             subtitle={subtitleOf(entry, now)}
             accessory={
               <button
                 type="button"
                 aria-label={`${position} kaydını sil`}
                 onClick={() => onDelete(entry)}
-                className="-mr-2 flex size-11 items-center justify-center rounded-full text-danger transition-colors active:bg-fill"
+                className="-mr-2 flex size-11 items-center justify-center rounded-full text-danger transition-[background-color,transform] duration-200 ease-standard hover:bg-fill active:scale-97 motion-reduce:active:scale-100"
               >
                 <Trash2 aria-hidden className="size-5" />
               </button>

@@ -44,7 +44,7 @@ export function TopicDetail({
           title="Bu konuda henüz test yok"
           message="Çözdüğün testin doğru, yanlış ve boş sayılarını gir; netin ve gelişimin burada görünür."
           action={
-            <Button icon={<Plus aria-hidden />} onClick={onAddTest}>
+            <Button variant="tinted" icon={<Plus aria-hidden />} onClick={onAddTest}>
               İlk testini ekle
             </Button>
           }

@@ -38,23 +38,21 @@ function progressText({ book, reachedUnit, ratio }: BookSummary): string {
 function BookRow({ summary }: { summary: BookSummary }) {
   const { book, ratio } = summary
   return (
-    <li className="py-2.5 first:pt-0 last:pb-0">
+    <li className="py-3 first:pt-0 last:pb-0">
       <div className="flex items-baseline justify-between gap-3">
         <p className="min-w-0 truncate text-callout">{book.title}</p>
         {ratio !== null && (
-          <p className="shrink-0 text-subheadline text-secondary-label tabular-nums">
-            {formatPercent(ratio)}
-          </p>
+          <p className="shrink-0 numeric text-numeral text-label">{formatPercent(ratio)}</p>
         )}
       </div>
-      <p className="truncate text-footnote text-secondary-label">{progressText(summary)}</p>
+      <p className="truncate numeric text-footnote text-secondary-label">{progressText(summary)}</p>
       {ratio !== null && (
         <ProgressBar
           value={ratio}
           label={`${book.title} ilerlemesi`}
           tone="accent"
           size="small"
-          className="mt-1.5"
+          className="mt-2"
         />
       )}
     </li>

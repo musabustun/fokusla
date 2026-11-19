@@ -1,6 +1,6 @@
 import { Pause, Play, Square } from 'lucide-react'
-import type { ReactNode, Ref } from 'react'
-import { Button, Card, cx } from '@/ui'
+import { useEffect, useState, type ReactNode, type Ref } from 'react'
+import { Button, ProgressRing, cx } from '@/ui'
 import { formatClock, formatDurationText } from './formatDuration'
 import { LongBreakAlert } from './LongBreakAlert'
 
@@ -28,72 +28,107 @@ export interface TimerPanelProps {
 
 const PHASE_LABEL: Record<TimerPhase, string> = {
   loading: 'Yükleniyor',
-  idle: 'Hazır olduğunda başla',
-  focus: 'Odaktasın',
-  break: 'Molada',
+  idle: 'Hazır',
+  focus: 'Odak',
+  break: 'Mola',
 }
 
-/** Büyük saat: large-title token'ının iki katı (ham boyut yok). */
-const CLOCK_CLASS =
-  'text-center text-[length:calc(var(--text-large-title)*2)] leading-none font-semibold tracking-tight tabular-nums'
+const MS_PER_HOUR = 3_600_000
+const RING_SIZE_PHONE = 300
+const RING_SIZE_TABLET = 360
+const RING_STROKE = 7
+const DESKTOP_QUERY = '(min-width: 1024px)'
 
-function PhaseBadge({ phase }: { phase: TimerPhase }) {
-  const isRunning = phase === 'focus' || phase === 'break'
-  return (
-    <p
-      className={cx(
-        'flex items-center justify-center gap-2 text-subheadline font-semibold',
-        phase === 'focus' && 'text-accent',
-        phase === 'break' && 'text-warning',
-        !isRunning && 'text-secondary-label',
-      )}
-    >
-      {isRunning && (
-        <span
-          aria-hidden
-          className={cx(
-            'size-2 rounded-full',
-            phase === 'focus' ? 'bg-accent motion-safe:animate-pulse' : 'bg-warning',
-          )}
-        />
-      )}
-      {PHASE_LABEL[phase]}
-    </p>
+/** Halka çapı: iPhone 300, iPad (lg) 360. matchMedia yoksa (test ortamı) telefon boyutu. */
+function useRingSize(): number {
+  const [isWide, setIsWide] = useState(
+    () => typeof window.matchMedia === 'function' && window.matchMedia(DESKTOP_QUERY).matches,
   )
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return
+    const query = window.matchMedia(DESKTOP_QUERY)
+    const onChange = () => setIsWide(query.matches)
+    query.addEventListener('change', onChange)
+    return () => query.removeEventListener('change', onChange)
+  }, [])
+  return isWide ? RING_SIZE_TABLET : RING_SIZE_PHONE
+}
+
+/** Saatlik tur: geçen sürenin saat içindeki payı (0–1); yay her saniye hafifçe ilerler. */
+function hourLap(ms: number): number {
+  if (!Number.isFinite(ms) || ms <= 0) return 0
+  return (ms % MS_PER_HOUR) / MS_PER_HOUR
 }
 
 function Clock({ phase, sessionFocusMs, breakMs }: TimerPanelProps) {
-  if (phase === 'focus' || phase === 'break') {
-    const isBreak = phase === 'break'
+  const isRunning = phase === 'focus' || phase === 'break'
+  const isBreak = phase === 'break'
+  const text = formatClock(isBreak ? breakMs : isRunning ? sessionFocusMs : 0)
+  // Saat hanesi varsa (7 karakter) iPhone halkasına sığması için bir kademe küçülür.
+  const sizeClass = text.length > 5 ? 'text-numeral-xl lg:text-numeral-hero' : 'text-numeral-hero'
+  const className = cx('numeric', sizeClass, isRunning ? 'text-label' : 'text-tertiary-label')
+  if (!isRunning) {
     return (
-      <div
-        role="timer"
-        aria-label={isBreak ? 'Mola süresi' : 'Oturum süresi'}
-        className={CLOCK_CLASS}
-      >
-        {formatClock(isBreak ? breakMs : sessionFocusMs)}
+      <div aria-hidden className={className}>
+        {text}
       </div>
     )
   }
   return (
-    <div aria-hidden className={cx(CLOCK_CLASS, 'text-tertiary-label')}>
-      {formatClock(0)}
+    <div role="timer" aria-label={isBreak ? 'Mola süresi' : 'Oturum süresi'} className={className}>
+      {text}
+    </div>
+  )
+}
+
+function Dial(props: TimerPanelProps) {
+  const { phase, sessionFocusMs, breakMs, sessionLabel } = props
+  const ringSize = useRingSize()
+  const isBreak = phase === 'break'
+  const lap = hourLap(isBreak ? breakMs : phase === 'focus' ? sessionFocusMs : 0)
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <p
+        className={cx(
+          'flex items-center gap-2 eyebrow',
+          phase === 'focus' && 'text-accent-ink',
+          isBreak && 'text-success',
+        )}
+      >
+        {phase === 'focus' && <span aria-hidden className="size-1.5 rounded-full bg-accent" />}
+        {PHASE_LABEL[phase]}
+      </p>
+      {/* Halka dekoratif (aria-hidden); saat erişilebilir kalsın diye halkanın içinde değil üstünde. */}
+      <div className="relative" style={{ width: ringSize, height: ringSize }}>
+        <ProgressRing
+          value={lap}
+          size={ringSize}
+          strokeWidth={RING_STROKE}
+          tone={isBreak ? 'success' : 'accent'}
+        />
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Clock {...props} />
+        </div>
+      </div>
+      <p className="min-h-5 text-center text-subheadline text-secondary-label">
+        {sessionLabel && phase !== 'idle' ? sessionLabel : null}
+      </p>
     </div>
   )
 }
 
 function Totals({ phase, sessionFocusMs, todayTotalMs }: TimerPanelProps) {
   return (
-    <dl className="flex justify-center gap-8 text-center">
+    <dl className="flex justify-center gap-10 border-y border-separator py-4 text-center">
       {phase === 'break' && (
         <div>
-          <dt className="text-footnote text-secondary-label">Bu oturumda odak</dt>
-          <dd className="text-headline tabular-nums">{formatDurationText(sessionFocusMs)}</dd>
+          <dt className="eyebrow">Bu oturumda odak</dt>
+          <dd className="mt-1 numeric text-numeral-sm">{formatDurationText(sessionFocusMs)}</dd>
         </div>
       )}
       <div>
-        <dt className="text-footnote text-secondary-label">Bugün toplam</dt>
-        <dd data-testid="today-total" className="text-headline tabular-nums">
+        <dt className="eyebrow">Bugün toplam</dt>
+        <dd data-testid="today-total" className="mt-1 numeric text-numeral-sm">
           {formatDurationText(todayTotalMs)}
         </dd>
       </div>
@@ -104,19 +139,28 @@ function Totals({ phase, sessionFocusMs, todayTotalMs }: TimerPanelProps) {
 function Actions(props: TimerPanelProps) {
   const { phase, actionsRef, onStart, onPause, onResume, onFinish } = props
   if (phase === 'loading') return null
-  // Birincil buton her durumda aynı konumda kalır; böylece durum değişince klavye odağı korunur.
-  const primary =
-    phase === 'idle'
-      ? { label: 'Odak başlat', icon: <Play aria-hidden className="size-5" />, onClick: onStart }
-      : phase === 'focus'
-        ? { label: 'Mola ver', icon: <Pause aria-hidden className="size-5" />, onClick: onPause }
-        : { label: 'Devam et', icon: <Play aria-hidden className="size-5" />, onClick: onResume }
+  const isIdle = phase === 'idle'
+  const isFocus = phase === 'focus'
+  const primary = isIdle
+    ? { label: 'Odak başlat', icon: <Play aria-hidden className="size-5" />, onClick: onStart }
+    : isFocus
+      ? { label: 'Mola ver', icon: <Pause aria-hidden className="size-5" />, onClick: onPause }
+      : { label: 'Devam et', icon: <Play aria-hidden className="size-5" />, onClick: onResume }
+  // Birincil buton her durumda aynı konumda kalır (durum değişince klavye odağı korunur). Ana
+  // eylem kehribar hap yalnızca boşta ("Odak başlat") ve molada ("Devam et"); odaktayken "Mola
+  // ver" ve "Bitir" çizgili hap olur (ekranda en fazla bir kehribar eylem).
   return (
     <div ref={actionsRef} className="flex flex-col gap-3">
-      <Button size="large" fullWidth icon={primary.icon} onClick={primary.onClick}>
+      <Button
+        variant={isFocus ? 'tinted' : 'filled'}
+        size="large"
+        fullWidth
+        icon={primary.icon}
+        onClick={primary.onClick}
+      >
         {primary.label}
       </Button>
-      {phase !== 'idle' && (
+      {!isIdle && (
         <Button
           variant="tinted"
           size="large"
@@ -131,19 +175,13 @@ function Actions(props: TimerPanelProps) {
   )
 }
 
-/** Kronometre kartı: durum, büyük saat, bugünkü toplam ve eylemler. */
+/** Kronometre: durum, büyük halka + saat, bugünkü toplam ve eylemler. */
 export function TimerPanel(props: TimerPanelProps) {
-  const { phase, sessionLabel, isLongBreak, error, picker, onResume, onFinish } = props
+  const { phase, isLongBreak, error, picker, onResume, onFinish } = props
   return (
-    <Card aria-busy={phase === 'loading' || undefined} className="flex flex-col gap-6 p-5">
-      <div className="flex flex-col gap-3">
-        <PhaseBadge phase={phase} />
-        {sessionLabel && phase !== 'idle' && (
-          <p className="text-center text-subheadline text-secondary-label">{sessionLabel}</p>
-        )}
-        <Clock {...props} />
-        <Totals {...props} />
-      </div>
+    <div aria-busy={phase === 'loading' || undefined} className="flex flex-col gap-8">
+      <Dial {...props} />
+      <Totals {...props} />
       {phase === 'idle' && picker}
       {phase === 'break' && isLongBreak && (
         <LongBreakAlert onResume={onResume} onFinish={onFinish} />
@@ -154,6 +192,6 @@ export function TimerPanel(props: TimerPanelProps) {
         </p>
       )}
       {!(phase === 'break' && isLongBreak) && <Actions {...props} />}
-    </Card>
+    </div>
   )
 }

@@ -29,8 +29,9 @@ export function AppleSignInButton({
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cx(
-        'inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-label px-5 text-headline text-background transition-opacity',
-        'disabled:cursor-not-allowed disabled:opacity-60',
+        'inline-flex min-h-13 w-full items-center justify-center gap-2 rounded-full bg-label px-6 text-headline text-background',
+        'transition-[transform,opacity] duration-200 ease-standard hover:opacity-90 active:scale-97 motion-reduce:active:scale-100',
+        'disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100',
         className,
       )}
     >

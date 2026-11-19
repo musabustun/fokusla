@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { FIELD_ERROR_CLASS, FIELD_HINT_CLASS, FIELD_LABEL_CLASS } from '@/ui'
 import { errorIdFor } from './formStyles'
 
 export interface FormFieldProps {
@@ -15,13 +16,13 @@ export interface FormFieldProps {
 export function FormField({ id, label, error, hint, children }: FormFieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="text-subheadline text-secondary-label">
+      <label htmlFor={id} className={FIELD_LABEL_CLASS}>
         {label}
       </label>
       {children}
-      {hint && !error && <p className="text-footnote text-secondary-label">{hint}</p>}
+      {hint && !error && <p className={FIELD_HINT_CLASS}>{hint}</p>}
       {error && (
-        <p id={errorIdFor(id)} className="text-footnote text-danger">
+        <p id={errorIdFor(id)} className={FIELD_ERROR_CLASS}>
           {error}
         </p>
       )}

@@ -95,10 +95,10 @@ function BookListBody({
         value={tab}
         onChange={onTabChange}
         fullWidth
-        className="mb-6"
+        className="mb-8"
       />
       {visible.length === 0 ? (
-        <p className="px-4 py-8 text-center text-subheadline text-secondary-label">
+        <p className="border-y border-separator px-4 py-8 text-center text-subheadline text-secondary-label">
           {EMPTY_TAB_TEXT[tab]}
         </p>
       ) : (
@@ -114,7 +114,6 @@ function DetailPlaceholder() {
       icon={<BookOpen />}
       title="Bir kitap seç"
       message="İlerlemesini görmek ve güncellemek için listeden bir kitap seç."
-      className="rounded-lg bg-surface"
     />
   )
 }
@@ -142,7 +141,7 @@ export function BooksScreen() {
         title="Kitaplar"
         subtitle="Soru bankaları ve kaynaklar"
         actions={
-          <Button variant="plain" icon={<Plus aria-hidden className="size-5" />} onClick={openForm}>
+          <Button icon={<Plus aria-hidden className="size-5" />} onClick={openForm}>
             <span className="lg:sr-only">Kitap ekle</span>
           </Button>
         }

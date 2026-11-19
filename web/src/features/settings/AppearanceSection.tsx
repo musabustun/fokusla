@@ -18,7 +18,10 @@ const THEME_OPTIONS: readonly SegmentedOption<ThemePreference>[] = [
 export function AppearanceSection() {
   const { preference, setPreference } = useTheme()
   return (
-    <ListSection header="Görünüm" footer="Sistem, cihazının açık/koyu ayarını izler.">
+    <ListSection
+      header="Görünüm"
+      footer="Gece mesaisi koyu temayla tasarlandı. Sistem, cihazının açık/koyu ayarını izler."
+    >
       <ListRow
         title="Tema"
         icon={<Palette className={ICON_CLASS} />}

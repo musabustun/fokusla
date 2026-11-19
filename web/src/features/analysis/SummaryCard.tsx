@@ -1,4 +1,4 @@
-import { Card } from '@/ui'
+import { Card, Metric } from '@/ui'
 import type { TestSummary } from '@/domain/calc/tests'
 import { formatCount, formatDateTime, formatNet, formatPercent } from './format'
 
@@ -9,41 +9,36 @@ export interface SummaryCardProps {
   showLastTaken?: boolean
 }
 
-interface Stat {
-  label: string
-  value: string
-}
-
-function statsOf(summary: TestSummary): Stat[] {
-  return [
-    { label: 'Toplam test', value: formatCount(summary.testCount) },
-    { label: 'Soru', value: formatCount(summary.totalQuestions) },
-    { label: 'Net', value: formatNet(summary.net) },
-    { label: 'Başarı', value: formatPercent(summary.accuracy) },
-  ]
-}
-
-/** Test özetinin dört temel sayısı (toplam test, soru, net, başarı). */
+/** Test özeti: net ana rakam (büyük mono); başarı, test ve soru sayısı yardımcı rakamlar. */
 export function SummaryCard({ title, summary, showLastTaken = false }: SummaryCardProps) {
   const lastTaken = summary.lastTakenAt
     ? `Son çözülen: ${formatDateTime(summary.lastTakenAt)}`
     : 'Henüz test yok'
 
   return (
-    <Card title={title} className="@container">
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 @sm:grid-cols-4">
-        {statsOf(summary).map((stat) => (
-          <div key={stat.label} className="flex flex-col-reverse">
-            <dt className="text-footnote text-secondary-label">{stat.label}</dt>
-            <dd className="text-title2 tabular-nums">{stat.value}</dd>
-          </div>
-        ))}
-      </dl>
-      {showLastTaken && (
-        <p className="mt-3 border-t border-separator pt-3 text-footnote text-secondary-label">
-          {lastTaken}
-        </p>
-      )}
+    <Card title={title}>
+      <Metric label="Net" value={formatNet(summary.net)} size="xl" tone="accent" />
+      <div className="mt-6 grid grid-cols-3 gap-px bg-separator">
+        <Metric
+          label="Başarı"
+          value={formatPercent(summary.accuracy)}
+          size="md"
+          className="bg-background pt-4 pr-3"
+        />
+        <Metric
+          label="Toplam test"
+          value={formatCount(summary.testCount)}
+          size="md"
+          className="bg-background px-3 pt-4"
+        />
+        <Metric
+          label="Soru"
+          value={formatCount(summary.totalQuestions)}
+          size="md"
+          className="bg-background pt-4 pl-3"
+        />
+      </div>
+      {showLastTaken && <p className="mt-4 text-footnote text-secondary-label">{lastTaken}</p>}
     </Card>
   )
 }

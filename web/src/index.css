@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+/* Yazı tipleri yerelde barındırılır (Google'a istek yok — "veri cihazda" kuralı). */
+@import '@fontsource-variable/bricolage-grotesque/wght.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
 @import './ui/tokens.css';
 
 /* Token'lar tema değişiminde kendiliğinden değişir; `dark:` yalnızca istisnalar içindir. */

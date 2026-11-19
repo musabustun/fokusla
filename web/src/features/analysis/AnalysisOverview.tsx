@@ -37,7 +37,7 @@ function WeakestTopics({ data }: { data: AnalysisData }) {
             key={topicId}
             title={topic.name}
             subtitle={`${subjectName} · ${formatQuestionCount(summary.totalQuestions)}`}
-            value={<span className="tabular-nums">{topicStatText(summary)}</span>}
+            value={<span className="numeric text-label">{topicStatText(summary)}</span>}
             render={(props) => (
               <Link to={analysisHref({ subjectId: topic.subjectId, topicId })} {...props} />
             )}
@@ -71,7 +71,7 @@ export function AnalysisOverview({
           title="Henüz test kaydın yok"
           message="Çözdüğün testleri ders ve konu bazında kaydet: doğru, yanlış ve boş sayılarını gir; netin (D − Y/4) otomatik hesaplanır."
           action={
-            <Button icon={<Plus aria-hidden />} onClick={onAddTest}>
+            <Button variant="tinted" icon={<Plus aria-hidden />} onClick={onAddTest}>
               İlk testini ekle
             </Button>
           }

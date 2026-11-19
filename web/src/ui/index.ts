@@ -11,6 +11,7 @@ export { EmptyState, type EmptyStateProps } from './components/EmptyState'
 export { ListRow, type ListRowProps, type ListRowRenderProps } from './components/ListRow'
 export { ListSection, type ListSectionProps } from './components/ListSection'
 export { clampProgress } from './components/clampProgress'
+export { ProgressBar, type ProgressBarProps } from './components/ProgressBar'
 export { ProgressRing, type ProgressRingProps } from './components/ProgressRing'
 export { ScreenHeader, type ScreenHeaderProps } from './components/ScreenHeader'
 export {
@@ -19,6 +20,7 @@ export {
   type SegmentedOption,
 } from './components/SegmentedControl'
 export { Sheet, type SheetProps } from './components/Sheet'
+export { Toggle, type ToggleProps } from './components/Toggle'
 export { cx } from './cx'
 export { ThemeProvider } from './theme/ThemeProvider'
 export {

@@ -41,6 +41,16 @@ describe('MockAuthService', () => {
     expect(localStorage.getItem(MOCK_APPLE_USER_ID_KEY)).toBe(first.appleUserId)
   })
 
+  it('deleteAccount clears the session and the mock Apple id', async () => {
+    const auth = new MockAuthService({ delayMs: 0 })
+    const first = await auth.signInWithApple()
+    await auth.deleteAccount()
+    expect(await auth.getSession()).toBeNull()
+    expect(localStorage.getItem(MOCK_APPLE_USER_ID_KEY)).toBeNull()
+    const second = await auth.signInWithApple()
+    expect(second.appleUserId).not.toBe(first.appleUserId)
+  })
+
   it('treats corrupt or foreign stored data as no session', async () => {
     const auth = new MockAuthService({ delayMs: 0 })
     for (const raw of ['{bozuk', '42', 'null', '{"appleUserId":""}', '{"foo":1}']) {
@@ -84,6 +94,7 @@ describe('MockAuthService', () => {
       const session = await auth.signInWithApple()
       expect(session.isMock).toBe(true)
       await expect(auth.signOut()).resolves.toBeUndefined()
+      await expect(auth.deleteAccount()).resolves.toBeUndefined()
     }
   })
 })

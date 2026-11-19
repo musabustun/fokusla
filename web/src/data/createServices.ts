@@ -1,5 +1,6 @@
 import { MockAuthService } from './auth/MockAuthService'
 import { createDatabase, DEFAULT_DB_NAME } from './dexie/db'
+import { DexieLocalDataService } from './dexie/DexieLocalDataService'
 import { createRepositories } from './dexie/repositories'
 import type { AppServices } from './services'
 import { MockSyncService } from './sync/MockSyncService'
@@ -25,5 +26,6 @@ export function createServices(options: CreateServicesOptions = {}): AppServices
     now,
     onChange: (change) => sync.recordLocalChange(change),
   })
-  return { repositories, auth, sync }
+  const localData = new DexieLocalDataService(db, now)
+  return { repositories, auth, sync, localData }
 }

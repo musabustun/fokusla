@@ -240,6 +240,28 @@ export interface Room extends BaseEntity {
   endedAt: ISODateTime | null
 }
 
+/** Sosyalde paylaşılan odak durumu: odakta / molada / çevrimdışı. */
+export type PresenceState = 'focusing' | 'onBreak' | 'offline'
+
+/**
+ * Bir kullanıcının arkadaşlarıyla paylaştığı anlık durum. SAKLANAN bir varlık DEĞİLDİR
+ * (BaseEntity yok): yayınlanan bir anlık görüntüdür. Gizlilik gereği yalnızca durum ve
+ * süreler içerir — ders, konu, test, kitap ya da başka kişisel veri ASLA eklenmez.
+ * Canlı süreler `now` ile domain/calc/social.ts'te hesaplanır.
+ * CloudKit: oda bölgesindeki / public DB'deki `Presence` kaydı (bkz. docs/ARCHITECTURE.md 4.7).
+ */
+export interface SocialPresence {
+  state: PresenceState
+  /** Sürmekte olan odak oturumunun başlangıcı; çevrimdışıysa null. */
+  sessionStartedAt: ISODateTime | null
+  /** Mevcut durumun (odak ya da mola aralığının) başlangıcı; çevrimdışıysa null. */
+  stateSince: ISODateTime | null
+  /** `updatedAt` anına kadar bugün (yayınlayanın yerel günü) biriken toplam odak süresi (ms). */
+  todayFocusMs: number
+  /** Durumun yayınlandığı an. Canlı bugünkü toplam = todayFocusMs + (odaktaysa now − updatedAt). */
+  updatedAt: ISODateTime
+}
+
 // ---------------------------------------------------------------------------
 // Varlık kataloğu
 // ---------------------------------------------------------------------------

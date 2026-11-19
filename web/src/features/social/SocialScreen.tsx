@@ -1,16 +1,42 @@
-import { Users } from 'lucide-react'
-import { EmptyState, ScreenHeader } from '@/ui'
+import { Card, ScreenHeader } from '@/ui'
+import { useSocialSnapshot } from './hooks'
+import { SignInGate } from './SignInGate'
+import { SocialHome } from './SocialHome'
+import { UsernameForm } from './UsernameForm'
 
-// Placeholder ekran — Sosyal modülü ayrı bir oturumda gerçeklenecek.
+/** Sosyal (`/sosyal`): giriş kapısı → kullanıcı adı → arkadaşlar ve paralel odak odaları. */
 export function SocialScreen() {
+  const snapshot = useSocialSnapshot()
   return (
     <>
-      <ScreenHeader title="Sosyal" subtitle="Birlikte çalış" />
-      <EmptyState
-        icon={<Users />}
-        title="Arkadaşların yakında burada"
-        message="Arkadaş ekle ve paralel odak odalarında aynı anda çalışın; kimin odakta olduğunu canlı gör."
-      />
+      <ScreenHeader title="Sosyal" subtitle="Arkadaşlarınla aynı anda çalış" />
+      <SocialContent snapshot={snapshot} />
     </>
   )
+}
+
+function SocialContent({ snapshot }: { snapshot: ReturnType<typeof useSocialSnapshot> }) {
+  switch (snapshot.status) {
+    case 'loading':
+      return (
+        <p role="status" className="text-subheadline text-secondary-label">
+          Yükleniyor…
+        </p>
+      )
+    case 'signedOut':
+      return <SignInGate />
+    case 'needsUsername':
+      return (
+        <Card className="mx-auto max-w-md">
+          <h2 className="text-title3">Kullanıcı adını seç</h2>
+          <p className="mt-1 mb-4 text-subheadline text-secondary-label">
+            Arkadaşların seni yalnızca bu adla görür. Adın, e-postan ve çalışma içeriğin
+            paylaşılmaz.
+          </p>
+          <UsernameForm submitLabel="Devam" />
+        </Card>
+      )
+    case 'ready':
+      return <SocialHome snapshot={snapshot} />
+  }
 }

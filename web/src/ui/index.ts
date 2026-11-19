@@ -1,4 +1,5 @@
 // Tasarım sisteminin PUBLIC API'si. Kullanım kılavuzu: src/ui/README.md
+export { AppleSignInButton, type AppleSignInButtonProps } from './components/AppleSignInButton'
 export { Button, type ButtonProps } from './components/Button'
 export {
   buttonStyles,
@@ -20,6 +21,7 @@ export {
   type SegmentedOption,
 } from './components/SegmentedControl'
 export { Sheet, type SheetProps } from './components/Sheet'
+export { Switch, type SwitchProps } from './components/Switch'
 export { Toggle, type ToggleProps } from './components/Toggle'
 export { cx } from './cx'
 export { ThemeProvider } from './theme/ThemeProvider'

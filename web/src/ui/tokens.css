@@ -11,6 +11,7 @@
   --fk-surface-elevated: #ffffff;
   --fk-fill: #e3e3e8;
   --fk-control-thumb: #ffffff;
+  --fk-switch-thumb-off: #6e6e73;
   --fk-label: #1c1c1e;
   --fk-secondary-label: #5f5f66;
   --fk-tertiary-label: #7c7c82;
@@ -32,6 +33,7 @@
   --fk-surface-elevated: #2c2c2e;
   --fk-fill: #38383a;
   --fk-control-thumb: #636366;
+  --fk-switch-thumb-off: #ffffff;
   --fk-label: #ffffff;
   --fk-secondary-label: #aeaeb2;
   --fk-tertiary-label: #8e8e93;
@@ -94,6 +96,7 @@
   --color-surface-elevated: var(--fk-surface-elevated);
   --color-fill: var(--fk-fill);
   --color-control-thumb: var(--fk-control-thumb);
+  --color-switch-thumb-off: var(--fk-switch-thumb-off);
   --color-label: var(--fk-label);
   --color-secondary-label: var(--fk-secondary-label);
   --color-tertiary-label: var(--fk-tertiary-label);

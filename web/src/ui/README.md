@@ -23,6 +23,7 @@ Kaynak: `tokens.ts` (TypeScript, SwiftUI eşlemesi) ve `tokens.css` (`--fk-*` de
 | `surface-elevated` | `#FFFFFF`   | `#2C2C2E`   | Sheet/üst katman                                               | `Color("SurfaceElevated")`  |
 | `fill`             | `#E3E3E8`   | `#38383A`   | systemFill — segment rayı, basılı satır, halka izi             | `Color("Fill")`             |
 | `control-thumb`    | `#FFFFFF`   | `#636366`   | Seçili segment                                                 | `Color("ControlThumb")`     |
+| `switch-thumb-off` | `#6E6E73`   | `#FFFFFF`   | Kapalı Switch topuzu (`fill` rayında 3:1)                      | `Color("SwitchThumbOff")`   |
 | `label`            | `#1C1C1E`   | `#FFFFFF`   | Birincil metin                                                 | `Color("Label")`            |
 | `secondary-label`  | `#5F5F66`   | `#AEAEB2`   | İkincil metin (AA uyumlu, iOS'tan koyu)                        | `Color("SecondaryLabel")`   |
 | `tertiary-label`   | `#7C7C82`   | `#8E8E93`   | **Yalnızca** ikon/chevron/devre dışı (3:1) — gövde metni değil | `Color("TertiaryLabel")`    |
@@ -39,7 +40,7 @@ Kaynak: `tokens.ts` (TypeScript, SwiftUI eşlemesi) ve `tokens.css` (`--fk-*` de
 iOS'un varsayılan mavisi (`#007AFF`) beyaz üzerinde ~4.0:1 olduğu için AA'yı geçmez; bu yüzden
 accent daha koyu bir indigodur. Ölçülen oranlar (açık / koyu): `label` zemin üzerinde 15.3 / 21.0,
 yüzey üzerinde 17.0 / 17.0; `accent` zemin üzerinde 5.9 / 8.1, yüzey üzerinde 6.6 / 6.6;
-`accent-contrast` accent üzerinde 6.6 / 7.4.
+`accent-contrast` accent üzerinde 6.6 / 7.4; `switch-thumb-off` `fill` üzerinde 4.0 / 11.7.
 
 ### Tipografi (`text-*`, iOS Dynamic Type)
 
@@ -92,6 +93,17 @@ destructive → `.bordered` + `role: .destructive`.
 **Bağlantıyı buton gibi göstermek:** `buttonStyles({ variant, size, fullWidth })` sınıf üretir:
 `<Link to={ROUTES.focus} className={buttonStyles({ variant: 'tinted' })}>Odakla</Link>`.
 
+### `AppleSignInButton` → `SignInWithAppleButton` (AuthenticationServices)
+
+```tsx
+<AppleSignInButton loading={busy} onClick={signIn} />
+```
+
+`{ onClick; loading?; disabled?; label? = "Apple ile Giriş"; className? }`. Apple yönergelerine
+yakın: açık temada siyah (`bg-label`), koyu temada beyaz; tam genişlik, 48px yükseklik. `loading`
+iken devre dışı + `aria-busy` + "Giriş yapılıyor…". Giriş isteyen her ekran (Sosyal, ileride
+Ayarlar/onboarding) bunu kullanır.
+
 ### `Card` → `GroupBox` / yuvarlatılmış `VStack` + `.background(Color("Surface"))`
 
 `{ title?: string; trailing?: ReactNode; children; ...HTMLAttributes }`. `title` verilirse `<h2>`
@@ -119,7 +131,7 @@ gösterilir ve kart `<section aria-labelledby>` olur. 16px iç boşluk, `rounded
 | `subtitle`  | Altında ikincil metin                                                                                                    |
 | `icon`      | Soldaki dekoratif ikon (accent renkli, ayraç ikona göre içeriden başlar)                                                 |
 | `value`     | Sağda ikincil metin                                                                                                      |
-| `accessory` | Sağda özel denetim (SegmentedControl, ileride Toggle)                                                                    |
+| `accessory` | Sağda özel denetim (SegmentedControl, Switch)                                                                            |
 | `chevron`   | `>` göstergesi; varsayılan: satır etkileşimliyse `true`                                                                  |
 | `onClick`   | Satır `<button type="button">` olur                                                                                      |
 | `href`      | Satır düz `<a href>` olur (router dışı/harici)                                                                           |
@@ -158,6 +170,30 @@ kapanınca odak açan öğeye döner; açıkken sayfa kaydırması kilitlidir. <
 `{ options: readonly { value: T; label: string }[]; value: T; onChange: (v: T) => void;
 'aria-label': string (zorunlu); fullWidth?; className? }`. `radiogroup`/`radio` semantiği, roving
 tabindex; ←/↑ ve →/↓ seçer ve odaklar (uçlarda başa sarar), Home/End ilk/son.
+
+### `Switch` → `Toggle(isOn:).toggleStyle(.switch)`
+
+```tsx
+<ListRow
+  title={<span id="share-presence">Durumumu paylaş</span>}
+  accessory={<Switch aria-labelledby="share-presence" checked={isSharing} onChange={setSharing} />}
+/>
+```
+
+| Prop                             | Tip                                                         | Varsayılan |
+| -------------------------------- | ----------------------------------------------------------- | ---------- |
+| `checked`                        | `boolean` (kontrollü)                                       | —          |
+| `onChange`                       | `(checked: boolean) => void` — yeni değerle çağrılır        | —          |
+| `aria-labelledby` / `aria-label` | Erişilebilir ad: görünür etiketin id'si ya da metin (biri!) | —          |
+| `aria-describedby`               | Açıklama metninin id'si (ör. ListRow `subtitle`)            | —          |
+| `disabled`, `id`, `className`    | Standart                                                    | `false`    |
+
+`<button type="button" role="switch" aria-checked>`; tıklama, Space ve Enter değiştirir. 44×44
+dokunma alanı içinde 51×31 ray ve 27px topuz; hareket `prefers-reduced-motion`'da kapanır. Renkler:
+açık → ray `accent`, topuz `accent-contrast`; kapalı → ray `fill`, topuz `switch-thumb-off`. Beyaz
+topuz açık temada `fill` üzerinde 1.3:1 kaldığı (ve koyu temada `accent` üzerinde 2.6:1) için iki
+durumda farklı topuz rengi kullanılır; durum ayrıca topuzun konumuyla anlatılır (yalnızca renk değil).
+SwiftUI: sistem `Toggle` + `.tint(Color("Accent"))`; topuz rengini sistem çizer.
 
 ### `Toggle` → `Toggle(isOn:)`
 

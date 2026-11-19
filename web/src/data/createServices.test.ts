@@ -38,4 +38,17 @@ describe('createServices', () => {
     const services = createServices()
     expect(Object.keys(services.repositories)).toHaveLength(12)
   })
+  it('wires the mock social service to the mock auth service', async () => {
+    const services = createServices({
+      dbName,
+      authDelayMs: 0,
+      social: { delayMs: 0, tickMs: 0, responseDelayMs: 0 },
+    })
+    expect(services.social.getSnapshot().status).toBe('loading')
+
+    await services.auth.signInWithApple()
+    await services.social.refresh()
+
+    expect(services.social.getSnapshot().status).toBe('needsUsername')
+  })
 })

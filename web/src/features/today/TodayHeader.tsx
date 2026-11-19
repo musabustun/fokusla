@@ -35,7 +35,7 @@ export function TodayHeader({ now }: TodayHeaderProps) {
           <span className="mt-1 flex flex-wrap items-center gap-2">
             <span>{greeting}</span>
             {profile && (
-              <span className="rounded-full bg-accent-subtle px-2.5 py-0.5 text-footnote font-semibold text-accent">
+              <span className="rounded-full bg-accent-subtle px-2.5 py-0.5 text-footnote font-semibold text-accent-ink">
                 {FIELD_LABELS[profile.field]}
                 <span className="sr-only"> alanı</span>
               </span>

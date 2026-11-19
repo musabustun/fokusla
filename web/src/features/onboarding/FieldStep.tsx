@@ -57,8 +57,8 @@ function FieldOption({ field, checked, onSelect }: FieldOptionProps) {
   return (
     <label
       className={cx(
-        'flex min-h-11 cursor-pointer gap-3 rounded-lg border-2 bg-surface p-4 transition-colors has-focus-visible:outline-2 has-focus-visible:outline-accent',
-        checked ? 'border-accent' : 'border-transparent',
+        'flex min-h-11 cursor-pointer gap-3 rounded-lg border-2 bg-surface p-4 transition-colors has-focus-visible:outline-2 has-focus-visible:outline-accent-ink',
+        checked ? 'border-accent-ink' : 'border-transparent',
       )}
     >
       <input

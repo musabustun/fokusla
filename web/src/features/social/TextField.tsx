@@ -35,7 +35,7 @@ export function TextField({
       </label>
       <div
         className={cx(
-          'flex min-h-11 items-center rounded-md bg-fill px-3 focus-within:outline-2 focus-within:outline-accent',
+          'flex min-h-11 items-center rounded-md bg-fill px-3 focus-within:outline-2 focus-within:outline-accent-ink',
           error && 'outline-2 outline-danger',
         )}
       >

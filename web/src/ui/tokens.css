@@ -1,82 +1,106 @@
 /*
- * Fokus tasarım token'ları — CSS tarafı. Değerler src/ui/tokens.ts ile birebir aynıdır
+ * Fokus tasarım token'ları — "Gece mesaisi". Değerler src/ui/tokens.ts ile birebir aynıdır
  * (tokens.test.ts senkronu doğrular). Bileşenler ham hex kullanmaz; yalnızca bu token'ları
- * Tailwind sınıfları üzerinden kullanır: bg-background, bg-surface, text-label, border-separator…
+ * Tailwind sınıfları üzerinden kullanır: bg-background, text-label, border-separator, bg-accent…
+ *
+ * Varsayılan tema koyudur ("gece"); açık tema ("gündüz") `data-theme='light'` ile gelir.
+ * Yazı tipleri yerelde barındırılır (@fontsource-variable, src/index.css) — Google'a istek yok.
  */
 
 :root {
   color-scheme: light;
-  --fk-background: #f2f2f7;
-  --fk-surface: #ffffff;
-  --fk-surface-elevated: #ffffff;
-  --fk-fill: #e3e3e8;
-  --fk-control-thumb: #ffffff;
-  --fk-switch-thumb-off: #6e6e73;
-  --fk-label: #1c1c1e;
-  --fk-secondary-label: #5f5f66;
-  --fk-tertiary-label: #7c7c82;
-  --fk-separator: #c6c6c8;
-  --fk-accent: #4b48d6;
-  --fk-accent-contrast: #ffffff;
-  --fk-accent-subtle: #e9e8fb;
-  --fk-success: #1f7a35;
-  --fk-warning: #a35200;
-  --fk-danger: #c9001a;
-  --fk-danger-subtle: #fce8ea;
-  --fk-scrim: #00000066;
+  --fk-background: #f5f2ea;
+  --fk-surface: #fbf9f4;
+  --fk-surface-elevated: #fffdf8;
+  --fk-fill: #e8e3d7;
+  --fk-control-thumb: #1b1a16;
+  --fk-switch-thumb-off: #77736a;
+  --fk-label: #1b1a16;
+  --fk-secondary-label: #5c5950;
+  --fk-tertiary-label: #7a766c;
+  --fk-separator: #dcd6c9;
+  --fk-separator-strong: #8c877b;
+  --fk-accent: #ffb547;
+  --fk-accent-contrast: #1a1205;
+  --fk-accent-ink: #955500;
+  --fk-accent-subtle: #f8e5c0;
+  --fk-success: #2d6a43;
+  --fk-success-contrast: #ffffff;
+  --fk-warning: #955500;
+  --fk-danger: #b3261e;
+  --fk-danger-subtle: #f7e1dc;
+  --fk-scrim: #1b1a1666;
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --fk-background: #000000;
-  --fk-surface: #1c1c1e;
-  --fk-surface-elevated: #2c2c2e;
-  --fk-fill: #38383a;
-  --fk-control-thumb: #636366;
-  --fk-switch-thumb-off: #ffffff;
-  --fk-label: #ffffff;
-  --fk-secondary-label: #aeaeb2;
-  --fk-tertiary-label: #8e8e93;
-  --fk-separator: #38383a;
-  --fk-accent: #9895ff;
-  --fk-accent-contrast: #0b0a2e;
-  --fk-accent-subtle: #25234d;
-  --fk-success: #30d158;
-  --fk-warning: #ffb340;
-  --fk-danger: #ff6961;
-  --fk-danger-subtle: #3d1c1e;
-  --fk-scrim: #00000099;
+  --fk-background: #0e0f0c;
+  --fk-surface: #141511;
+  --fk-surface-elevated: #1a1b17;
+  --fk-fill: #22231e;
+  --fk-control-thumb: #edeae2;
+  --fk-switch-thumb-off: #8a877f;
+  --fk-label: #edeae2;
+  --fk-secondary-label: #9a978e;
+  --fk-tertiary-label: #6f6c64;
+  --fk-separator: #2a2a25;
+  --fk-separator-strong: #6a675f;
+  --fk-accent: #ffb547;
+  --fk-accent-contrast: #1a1205;
+  --fk-accent-ink: #ffb547;
+  --fk-accent-subtle: #2a2214;
+  --fk-success: #8fd3a6;
+  --fk-success-contrast: #0b1a10;
+  --fk-warning: #ffb547;
+  --fk-danger: #ff7a6b;
+  --fk-danger-subtle: #2c1613;
+  --fk-scrim: #000000b3;
 }
 
-/* Tailwind'in varsayılan renk, yazı boyutu ve yarıçap ölçeklerini kapatır: yalnızca token'lar. */
+/* Tailwind'in varsayılan renk, yazı boyutu, yarıçap ve harf aralığı ölçeklerini kapatır. */
 @theme {
   --color-*: initial;
   --text-*: initial;
   --radius-*: initial;
+  --tracking-*: initial;
 
+  /* Gövde: sistem fontu (SF Pro). Başlık: Bricolage Grotesque. Rakam: JetBrains Mono. */
   --font-sans:
     -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Bricolage Grotesque Variable', 'Bricolage Grotesque', var(--font-sans);
+  --font-mono:
+    'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
-  /* iOS Dynamic Type (px → rem, 1rem = 16px; tarayıcı yazı boyutuyla ölçeklenir) */
-  --text-large-title: 2.125rem;
-  --text-large-title--line-height: 2.5625rem;
-  --text-large-title--font-weight: 700;
+  /* Başlıklar (Bricolage, sıkı aralık) — px → rem, 1rem = 16px. `display` = iPad büyük başlığı. */
+  --text-display: 2.75rem;
+  --text-display--line-height: 3rem;
+  --text-display--font-weight: 800;
+  --text-display--letter-spacing: -0.04em;
+  --text-large-title: 2.25rem;
+  --text-large-title--line-height: 2.5rem;
+  --text-large-title--font-weight: 800;
+  --text-large-title--letter-spacing: -0.035em;
   --text-title1: 1.75rem;
-  --text-title1--line-height: 2.125rem;
-  --text-title1--font-weight: 700;
+  --text-title1--line-height: 2rem;
+  --text-title1--font-weight: 800;
+  --text-title1--letter-spacing: -0.03em;
   --text-title2: 1.375rem;
   --text-title2--line-height: 1.75rem;
-  --text-title2--font-weight: 700;
+  --text-title2--font-weight: 500;
+  --text-title2--letter-spacing: -0.02em;
   --text-title3: 1.25rem;
-  --text-title3--line-height: 1.5625rem;
-  --text-title3--font-weight: 600;
+  --text-title3--line-height: 1.5rem;
+  --text-title3--font-weight: 500;
+  --text-title3--letter-spacing: -0.015em;
+
+  /* Gövde (sistem fontu). */
   --text-headline: 1.0625rem;
   --text-headline--line-height: 1.375rem;
   --text-headline--font-weight: 600;
   --text-body: 1.0625rem;
-  --text-body--line-height: 1.375rem;
+  --text-body--line-height: 1.5rem;
   --text-callout: 1rem;
-  --text-callout--line-height: 1.3125rem;
+  --text-callout--line-height: 1.375rem;
   --text-subheadline: 0.9375rem;
   --text-subheadline--line-height: 1.25rem;
   --text-footnote: 0.8125rem;
@@ -84,10 +108,62 @@
   --text-caption: 0.75rem;
   --text-caption--line-height: 1rem;
 
-  --radius-sm: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.375rem;
+  /* Bölüm etiketi: küçük, büyük harf, geniş aralıklı mono ("BUGÜN", "SON 7 GÜN"). */
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--line-height: 1rem;
+  --text-eyebrow--font-weight: 500;
+  --text-eyebrow--letter-spacing: 0.12em;
+
+  /* Rakamlar (JetBrains Mono, tabular): `numeric` yardımcı sınıfıyla birlikte kullanılır. */
+  --text-numeral-hero: 4.5rem;
+  --text-numeral-hero--line-height: 1;
+  --text-numeral-hero--font-weight: 400;
+  --text-numeral-hero--letter-spacing: -0.06em;
+  --text-numeral-xl: 3.5rem;
+  --text-numeral-xl--line-height: 1;
+  --text-numeral-xl--font-weight: 400;
+  --text-numeral-xl--letter-spacing: -0.05em;
+  --text-numeral-lg: 2.25rem;
+  --text-numeral-lg--line-height: 2.5rem;
+  --text-numeral-lg--font-weight: 400;
+  --text-numeral-lg--letter-spacing: -0.04em;
+  --text-numeral: 1.5rem;
+  --text-numeral--line-height: 1.875rem;
+  --text-numeral--font-weight: 400;
+  --text-numeral--letter-spacing: -0.03em;
+  --text-numeral-sm: 1.0625rem;
+  --text-numeral-sm--line-height: 1.375rem;
+  --text-numeral-sm--font-weight: 500;
+  --text-numeral-sm--letter-spacing: -0.01em;
+
+  --tracking-tight: -0.02em;
+  --tracking-normal: 0;
+  --tracking-wide: 0.12em;
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  /* Hareket: kısa ve anlamlı. prefers-reduced-motion'da tümü durur (aşağıda). */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-screen-in: screen-in 240ms var(--ease-emphasized) both;
+  --animate-sheet-in: sheet-in 280ms var(--ease-emphasized) both;
+
+  @keyframes screen-in {
+    from {
+      opacity: 0;
+      transform: translateY(0.375rem);
+    }
+  }
+
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem);
+    }
+  }
 }
 
 @theme inline {
@@ -101,14 +177,34 @@
   --color-secondary-label: var(--fk-secondary-label);
   --color-tertiary-label: var(--fk-tertiary-label);
   --color-separator: var(--fk-separator);
+  --color-separator-strong: var(--fk-separator-strong);
   --color-accent: var(--fk-accent);
   --color-accent-contrast: var(--fk-accent-contrast);
+  --color-accent-ink: var(--fk-accent-ink);
   --color-accent-subtle: var(--fk-accent-subtle);
   --color-success: var(--fk-success);
+  --color-success-contrast: var(--fk-success-contrast);
   --color-warning: var(--fk-warning);
   --color-danger: var(--fk-danger);
   --color-danger-subtle: var(--fk-danger-subtle);
   --color-scrim: var(--fk-scrim);
+}
+
+/* Süre, sayaç, net, sayfa: mono + tabular rakam (değişen rakamlar zıplamaz). */
+@utility numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+}
+
+/* Bölüm etiketi: `<h2 className="eyebrow">Bugün</h2>` → mono, büyük harf, ikincil renk. */
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-eyebrow);
+  line-height: var(--text-eyebrow--line-height);
+  font-weight: var(--text-eyebrow--font-weight);
+  letter-spacing: var(--text-eyebrow--letter-spacing);
+  text-transform: uppercase;
+  color: var(--fk-secondary-label);
 }
 
 @layer base {
@@ -121,13 +217,36 @@
     @apply bg-background text-body text-label antialiased;
   }
 
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+
   :focus-visible {
-    outline: 2px solid var(--fk-accent);
+    outline: 2px solid var(--fk-accent-ink);
     outline-offset: 2px;
+  }
+
+  ::selection {
+    background-color: var(--fk-accent);
+    color: var(--fk-accent-contrast);
   }
 
   /* Açık bir modal (Sheet) varken arka plan kaymaz. */
   html:has(dialog[open]) {
     overflow: hidden;
+  }
+
+  /* Hareket azaltma: tüm geçiş ve animasyonlar durur. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

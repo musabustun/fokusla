@@ -59,7 +59,7 @@ function BookHeader({ titleId, title, meta, isWide }: BookHeaderProps) {
       {!isWide && (
         <Link
           to={ROUTES.books}
-          className="mb-1 -ml-2 inline-flex min-h-11 items-center gap-0.5 rounded-md pr-2 text-body text-accent"
+          className="mb-1 -ml-2 inline-flex min-h-11 items-center gap-0.5 rounded-md pr-2 text-body text-accent-ink"
         >
           <ChevronLeft aria-hidden className="size-6" />
           Kitaplar

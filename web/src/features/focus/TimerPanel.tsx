@@ -43,7 +43,7 @@ function PhaseBadge({ phase }: { phase: TimerPhase }) {
     <p
       className={cx(
         'flex items-center justify-center gap-2 text-subheadline font-semibold',
-        phase === 'focus' && 'text-accent',
+        phase === 'focus' && 'text-accent-ink',
         phase === 'break' && 'text-warning',
         !isRunning && 'text-secondary-label',
       )}

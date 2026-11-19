@@ -142,12 +142,12 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
     <Card
       title={room.name}
       className="mb-8"
-      trailing={<DoorOpen aria-hidden className="size-5 text-accent" />}
+      trailing={<DoorOpen aria-hidden className="size-5 text-accent-ink" />}
     >
       <div className="mb-4 flex items-center justify-between gap-3 rounded-md bg-fill px-3 py-2">
         <div className="min-w-0">
           <p className="text-footnote text-secondary-label">Oda davet kodu</p>
-          <p className="font-mono text-headline tracking-widest">{room.inviteCode}</p>
+          <p className="tracking-widest font-mono text-headline">{room.inviteCode}</p>
         </div>
         <Button
           size="small"
@@ -178,7 +178,7 @@ function RoomView({ room, ownPresence, now }: RoomViewProps) {
                   @{member.username}
                   {member.isSelf && <span className="text-secondary-label"> (sen)</span>}
                   {member.isHost && (
-                    <span className="ml-1.5 rounded-sm bg-accent-subtle px-1.5 py-0.5 text-caption text-accent">
+                    <span className="ml-1.5 rounded-sm bg-accent-subtle px-1.5 py-0.5 text-caption text-accent-ink">
                       Ev sahibi
                     </span>
                   )}

@@ -13,7 +13,7 @@ interface Highlight {
   text: string
 }
 
-const ICON_CLASS = 'size-6 shrink-0 text-accent'
+const ICON_CLASS = 'size-6 shrink-0 text-accent-ink'
 
 const HIGHLIGHTS: readonly Highlight[] = [
   {

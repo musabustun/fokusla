@@ -93,7 +93,7 @@ function ActiveSessionPanel({ state }: { state: ActiveFocusState }) {
   const Icon = isBreak ? Coffee : Timer
   return (
     <div className="flex items-center justify-between gap-3 rounded-md bg-accent-subtle px-4 py-3">
-      <p className="flex items-center gap-2 text-subheadline font-semibold text-accent">
+      <p className="flex items-center gap-2 text-subheadline font-semibold text-accent-ink">
         <Icon aria-hidden className="size-5 shrink-0" />
         {isBreak ? 'Moladasın' : 'Odaktasın'}
       </p>

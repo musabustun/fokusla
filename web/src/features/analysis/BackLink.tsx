@@ -16,7 +16,7 @@ export function BackLink({ to, label, className }: BackLinkProps) {
       to={to}
       aria-label={`Geri: ${label}`}
       className={cx(
-        'mb-1 -ml-2 inline-flex min-h-11 max-w-full items-center gap-0.5 rounded-md pr-3 text-body text-accent active:opacity-70',
+        'mb-1 -ml-2 inline-flex min-h-11 max-w-full items-center gap-0.5 rounded-md pr-3 text-body text-accent-ink active:opacity-70',
         className,
       )}
     >

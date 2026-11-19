@@ -10,7 +10,7 @@ export interface ProgressBarProps {
    */
   label?: string
   tone?: 'accent' | 'success'
-  /** `small` = 4px (liste satırı), `medium` = 8px (detay). Varsayılan `medium`. */
+  /** `small` = 2px (liste satırı), `medium` = 4px (detay). Varsayılan `medium`. */
   size?: 'small' | 'medium'
   className?: string
 }
@@ -38,15 +38,15 @@ export function ProgressBar({
     <div
       {...a11y}
       className={cx(
-        'w-full overflow-hidden rounded-full bg-fill',
-        size === 'small' ? 'h-1' : 'h-2',
+        'w-full overflow-hidden rounded-full bg-separator',
+        size === 'small' ? 'h-0.5' : 'h-1',
         className,
       )}
     >
       <div
         className={cx(
-          'h-full rounded-full motion-safe:transition-[width] motion-safe:duration-500',
-          tone === 'success' ? 'bg-success' : 'bg-accent',
+          'h-full rounded-full motion-safe:transition-[width] motion-safe:duration-700 motion-safe:ease-emphasized',
+          tone === 'success' ? 'bg-success' : 'bg-accent-ink',
         )}
         style={{ width: `${progress * 100}%` }}
       />

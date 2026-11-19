@@ -43,7 +43,7 @@ export function SignInGate() {
       <ul className="my-5 flex flex-col gap-3">
         {POINTS.map(({ icon: Icon, text }) => (
           <li key={text} className="flex items-start gap-3 text-subheadline">
-            <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-accent" />
+            <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-accent-ink" />
             <span>{text}</span>
           </li>
         ))}

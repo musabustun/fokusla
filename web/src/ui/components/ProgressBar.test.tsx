@@ -26,7 +26,7 @@ describe('ProgressBar', () => {
     const { container } = render(<ProgressBar value={0.5} size="small" tone="success" />)
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
     expect(container.firstElementChild).toHaveAttribute('aria-hidden', 'true')
-    expect(container.firstElementChild).toHaveClass('h-1')
+    expect(container.firstElementChild).toHaveClass('h-0.5')
     expect(container.firstElementChild?.firstElementChild).toHaveClass('bg-success')
   })
 })

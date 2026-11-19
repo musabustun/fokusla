@@ -51,9 +51,9 @@ function useDialogSync(open: boolean) {
 
 const DIALOG_CLASS = [
   'fixed inset-x-0 top-auto bottom-0 m-0 flex max-h-[92dvh] w-full max-w-none flex-col',
-  'rounded-t-xl bg-surface-elevated p-0 text-label backdrop:bg-scrim',
-  'pb-[env(safe-area-inset-bottom)] not-open:hidden',
-  'md:inset-0 md:m-auto md:h-fit md:max-h-[80dvh] md:max-w-lg md:rounded-xl md:pb-0',
+  'rounded-t-xl border-t border-separator bg-surface-elevated p-0 text-label backdrop:bg-scrim',
+  'pb-[env(safe-area-inset-bottom)] not-open:hidden open:animate-sheet-in',
+  'md:inset-0 md:m-auto md:h-fit md:max-h-[80dvh] md:max-w-lg md:rounded-xl md:border md:pb-0',
 ].join(' ')
 
 /**
@@ -93,10 +93,13 @@ export function Sheet({ open, onClose, title, description, children, footer }: S
     >
       {open && (
         <>
-          <div aria-hidden className="mx-auto mt-2 h-1.5 w-9 rounded-full bg-fill md:hidden" />
-          <header className="flex items-start gap-3 px-4 pt-3 pb-2">
+          <div
+            aria-hidden
+            className="mx-auto mt-2 h-1 w-9 rounded-full bg-separator-strong md:hidden"
+          />
+          <header className="flex items-start gap-3 px-5 pt-3 pb-3">
             <div className="min-w-0 flex-1 pt-2">
-              <h2 id={titleId} className="text-headline">
+              <h2 id={titleId} className="text-title3">
                 {title}
               </h2>
               {description && (
@@ -109,13 +112,13 @@ export function Sheet({ open, onClose, title, description, children, footer }: S
               type="button"
               aria-label="Kapat"
               onClick={onClose}
-              className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-secondary-label active:bg-fill"
+              className="-mr-2 flex size-11 shrink-0 items-center justify-center rounded-full text-secondary-label transition-[background-color,transform] duration-200 hover:bg-fill hover:text-label active:scale-97"
             >
               <X aria-hidden className="size-5" />
             </button>
           </header>
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-4">{children}</div>
-          {footer && <footer className="border-t border-separator px-4 py-3">{footer}</footer>}
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">{children}</div>
+          {footer && <footer className="border-t border-separator px-5 py-3">{footer}</footer>}
         </>
       )}
     </dialog>

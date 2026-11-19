@@ -13,13 +13,13 @@ export interface SwitchProps {
   className?: string
 }
 
-// 44×44 dokunma alanı; görsel ray iOS'taki gibi 51×31, topuz 27px ve 2px iç boşluk.
+// 44×44 dokunma alanı; görsel ray 51×31 (1px çizgi dahil), topuz 27px.
 const HIT_AREA =
   'inline-flex min-h-11 min-w-11 shrink-0 items-center justify-center rounded-full select-none disabled:cursor-not-allowed disabled:opacity-40'
 const TRACK =
-  'relative flex h-7.75 w-12.75 items-center rounded-full p-0.5 transition-colors duration-200 motion-reduce:transition-none'
+  'relative flex h-7.75 w-12.75 items-center rounded-full border p-px transition-colors duration-200 motion-reduce:transition-none'
 const THUMB =
-  'size-6.75 rounded-full shadow-sm transition-transform duration-200 ease-out motion-reduce:transition-none'
+  'size-6.75 rounded-full transition-transform duration-200 ease-emphasized motion-reduce:transition-none'
 
 /**
  * iOS anahtarı (SwiftUI `Toggle(isOn:).toggleStyle(.switch)`). Durum yalnızca renkle değil topuzun
@@ -51,7 +51,10 @@ export function Switch({
       <span
         aria-hidden="true"
         data-switch-track
-        className={cx(TRACK, checked ? 'bg-accent' : 'bg-fill')}
+        className={cx(
+          TRACK,
+          checked ? 'border-accent bg-accent' : 'border-separator-strong bg-fill',
+        )}
       >
         <span
           data-switch-thumb

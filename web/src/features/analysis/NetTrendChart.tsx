@@ -76,7 +76,7 @@ export function NetTrendChart({ points, label }: NetTrendChartProps) {
               <path
                 d={linePath}
                 fill="none"
-                className="stroke-accent"
+                className="stroke-accent-ink"
                 strokeWidth={2}
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -87,7 +87,7 @@ export function NetTrendChart({ points, label }: NetTrendChartProps) {
               <path
                 key={points[i]?.date ?? i}
                 d={`M${c.x} ${c.y} h0`}
-                className="stroke-accent"
+                className="stroke-accent-ink"
                 strokeWidth={8}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"

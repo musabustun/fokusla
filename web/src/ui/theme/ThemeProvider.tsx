@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from 'react'
+import { COLORS } from '../tokens'
 import { subscribeToSystemTheme } from './systemTheme'
 import { useThemeStore } from './themeStore'
 import { useTheme } from './useTheme'
@@ -8,7 +9,8 @@ interface ThemeProviderProps {
 }
 
 /**
- * Çözümlenen temayı `<html data-theme>` ve `color-scheme` olarak uygular; sistem temasını izler.
+ * Çözümlenen temayı `<html data-theme>`, `color-scheme` ve `<meta name="theme-color">` olarak
+ * uygular; sistem temasını izler.
  * Uygulamada bir kez, en dışta kullanılır.
  */
 export function ThemeProvider({ children }: ThemeProviderProps) {
@@ -21,6 +23,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     const root = document.documentElement
     root.dataset.theme = resolved
     root.style.colorScheme = resolved
+    // Tarayıcı/durum çubuğu rengi ekran zeminiyle aynı olsun.
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', COLORS[resolved].background)
   }, [resolved])
 
   return children

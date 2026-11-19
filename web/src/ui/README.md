@@ -1,72 +1,109 @@
-# Fokus tasarım sistemi (`@/ui`)
+# Fokus tasarım sistemi (`@/ui`) — "Gece mesaisi"
 
-iOS hissi veren, sakin ve token tabanlı bileşenler. Web prototipi daha sonra SwiftUI'a **birebir**
-taşınacağı için her renk/boyut/yarıçap adlandırılmış bir token'dan gelir ve her bileşenin bir
-SwiftUI karşılığı vardır. Feature'lar yalnızca `@/ui` public API'sini (`src/ui/index.ts`) import eder.
+Ciddi ve sade: koyu öncelikli sıcak zemin, kart kutusu yerine **1px çizgiler**, **tek kehribar vurgu**
+ve ekranın ana öğesi olan **büyük mono rakamlar**. Web prototipi SwiftUI'a **birebir** taşınacağı için her
+renk/boyut/yarıçap/hareket adlandırılmış bir token'dan gelir ve her bileşenin bir SwiftUI karşılığı vardır
+(bkz. [docs/ARCHITECTURE.md § 4.9](../../../docs/ARCHITECTURE.md)). Feature'lar yalnızca `@/ui` public
+API'sini (`src/ui/index.ts`) import eder.
 
 > Kural: bileşenlerde ve ekranlarda ham hex, `text-[13px]`, `bg-white` gibi değerler kullanılmaz.
-> Tailwind'in varsayılan renk/yazı/yarıçap ölçekleri kapalıdır; yalnızca aşağıdaki token sınıfları
-> vardır. Görünür metin Türkçe, kod tanımlayıcıları İngilizcedir.
+> Tailwind'in varsayılan renk/yazı/yarıçap/harf aralığı ölçekleri kapalıdır; yalnızca aşağıdaki token
+> sınıfları vardır. Görünür metin Türkçe, kod tanımlayıcıları İngilizcedir.
+
+## İlkeler
+
+1. **Çizgi, kutu değil.** Bölümler `border-t border-separator` + küçük mono etiketle ayrılır (`Card`,
+   `ListSection`). Dolu yüzey (`surface-elevated`) yalnızca Sheet gibi üst katmanlardadır.
+2. **Tek vurgu: kehribar.** Ana eylem (ekranda bir tane, `Button` filled), seçili gezinme işareti ve
+   ilerleme yayı. Başka her şey nötr. Mola/başarı adaçayı (`success`), hata kırmızı (`danger`). Mor yok.
+3. **Rakam ana öğedir.** Süre, net, sayfa, yüzde: `numeric` + `text-numeral-*` (JetBrains Mono, tabular)
+   veya `Metric`. Birim küçük ve ikincil.
+4. **Hareket anlamlıdır.** Basınca hafif küçülme, ilerleme yayının akışı, sekme değişince tek kısa
+   giriş. Scroll animasyonu yok; `prefers-reduced-motion`'da hepsi durur (global kural, `tokens.css`).
 
 ## Token'lar
 
 Kaynak: `tokens.ts` (TypeScript, SwiftUI eşlemesi) ve `tokens.css` (`--fk-*` değişkenleri).
-`tokens.test.ts` ikisinin senkron olduğunu ve WCAG AA kontrastını doğrular. Yeni renk eklerken
-**her iki dosyaya** ve gerekiyorsa `CONTRAST_PAIRS` listesine ekle.
+`tokens.test.ts` ikisinin senkron olduğunu ve `CONTRAST_PAIRS` listesindeki her çiftin WCAG AA
+kontrastını doğrular. Yeni renk eklerken **her iki dosyaya** ve gerekiyorsa `CONTRAST_PAIRS`'e ekle.
 
 ### Renkler (`bg-*`, `text-*`, `border-*`, `stroke-*`)
 
-| Token              | Açık        | Koyu        | iOS karşılığı / kullanım                                       | SwiftUI                     |
-| ------------------ | ----------- | ----------- | -------------------------------------------------------------- | --------------------------- |
-| `background`       | `#F2F2F7`   | `#000000`   | systemGroupedBackground — ekran zemini                         | `Color("Background")`       |
-| `surface`          | `#FFFFFF`   | `#1C1C1E`   | secondarySystemGroupedBackground — kart, liste                 | `Color("Surface")`          |
-| `surface-elevated` | `#FFFFFF`   | `#2C2C2E`   | Sheet/üst katman                                               | `Color("SurfaceElevated")`  |
-| `fill`             | `#E3E3E8`   | `#38383A`   | systemFill — segment rayı, basılı satır, halka izi             | `Color("Fill")`             |
-| `control-thumb`    | `#FFFFFF`   | `#636366`   | Seçili segment                                                 | `Color("ControlThumb")`     |
-| `switch-thumb-off` | `#6E6E73`   | `#FFFFFF`   | Kapalı Switch topuzu (`fill` rayında 3:1)                      | `Color("SwitchThumbOff")`   |
-| `label`            | `#1C1C1E`   | `#FFFFFF`   | Birincil metin                                                 | `Color("Label")`            |
-| `secondary-label`  | `#5F5F66`   | `#AEAEB2`   | İkincil metin (AA uyumlu, iOS'tan koyu)                        | `Color("SecondaryLabel")`   |
-| `tertiary-label`   | `#7C7C82`   | `#8E8E93`   | **Yalnızca** ikon/chevron/devre dışı (3:1) — gövde metni değil | `Color("TertiaryLabel")`    |
-| `separator`        | `#C6C6C8`   | `#38383A`   | Ayraç çizgileri                                                | `Color("Separator")`        |
-| `accent`           | `#4B48D6`   | `#9895FF`   | Tint (indigo); bağlantı, seçili sekme, dolu buton              | `Color("Accent")` / `.tint` |
-| `accent-contrast`  | `#FFFFFF`   | `#0B0A2E`   | `accent` zemin üzerindeki metin                                | `Color("AccentContrast")`   |
-| `accent-subtle`    | `#E9E8FB`   | `#25234D`   | Tinted buton zemini                                            | `Color("AccentSubtle")`     |
-| `success`          | `#1F7A35`   | `#30D158`   | Başarı metni/ikonu                                             | `Color("Success")`          |
-| `warning`          | `#A35200`   | `#FFB340`   | Uyarı metni/ikonu                                              | `Color("Warning")`          |
-| `danger`           | `#C9001A`   | `#FF6961`   | Yıkıcı eylem, hata                                             | `Color("Danger")`           |
-| `danger-subtle`    | `#FCE8EA`   | `#3D1C1E`   | Destructive buton zemini                                       | `Color("DangerSubtle")`     |
-| `scrim`            | `#00000066` | `#00000099` | Modal arka perdesi                                             | `Color("Scrim")`            |
+Varsayılan tema **koyu** ("gece"); açık tema ("gündüz") kullanıcı seçimidir.
 
-iOS'un varsayılan mavisi (`#007AFF`) beyaz üzerinde ~4.0:1 olduğu için AA'yı geçmez; bu yüzden
-accent daha koyu bir indigodur. Ölçülen oranlar (açık / koyu): `label` zemin üzerinde 15.3 / 21.0,
-yüzey üzerinde 17.0 / 17.0; `accent` zemin üzerinde 5.9 / 8.1, yüzey üzerinde 6.6 / 6.6;
-`accent-contrast` accent üzerinde 6.6 / 7.4; `switch-thumb-off` `fill` üzerinde 4.0 / 11.7.
+| Token              | Gündüz      | Gece        | Kullanım                                                        | SwiftUI                    |
+| ------------------ | ----------- | ----------- | --------------------------------------------------------------- | -------------------------- |
+| `background`       | `#F5F2EA`   | `#0E0F0C`   | Ekran zemini (sıcak kırık beyaz / neredeyse siyah)              | `Color("Background")`      |
+| `surface`          | `#FBF9F4`   | `#141511`   | Nadir dolu yüzey                                                | `Color("Surface")`         |
+| `surface-elevated` | `#FFFDF8`   | `#1A1B17`   | Sheet / üst katman                                              | `Color("SurfaceElevated")` |
+| `fill`             | `#E8E3D7`   | `#22231E`   | Hover/basılı zemin, Switch rayı                                 | `Color("Fill")`            |
+| `control-thumb`    | `#1B1A16`   | `#EDEAE2`   | Seçili segment (ters renk; üstündeki metin `text-background`)   | `Color("ControlThumb")`    |
+| `switch-thumb-off` | `#77736A`   | `#8A877F`   | Kapalı Switch topuzu (`fill` üzerinde ≥3:1)                     | `Color("SwitchThumbOff")`  |
+| `label`            | `#1B1A16`   | `#EDEAE2`   | Birincil metin (mürekkep / kırık beyaz)                         | `Color("Label")`           |
+| `secondary-label`  | `#5C5950`   | `#9A978E`   | İkincil metin, bölüm etiketi (sıcak gri, AA)                    | `Color("SecondaryLabel")`  |
+| `tertiary-label`   | `#7A766C`   | `#6F6C64`   | **Yalnızca** ikon/chevron/devre dışı (3:1)                      | `Color("TertiaryLabel")`   |
+| `separator`        | `#DCD6C9`   | `#2A2A25`   | Bölüm ve satır çizgileri, halka izi                             | `Color("Separator")`       |
+| `separator-strong` | `#8C877B`   | `#6A675F`   | Giriş alanı, çizgili buton sınırı (≥3:1, WCAG 1.4.11)           | `Color("SeparatorStrong")` |
+| `accent`           | `#FFB547`   | `#FFB547`   | Kehribar **dolgu**: ana eylem hapı, seçili işaret, bugün çubuğu | `Color("Accent")`/`.tint`  |
+| `accent-contrast`  | `#1A1205`   | `#1A1205`   | `accent` üstündeki metin                                        | `Color("AccentContrast")`  |
+| `accent-ink`       | `#955500`   | `#FFB547`   | Kehribar **metin/ikon/yay** (gündüzde AA için koyulaştırılmış)  | `Color("AccentInk")`       |
+| `accent-subtle`    | `#F8E5C0`   | `#2A2214`   | Seyrek rozet zemini (üstünde `accent-ink`)                      | `Color("AccentSubtle")`    |
+| `success`          | `#2D6A43`   | `#8FD3A6`   | Adaçayı: mola, tamamlandı, "odakta"                             | `Color("Success")`         |
+| `success-contrast` | `#FFFFFF`   | `#0B1A10`   | `success` üstündeki işaret/metin                                | `Color("SuccessContrast")` |
+| `warning`          | `#955500`   | `#FFB547`   | Uyarı = kehribar mürekkep (ayrı renk yok)                       | `Color("Warning")`         |
+| `danger`           | `#B3261E`   | `#FF7A6B`   | Hata, yıkıcı eylem                                              | `Color("Danger")`          |
+| `danger-subtle`    | `#F7E1DC`   | `#2C1613`   | Yıkıcı buton hover zemini                                       | `Color("DangerSubtle")`    |
+| `scrim`            | `#1B1A1666` | `#000000B3` | Modal arka perdesi                                              | `Color("Scrim")`           |
 
-### Tipografi (`text-*`, iOS Dynamic Type)
+Ölçülen oranlar (gündüz / gece, zemin üzerinde): `label` 15.6 / 16.0, `secondary-label` 6.3 / 6.6,
+`accent-ink` 5.3 / 10.9, `success` 5.8 / 11.0, `danger` 5.8 / 7.6; `accent-contrast` kehribar üzerinde
+10.6. Parlak kehribar (`accent`) gündüz zemininde 1.57:1 kaldığı için **gündüzde metin/çizgi olarak
+kullanılmaz** — onun yerine `accent-ink`. İlerleme yayı ve çubuğu bu yüzden `accent-ink` çizer.
 
-| Sınıf              | Boyut/satır | Ağırlık | SwiftUI                            |
-| ------------------ | ----------- | ------- | ---------------------------------- |
-| `text-large-title` | 34/41       | 700     | `.font(.largeTitle.bold())`        |
-| `text-title1`      | 28/34       | 700     | `.font(.title.bold())`             |
-| `text-title2`      | 22/28       | 700     | `.font(.title2.bold())`            |
-| `text-title3`      | 20/25       | 600     | `.font(.title3.weight(.semibold))` |
-| `text-headline`    | 17/22       | 600     | `.font(.headline)`                 |
-| `text-body`        | 17/22       | 400     | `.font(.body)`                     |
-| `text-callout`     | 16/21       | 400     | `.font(.callout)`                  |
-| `text-subheadline` | 15/20       | 400     | `.font(.subheadline)`              |
-| `text-footnote`    | 13/18       | 400     | `.font(.footnote)`                 |
-| `text-caption`     | 12/16       | 400     | `.font(.caption)`                  |
+### Tipografi
 
-Boyutlar `rem` cinsindendir (tarayıcı yazı boyutuyla ölçeklenir). Yazı ailesi sistem fontudur
-(SF Pro). Gövde varsayılanı `text-body text-label`.
+Yerelde barındırılan yazı tipleri (`@fontsource-variable/*`, `src/index.css`; Google'a istek yok):
 
-### Boşluk, yarıçap, dokunma hedefi
+| Rol     | Aile                | Kullanım                                                         |
+| ------- | ------------------- | ---------------------------------------------------------------- |
+| display | Bricolage Grotesque | `h1`–`h3` otomatik (base katmanı); `font-display` ile elle       |
+| text    | Sistem (SF Pro)     | Gövde varsayılanı                                                |
+| mono    | JetBrains Mono      | `numeric` (tabular rakam) ve `eyebrow` yardımcıları; `font-mono` |
 
-- Boşluk: 4pt ızgarası — Tailwind sayıları (`p-1` = 4px, `p-4` = 16px, `gap-3` = 12px).
-- Yarıçap: `rounded-sm` 8, `rounded-md` 12, `rounded-lg` 16, `rounded-xl` 22, `rounded-full`.
+| Sınıf                | Boyut/satır | Ağırlık | Aile    | Not                                     |
+| -------------------- | ----------- | ------- | ------- | --------------------------------------- |
+| `text-display`       | 44/48       | 800     | display | iPad büyük başlığı (`ScreenHeader` md:) |
+| `text-large-title`   | 36/40       | 800     | display | Ekran başlığı, −0.035em                 |
+| `text-title1`        | 28/32       | 800     | display |                                         |
+| `text-title2`        | 22/28       | 500     | display |                                         |
+| `text-title3`        | 20/24       | 500     | display | Sheet başlığı, boş durum                |
+| `text-headline`      | 17/22       | 600     | text    |                                         |
+| `text-body`          | 17/24       | 400     | text    | Varsayılan                              |
+| `text-callout`       | 16/22       | 400     | text    |                                         |
+| `text-subheadline`   | 15/20       | 400     | text    |                                         |
+| `text-footnote`      | 13/18       | 400     | text    |                                         |
+| `text-caption`       | 12/16       | 400     | text    |                                         |
+| `eyebrow` (yardımcı) | 11/16       | 500     | mono    | BÜYÜK HARF, +0.12em, ikincil renk       |
+| `text-numeral-hero`  | 72/72       | 400     | mono\*  | Kronometre, Bugün toplamı               |
+| `text-numeral-xl`    | 56/56       | 400     | mono\*  | Ekranın ana sayısı                      |
+| `text-numeral-lg`    | 36/40       | 400     | mono\*  | `Metric` varsayılanı                    |
+| `text-numeral`       | 24/30       | 400     | mono\*  | İkincil istatistik                      |
+| `text-numeral-sm`    | 17/22       | 500     | mono\*  | Satır içi değer                         |
+
+\* `text-numeral-*` yalnızca boyut taşır; aileyi `numeric` yardımcısı verir: `className="numeric text-numeral-xl"`.
+Boyutlar `rem` (tarayıcı yazı boyutuyla ölçeklenir). Türkçe büyük harf `lang="tr"` sayesinde doğru (`İ`).
+
+### Boşluk, yarıçap, hareket, dokunma hedefi
+
+- Boşluk: 4pt ızgarası — Tailwind sayıları (`p-1` = 4px, `gap-10` = 40px). Bölümler arası cömert (`gap-10`).
+- Yarıçap: `rounded-sm` 6, `rounded-md` 10, `rounded-lg` 14, `rounded-xl` 20; eylemler `rounded-full` (hap).
+- Hareket (`MOTION`, `EASINGS`): basınca `active:scale-97` (120ms), renk geçişi 200ms `ease-standard`,
+  ekran girişi `animate-screen-in` (240ms), sheet `animate-sheet-in` (280ms), ilerleme akışı 700ms
+  `ease-emphasized`. Kendi tıklanabilir öğende:
+  `transition-[background-color,transform] duration-200 ease-standard hover:bg-fill active:scale-97 motion-reduce:active:scale-100`.
 - Minimum dokunma hedefi 44px: `min-h-11` (tüm etkileşimli bileşenler bunu uygular).
-- Kırılımlar: `md` = 768px (iPad, kenar çubuğu), `lg` = 1024px.
-- Odak halkası global: `:focus-visible` → 2px `accent` dış çizgi.
+- Kırılımlar: `md` = 768px (iPad, kenar çubuğu), `lg` = 1024px (iki sütun).
+- Odak halkası global: `:focus-visible` → 2px `accent-ink` dış çizgi.
 
 ## Bileşenler
 
@@ -87,8 +124,11 @@ Boyutlar `rem` cinsindendir (tarayıcı yazı boyutuyla ölçeklenir). Yazı ail
 | `icon`      | `ReactNode` — etiketin solunda (dekoratif)                | —          |
 | …           | tüm `<button>` nitelikleri; `type` varsayılanı `"button"` |            |
 
-SwiftUI: filled → `.borderedProminent`, tinted → `.bordered`, plain → `.plain`/`.borderless`,
-destructive → `.bordered` + `role: .destructive`.
+Görünüm: hepsi hap (`rounded-full`) ve basınca küçülür. filled = kehribar dolgu (ekranın ana eylemi,
+bir tane); tinted = 1px `separator-strong` çizgili, nötr metin (ikincil eylem); plain = kehribar mürekkep
+metin, hover'da `fill`; destructive = kırmızı çizgili.
+SwiftUI: filled → `.borderedProminent` + `.buttonBorderShape(.capsule)`, tinted → `.bordered` + capsule
+stroke, plain → `.plain`/`.borderless`, destructive → `.bordered` + `role: .destructive`.
 
 **Bağlantıyı buton gibi göstermek:** `buttonStyles({ variant, size, fullWidth })` sınıf üretir:
 `<Link to={ROUTES.focus} className={buttonStyles({ variant: 'tinted' })}>Odakla</Link>`.
@@ -100,16 +140,45 @@ destructive → `.bordered` + `role: .destructive`.
 ```
 
 `{ onClick; loading?; disabled?; label? = "Apple ile Giriş"; className? }`. Apple yönergelerine
-yakın: açık temada siyah (`bg-label`), koyu temada beyaz; tam genişlik, 48px yükseklik. `loading`
+yakın: gündüzde mürekkep (`bg-label`), gecede kırık beyaz; hap, tam genişlik, 52px yükseklik. `loading`
 iken devre dışı + `aria-busy` + "Giriş yapılıyor…". Giriş isteyen her ekran (Sosyal, ileride
 Ayarlar/onboarding) bunu kullanır.
 
-### `Card` → `GroupBox` / yuvarlatılmış `VStack` + `.background(Color("Surface"))`
+### `Card` (çizgili bölüm) → `VStack` + üstte `Divider()`
 
-`{ title?: string; trailing?: ReactNode; children; ...HTMLAttributes }`. `title` verilirse `<h2>`
-gösterilir ve kart `<section aria-labelledby>` olur. 16px iç boşluk, `rounded-lg`, `bg-surface`.
+`{ title?: string; trailing?: ReactNode; children; ...HTMLAttributes }`. Kutu yoktur: üstte 1px
+`separator` çizgisi, `title` verilirse küçük mono bölüm etiketi (`<h2 class="eyebrow">`) ve bölüm
+`<section aria-labelledby>` olur. `trailing` başlığın sağında (ör. plain "Tümü" bağlantısı).
 
-### `ListSection` + `ListRow` → `List { Section(header:footer:) { … } }.listStyle(.insetGrouped)`
+### `Metric` → `VStack(alignment: .leading) { Text(label).eyebrow(); Text(value).numeral() }`
+
+```tsx
+<Metric
+  label="Bugün"
+  value="2:45"
+  unit="sa"
+  size="hero"
+  tone="accent"
+  caption="Dünden 20 dk fazla"
+/>
+```
+
+`{ label; value; unit?; caption?; size?: 'hero' | 'xl' | 'lg' (varsayılan) | 'md' | 'sm';
+tone?: 'default' | 'accent' | 'success'; className? }`. Etiket üstte (eyebrow), değer mono + tabular,
+birim küçük ve ikincil. `tone="accent"` yalnızca ekranın ana sayısı için.
+
+### `inputStyles()` + `FIELD_LABEL_CLASS` / `FIELD_HINT_CLASS` / `FIELD_ERROR_CLASS`
+
+```tsx
+<label htmlFor={id} className={FIELD_LABEL_CLASS}>Başlık</label>
+<input id={id} className={inputStyles()} aria-invalid={Boolean(error) || undefined} />
+<textarea className={inputStyles({ multiline: true })} />
+```
+
+Şeffaf zemin, 1px `separator-strong` çizgi (≥3:1), `rounded-md`, ≥44px; hover'da çizgi koyulaşır,
+`aria-invalid` iken `danger`. SwiftUI: `TextField` + `.textFieldStyle(.plain)` + stroke overlay.
+
+### `ListSection` + `ListRow` → `List { Section(header:footer:) { … } }.listStyle(.plain)`
 
 ```tsx
 <ListSection header="Hakkında" footer="Fokus ücretsiz ve reklamsızdır.">
@@ -121,7 +190,8 @@ gösterilir ve kart `<section aria-labelledby>` olur. 16px iç boşluk, `rounded
 ```
 
 `ListSection`: `{ header?: string; footer?: ReactNode; children; className? }` — `<section>` +
-`<h2>` (küçük gri başlık) + `<ul>`. Çocukları **yalnızca `ListRow`** olmalıdır.
+`<h2 class="eyebrow">` + üstü/altı çizgili `<ul>` (kutu yok). Çocukları **yalnızca `ListRow`** olmalıdır.
+Satırlar 52px, aralarında ince ayraç; etkileşimli satır hover'da `fill`, basınca hafif küçülür.
 
 `ListRow` (`<li>` render eder):
 
@@ -129,7 +199,7 @@ gösterilir ve kart `<section aria-labelledby>` olur. 16px iç boşluk, `rounded
 | ----------- | ------------------------------------------------------------------------------------------------------------------------ |
 | `title`     | Birincil metin (zorunlu)                                                                                                 |
 | `subtitle`  | Altında ikincil metin                                                                                                    |
-| `icon`      | Soldaki dekoratif ikon (accent renkli, ayraç ikona göre içeriden başlar)                                                 |
+| `icon`      | Soldaki dekoratif ikon (ikincil renk, ayraç ikona göre içeriden başlar)                                                  |
 | `value`     | Sağda ikincil metin                                                                                                      |
 | `accessory` | Sağda özel denetim (SegmentedControl, Switch)                                                                            |
 | `chevron`   | `>` göstergesi; varsayılan: satır etkileşimliyse `true`                                                                  |
@@ -160,7 +230,7 @@ plana tıklama ve "Kapat" düğmesi `onClose` çağırır (birden fazla çağrı
 kapanınca odak açan öğeye döner; açıkken sayfa kaydırması kilitlidir. <768px'de alttan sheet
 (tutamaçlı), ≥768px'de ortalanmış form sheet (max 32rem). İçerik yalnızca açıkken render edilir.
 
-### `SegmentedControl<T extends string>` → `Picker(…).pickerStyle(.segmented)`
+### `SegmentedControl<T extends string>` → `Picker(…).pickerStyle(.segmented)` (özel stil)
 
 ```tsx
 <SegmentedControl aria-label="Tema" options={[{ value: 'light', label: 'Açık' }, …]}
@@ -169,7 +239,8 @@ kapanınca odak açan öğeye döner; açıkken sayfa kaydırması kilitlidir. <
 
 `{ options: readonly { value: T; label: string }[]; value: T; onChange: (v: T) => void;
 'aria-label': string (zorunlu); fullWidth?; className? }`. `radiogroup`/`radio` semantiği, roving
-tabindex; ←/↑ ve →/↓ seçer ve odaklar (uçlarda başa sarar), Home/End ilk/son.
+tabindex; ←/↑ ve →/↓ seçer ve odaklar (uçlarda başa sarar), Home/End ilk/son. Görünüm: 1px çizgili
+hap ray; seçili seçenek ters renk (`bg-control-thumb text-background`) — kehribar değil.
 
 ### `Switch` → `Toggle(isOn:).toggleStyle(.switch)`
 
@@ -189,15 +260,15 @@ tabindex; ←/↑ ve →/↓ seçer ve odaklar (uçlarda başa sarar), Home/End 
 | `disabled`, `id`, `className`    | Standart                                                    | `false`    |
 
 `<button type="button" role="switch" aria-checked>`; tıklama, Space ve Enter değiştirir. 44×44
-dokunma alanı içinde 51×31 ray ve 27px topuz; hareket `prefers-reduced-motion`'da kapanır. Renkler:
-açık → ray `accent`, topuz `accent-contrast`; kapalı → ray `fill`, topuz `switch-thumb-off`. Beyaz
-topuz açık temada `fill` üzerinde 1.3:1 kaldığı (ve koyu temada `accent` üzerinde 2.6:1) için iki
-durumda farklı topuz rengi kullanılır; durum ayrıca topuzun konumuyla anlatılır (yalnızca renk değil).
+dokunma alanı içinde 51×31 ray (1px çizgi dahil) ve 27px topuz; hareket `prefers-reduced-motion`'da
+kapanır. Renkler: açık → ray `accent` (kehribar), topuz `accent-contrast`; kapalı → ray `fill` +
+`separator-strong` çizgi, topuz `switch-thumb-off`. Durum ayrıca topuzun konumuyla anlatılır.
 SwiftUI: sistem `Toggle` + `.tint(Color("Accent"))`; topuz rengini sistem çizer.
 
 ### `ProgressRing` → `Circle().trim(from: 0, to: value).stroke(…).rotationEffect(.degrees(-90))`
 
-`{ value: number (0–1, sınırlanır; NaN → 0); size? = 120; strokeWidth? = 10; label?: string;
+İnce iz (`separator`) + yuvarlak uçlu yay (`accent-ink` ya da `success`); değer değişince yay 700ms akar.
+`{ value: number (0–1, sınırlanır; NaN → 0); size? = 120; strokeWidth? = 6; label?: string;
 tone?: 'accent' | 'success'; children? (ortadaki içerik); className? }`. `label` verilirse
 `role="progressbar"` + `aria-valuenow` (0–100, yuvarlanmış) / `aria-valuemin=0` / `aria-valuemax=100`;
 verilmezse `aria-hidden` (değeri metin olarak başka yerde ver). `clampProgress()` da dışa açıktır.
@@ -209,26 +280,28 @@ verilmezse `aria-hidden` (değeri metin olarak başka yerde ver). `clampProgress
 ```
 
 `{ value: number (0–1, sınırlanır; NaN → 0); label?: string; tone?: 'accent' | 'success';
-size?: 'small' (4px, liste satırı) | 'medium' (8px, varsayılan); className? }`. Erişilebilirlik
+size?: 'small' (2px, liste satırı) | 'medium' (4px, varsayılan); className? }`. İz `separator`, dolgu
+`accent-ink` ya da `success`. Erişilebilirlik
 `ProgressRing` ile aynıdır: `label` varsa `role="progressbar"` + `aria-valuenow` (0–100), yoksa
 `aria-hidden`. Hareket azaltma açıkken genişlik animasyonu yapılmaz.
 
 ### `EmptyState` → `ContentUnavailableView(title, systemImage:, description:)`
 
 `{ icon?: ReactNode; title: string; message?: ReactNode; action?: ReactNode; className? }`.
-Ortalanmış; başlık `<h2>`. `action` için `<Button>` ya da `buttonStyles()` ile bir `<Link>`.
+Ortalanmış; ikon ince çizgili bir dairede, başlık `<h2>` (`text-title3`, Bricolage). `action` için `<Button>` ya da `buttonStyles()` ile bir `<Link>`.
 
 ### `ScreenHeader` → `.navigationTitle(title)` + `.navigationBarTitleDisplayMode(.large)`
 
 `{ title: string; subtitle?: ReactNode; actions?: ReactNode; className? }` — ekranın tek `<h1>`'i
-(`text-large-title`), altında ikincil alt başlık, sağda eylemler (ör. `variant="plain"` butonlar →
+(`text-large-title`, iPad'de `text-display`; Bricolage 800, sıkı aralık), altında ikincil alt başlık, sağda eylemler (ör. `variant="plain"` butonlar →
 `.toolbar`). Her ekran bununla başlar.
 
 ## Tema
 
 `ThemeProvider` (uygulamada bir kez, `App.tsx`'te) çözümlenen temayı `<html data-theme>` ve
 `color-scheme` olarak uygular, sistem temasını (`prefers-color-scheme`) izler. `index.html`'deki
-satır içi betik ilk boyamada doğru temayı ayarlar.
+satır içi betik ilk boyamada doğru temayı ayarlar. **Kayıtlı tercih yoksa koyu**
+(`DEFAULT_THEME_PREFERENCE = 'dark'`); "Sistem" seçilirse cihazı izler.
 
 ```ts
 const { preference, resolved, setPreference } = useTheme()
@@ -241,5 +314,7 @@ SwiftUI: `@AppStorage("fokus.theme")` + `.preferredColorScheme(...)`.
 ## Yardımcılar
 
 - `cx(...classes)` — koşullu sınıf birleştirme.
-- `tokens` — `import { tokens } from '@/ui'` → `tokens.COLORS`, `tokens.TYPE_SCALE`, `tokens.RADII`…
+- `tokens` — `import { tokens } from '@/ui'` → `tokens.COLORS`, `tokens.TYPE_SCALE`, `tokens.RADII`,
+  `tokens.MOTION`, `tokens.FONT_FAMILIES`…
+- Yardımcı sınıflar (`tokens.css`): `numeric` (mono + tabular rakam), `eyebrow` (bölüm etiketi).
 - `contrastRatio()` (`src/ui/contrast.ts`) — WCAG kontrast oranı (testlerde kullanılır).

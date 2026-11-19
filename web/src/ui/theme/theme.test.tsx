@@ -59,6 +59,21 @@ describe('theme', () => {
     expect(document.documentElement.style.colorScheme).toBe('light')
   })
 
+  it('keeps the theme-color meta in sync with the background token', async () => {
+    const meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.append(meta)
+    render(
+      <ThemeProvider>
+        <ThemeProbe />
+      </ThemeProvider>,
+    )
+    expect(meta).toHaveAttribute('content', '#F5F2EA')
+    await userEvent.click(screen.getByRole('button', { name: 'Koyu' }))
+    expect(meta).toHaveAttribute('content', '#0E0F0C')
+    meta.remove()
+  })
+
   it('persists an explicit preference and applies data-theme', async () => {
     render(
       <ThemeProvider>

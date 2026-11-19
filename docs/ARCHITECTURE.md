@@ -155,6 +155,8 @@ Tüm `@Model`'ler `BaseEntity` alanlarını taşır: `id: UUID = UUID()`, `creat
 
 Gömülü tipler: `BaseEntity` → her modelde tekrarlanan dört alan (Swift'te ortak protokol `SyncedEntity`); `RecurrenceRule` → `Codable struct`; `YksField`, `ExamType`, `BookKind`, `BookUnit`, `FocusSegmentKind`, `TaskKind`, `FriendStatus` → `String` raw value'lu `enum`; `Weekday` → `Int`.
 
+`SocialPresence` (+ `PresenceState`) saklanan bir varlık değil, değer tipidir: SwiftData `@Model` olmaz; Swift'te `struct SocialPresence: Codable`, `PresenceState` → `String` raw value'lu `enum` (`focusing`, `onBreak`, `offline`). Public DB'deki `Presence` kaydına yansıtılır (4.7).
+
 Enum raw value'ları (TS ile aynı kalmalı):
 
 | Enum                       | Değerler                                           |
@@ -197,15 +199,70 @@ Enum raw value'ları (TS ile aynı kalmalı):
 - Uygulama girişsiz tam çalışır. Giriş yalnızca kimlik gerektiren özellikler (Sosyal) ve görünen ad için kullanılır.
 - **Not:** `SyncService.enable()` yorumu "Apple ile giriş gerektirir" diyor; native'de gerçek gereksinim iCloud hesabıdır. Ürün kararı: senkron SIWA'ya bağlanacak mı, yoksa iCloud hesabı yeterli mi? Öneri: iCloud hesabı yeterli, SIWA zorunlu değil.
 
-### 4.7 Sosyal tasarım notları (taslak)
+### 4.7 Sosyal: `SocialService` ↔ CloudKit eşlemesi
 
-Web prototipinde Sosyal tamamen mock'tur; aşağıdakiler native tasarım yönüdür.
+**Prototip durumu.** Web'de `MockSocialService` (`web/src/data/social/`) kullanılır: ağ yoktur, arkadaşlar ve oda üyeleri zamanlayıcıyla simüle edilir, durum `localStorage` anahtarı `fokus.social.mock.v1` altında tutulur. Native'de aynı `SocialService` sözleşmesi bir Swift protokolü olur ve `CloudKitSocialService` ile gerçeklenir. Ürün akışında Sosyal "Apple ile Giriş" gerektirir; CloudKit'in kendisi ise cihazdaki iCloud hesabını kullanır (4.6). Sosyal ekranı açılışta `CKContainer.accountStatus()` kontrol eder; `available` değilse (hesap yok, kısıtlı, belirlenemedi) kullanıcıya "Sosyal için iCloud'a giriş yapmalısın" gibi açık bir mesaj gösterir ve kayıt işlemi yapmaz.
 
-- **Arkadaş keşfi:** Public DB'de kullanıcı başına bir `PublicProfile` kaydı: kısa arkadaş kodu (recordName olarak — böylece tekillik CloudKit tarafından sağlanır), görünen ad. E-posta/telefon ile keşif yok. Kullanıcı yalnızca Sosyal'i açınca oluşturulur.
-- **Arkadaşlık:** Karşılıklı istek; kabul edilen arkadaş kendi listemde `Friend` (private DB) olarak tutulur. `remoteUserId` = CloudKit kullanıcı kayıt adı (`CKContainer.userRecordID()`).
-- **Paralel odak odaları:** İki seçenek: (a) public DB'de `Room` + üye başına `RoomPresence` kaydı (durum: odakta/molada, `heartbeatAt`); (b) oda sahibinin private DB'sinde özel bir bölge + `CKShare`, üyeler shared DB'den okur/yazar. Öneri: (b) — veri yalnızca davetlilere görünür. Varlık/kalp atışı ~30–60 sn'de bir güncellenir; abonelik (`CKQuerySubscription` / `CKDatabaseSubscription`) ile anlık güncelleme. `inviteCode` tekilliği için kodu recordName olarak kullan.
-- **Gizlilik:** Yalnızca gerekeni paylaş — görünen ad, odak durumu, oturum başlangıcı. Test sonuçları, kitaplar, görevler asla paylaşılmaz. Engelleme (`blocked`) ve odadan çıkma her zaman mümkün.
-- Public DB depolaması ve istekleri uygulamanın CloudKit kotasına sayılır (doğrulanmadı); kalp atışı sıklığını düşük tut.
+**Public DB gizliliği:** Public DB'deki kayıtlar uygulamanın her kimliği doğrulanmış kullanıcısı tarafından okunabilir (alan düzeyinde güvenlik rolü kısıtları Console'da ayrıca tanımlanır, doğrulanmadı). Bu yüzden oraya YALNIZCA kullanıcı adı, davet kodu ve odak durumu/süreleri gider; Apple kimliği, ad, e-posta, ders/test/kitap/görev içeriği asla gitmez.
+
+#### Kayıt tipleri
+
+| Kayıt tipi      | Veritabanı                                | recordName                       | Alanlar                                                                                                   | Kim okur / yazar                                                                                                       |
+| --------------- | ----------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `PublicProfile` | Public                                    | Kullanıcının user record name'i  | `username`, `inviteCode`, `isDiscoverable`                                                                | Herkes okur; yalnız sahibi yazar (`_creator` rolü)                                                                     |
+| `UsernameClaim` | Public                                    | `username:<küçük_harfli_ad>`     | `owner` (kullanıcı referansı)                                                                             | Herkes okur; yalnız oluşturan yazar/siler. Tekillik: var olan recordName'e `save` `serverRecordChanged` ile reddedilir |
+| `InviteCode`    | Public                                    | Davet kodu (6 karakter, A–Z 0–9) | `owner`                                                                                                   | Herkes okur; sahibi yazar. Kod çakışırsa `serverRecordChanged` → yeni kod üret                                         |
+| `FriendRequest` | Public                                    | UUID (küçük harf)                | `from`, `to` (kullanıcı kayıt adları), `createdAt`                                                        | Gönderen oluşturur/siler; alıcı okur/siler. Başkaları okuyabilir mi: kısıtlama Console'da yapılmalı (doğrulanmadı)     |
+| `Friend`        | Private (4.3'teki `CD_Friend`)            | SwiftData/mirroring              | `remoteUserId`, `displayName` (= kullanıcı adı), `statusRaw`                                              | Yalnız ben; cihazlarım arasında senkron. Kabul edilmiş arkadaşların yerel önbelleği                                    |
+| `Presence`      | Public                                    | Kullanıcının user record name'i  | `SocialPresence` alanları birebir: `state`, `sessionStartedAt`, `stateSince`, `todayFocusMs`, `updatedAt` | Arkadaşlar okur; yalnız sahibi yazar. `isDiscoverable = false` ise kayıt SİLİNİR                                       |
+| `Room`          | Oda sahibinin private DB'sinde özel bölge | Bölge içinde UUID                | `name`, `hostUserId`, `inviteCode`, `createdAt`                                                           | `CKShare` ile paylaşılır; üyeler shared DB'den okur/yazar                                                              |
+| `RoomMember`    | Aynı paylaşılan bölge                     | Üyenin user record name'i        | `userId`, `joinedAt`                                                                                      | Üye kendi kaydını yazar; oda sahibi hepsini yönetir. Üyenin odak durumu `Presence`'tan okunur                          |
+| `RoomInvite`    | Public                                    | Oda davet kodu                   | `shareURL`, `owner`                                                                                       | Herkes okur; oda sahibi yazar. Alternatif: `CKShare.url`'in doğrudan paylaşılması (kod gerekmez)                       |
+
+Oda önerisi: odayı public DB'de tutmak yerine oda sahibinin özel bölgesi + `CKShare` (veri yalnızca davetlilere görünür). Eski taslakta bu seçenek (b) idi; kararı koruyoruz.
+
+#### `SocialService` → CloudKit işlemleri
+
+| Metot                          | CloudKit karşılığı                                                                                                                                                                                                                                                                                                                        |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `refresh()`                    | `accountStatus()` + `userRecordID()`; `PublicProfile` / `Friend` / gelen `FriendRequest`'ler / oda ve arkadaş `Presence`'ları için fetch; abonelikleri yoksa kurar                                                                                                                                                                        |
+| `checkUsername(raw)`           | Biçim yerelde (`validateUsername`); sonra `UsernameClaim` kaydını `username:<ad>` recordName'iyle `fetch` — bulunursa `taken`                                                                                                                                                                                                             |
+| `claimUsername(raw)`           | Yeni `UsernameClaim` `save` (var olan recordName → `serverRecordChanged` → `usernameTaken`); ardından `PublicProfile` güncelle; ad değişiyorsa eski claim'i sil. Üç adım atomik değil → hata durumunda geri al/yeniden dene (doğrulanmadı: tek `CKModifyRecordsOperation` içinde birlikte gönderilebilir, `isAtomic` yalnız aynı bölgede) |
+| `setDiscoverable(flag)`        | `PublicProfile.isDiscoverable` güncelle; `false` ise `Presence` kaydını sil ve `UsernameClaim` aramasını kapat; `true` ise yeniden yayınla                                                                                                                                                                                                |
+| `sendFriendRequest(lookup)`    | `UsernameClaim` veya `InviteCode` ile `owner`'ı bul → kendine / zaten arkadaş / mevcut istek kontrolleri → `FriendRequest` `save`                                                                                                                                                                                                         |
+| `respondToRequest(id, accept)` | Kabul: private DB'ye `Friend` yaz + `FriendRequest`'i sil. Gönderen kabulü abonelikle öğrenir ve kendi `Friend`'ini yazar. Ret: yalnız isteği sil                                                                                                                                                                                         |
+| `cancelRequest(id)`            | Kendi `FriendRequest`'ini sil                                                                                                                                                                                                                                                                                                             |
+| `removeFriend(userId)`         | Kendi `Friend` kaydını soft-delete et; karşı tarafın listesi bir sonraki senkronda/isteğe bağlı bir "kaldırıldı" kaydıyla güncellenir (açık soru)                                                                                                                                                                                         |
+| `createRoom(name)`             | Özel `CKRecordZone` + `Room`/`RoomMember` kaydı + `CKShare` (`publicPermission = .none`, davetle katılım); davet kodu için `RoomInvite`                                                                                                                                                                                                   |
+| `joinRoom(target)`             | `RoomInvite` → `shareURL` → `CKShare.Metadata` ile `CKAcceptSharesOperation`; shared DB'de kendi `RoomMember` kaydını yaz                                                                                                                                                                                                                 |
+| `leaveRoom()`                  | Üye: kendi `RoomMember`'ını sil ve paylaşımdan ayrıl (shared bölgeyi sil). Ev sahibi: `CKShare`'i ve bölgeyi sil → oda kapanır                                                                                                                                                                                                            |
+| `publishPresence(presence)`    | `Presence` kaydı `save`, `savePolicy = .changedKeys`; `isDiscoverable = false` ise hiçbir şey yazılmaz/siler                                                                                                                                                                                                                              |
+| `subscribe(listener)`          | Yerel dinleyici; CloudKit abonelikleri ve push işleme aşağıdaki bölümde                                                                                                                                                                                                                                                                   |
+
+#### Durum güncelleme ve "gerçek zamanlı değil" kısıtı
+
+- **Abonelikler:** `CKQuerySubscription` — `FriendRequest` üzerinde `to == <ben>` (gelen istek ve kabul bildirimi); arkadaşların `Presence`'ı için `CKQuerySubscription`; oda için shared DB üzerinde `CKDatabaseSubscription`. Çok sayıda arkadaş için tek `IN` predicate'inin ve abonelik sayısı sınırlarının davranışı **doğrulanmadı**; yedek plan: arkadaş sayısı az olduğunda arkadaş başına abonelik, çoksa yalnız çekme (pull).
+- **Push güvenilir değildir:** Sessiz bildirimler en iyi çabayla gelir, birleştirilebilir/kısılabilir ve uygulama kapalıyken iletilmeyebilir (doğrulanmadı: kesin sınırlar). Bu yüzden akış: (1) odak oturumu sürerken ~60 sn'lik kalp atışı + her durum değişiminde (başla/mola/devam/bitir) `publishPresence`; (2) uygulama öne gelince ve çek-yenile (pull-to-refresh) ile `refresh()`; (3) push yalnızca "şimdi çek" ipucudur.
+- **Süreler yerelde ilerletilir:** UI arkadaşın süresini `updatedAt`/`stateSince`'ten `liveSessionMs`, `liveStateMs`, `liveTodayFocusMs` ile her saniye hesaplar; ağ trafiği gerekmez.
+- **Bayat durum:** `updatedAt` üzerinden `PRESENCE_STALE_AFTER_MS` (10 dk) geçmişse `effectivePresenceState` kişiyi çevrimdışı gösterir (uygulama sonlandırılmış/ağ yok durumunda "hayalet odakta" kalmasın).
+- **`todayFocusMs` anlık görüntüdür:** Yayınlanan değerdir, yerelde saklanan bir türetilmiş değer değildir (4.5); hesaplamalar `domain/calc` içinde kalır. Gün bölünmesi yayınlayanın yerel gününe göredir.
+- **Kendi durumum salt okunur türetilir:** `ownPresenceFromFocus` yalnızca `FocusSession`/`FocusSegment`'ten üretir; Sosyal modülü Odak verisini yazmaz. Native'de yayın, Odak değişikliklerini gözleyen küçük bir "presence publisher" (uygulama düzeyinde servis) üzerinden yapılmalıdır, yalnızca Sosyal ekranı açıkken değil. **Bilinen sınırlama:** web prototipi yalnızca Sosyal ekranı bağlıyken (mounted) yayınlar.
+
+#### Gizlilik ve güvenlik (çoğu kullanıcı 18 yaş altı)
+
+- Paylaşılan tek şey: kullanıcı adı + `SocialPresence` (durum, başlangıç zamanları, bugünkü toplam). Serbest metin yalnızca kullanıcı adı (3–20 karakter, harfle başlar; yalnızca ASCII küçük harf, rakam, `.` ve `_`; `validateUsername`) ve oda adı (≤ 40) alanlarıdır. Gerçek ad, Apple kimliği, e-posta, ders/konu/test/kitap/görev verisi paylaşılmaz.
+- **"Sosyalde görün / gizlen" (`isDiscoverable`):** Kapalıyken `Presence` silinir (arkadaşlar beni çevrimdışı görür) ve kullanıcı adıyla aranamam. Davet kodu çalışmaya devam eder: kod, kişinin kendi paylaştığı bir gizli bilgidir, bu yüzden arkadaş eklemenin kullanıcı kontrollü yolu olarak kalır (karar: öneri, ürün onayı bekliyor).
+- **Kötüye kullanım:** İstemci tarafında arkadaş isteği hız sınırı (ör. dakikada birkaç istek, bekleyen giden istek tavanı); `FriendStatus 'blocked'` ile engelleme ve odadan çıkma her zaman mümkün. Gelecek: kullanıcı adı/oda adı için küfür filtresi + bildir (report) akışı; ek bir sunucu olmadığından moderasyon sınırlıdır.
+- **Kota:** Public DB depolama ve istek kotaları uygulamanın CloudKit kapsamına sayılır (doğrulanmadı); kalp atışı sıklığı düşük tutulur (≥ 60 sn) ve yalnızca odak sürerken yayınlanır.
+
+#### Açık sorular
+
+1. Çok sayıda arkadaş için `Presence` aboneliği: `IN` predicate'i / abonelik sayısı sınırları (doğrulanmadı).
+2. `CKShare` katılımcı sınırı ve oda başına üye tavanı; sahibi gidince odanın kapanması kabul edilebilir mi?
+3. Public DB'de kayıt düzeyi okuma kısıtı (özellikle `FriendRequest`): güvenlik rolleri yeterli mi, yoksa istek `CKShare`/private akışa mı taşınmalı?
+4. Arkadaşlık kaldırma karşı tarafa nasıl yansır (karşılıklı `Friend` silme).
+5. Moderasyon: kullanıcı adı filtresi, bildirme, engelleme sonrası görünürlük.
+6. Yaş sınırı/ebeveyn onayı gereksinimleri (App Store ve yerel mevzuat) — hukuki inceleme gerekir.
 
 ### 4.8 Servis ve UI eşlemesi
 
@@ -215,6 +272,7 @@ Web prototipinde Sosyal tamamen mock'tur; aşağıdakiler native tasarım yönü
 | `useLiveData` / `liveQuery`                                      | `@Query` (otomatik güncellenir)                                                                                                                                             |
 | `AuthService` / `MockAuthService`                                | `ASAuthorizationAppleIDProvider` + `SignInWithAppleButton` (AuthenticationServices)                                                                                         |
 | `SyncService` / `MockSyncService`                                | `ModelConfiguration(cloudKitDatabase: .private("iCloud.<bundle>"))`; durum için `NSPersistentCloudKitContainer.eventChangedNotification` (doğrulanmadı) veya `CKSyncEngine` |
+| `SocialService` / `MockSocialService`                            | Swift protokolü + `CloudKitSocialService` (public DB + `CKShare`, `CKQuerySubscription`; bkz. 4.7)                                                                          |
 | `recordLocalChange()`                                            | Otomatik mirroring'de gereksiz (SwiftData kendisi izler); `CKSyncEngine`'de `state.add(pendingRecordZoneChanges:)`                                                          |
 | `ThemeProvider` / `useTheme` (zustand)                           | `@Environment(\.colorScheme)` + `.preferredColorScheme(_:)`; tercih `@AppStorage`                                                                                           |
 | Tasarım tokenları (`ui/`)                                        | Asset Catalog renkleri (Any/Dark), `Font.TextStyle` (Dynamic Type), boşluk sabitleri                                                                                        |

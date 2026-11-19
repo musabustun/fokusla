@@ -142,7 +142,18 @@ describe('BooksScreen', () => {
     renderBooks(services)
 
     const link = await screen.findByRole('link', { name: /Fasikül/ })
-    expect(link).toHaveTextContent('Soru bankası · 50 / 200 sayfa · haftada ~30 sayfa')
+    expect(link).toHaveTextContent('50 / 200 sayfa · haftada ~30 sayfa')
+    // Kalan 150 sayfa, haftada 30 → ceil(150 / (30/7)) = 35 gün.
+    const today = new Date()
+    const finish = new Date(today)
+    finish.setDate(finish.getDate() + 35)
+    const day = (d: Date) =>
+      new Intl.DateTimeFormat('tr-TR', {
+        day: 'numeric',
+        month: 'long',
+        ...(d.getFullYear() === today.getFullYear() ? {} : { year: 'numeric' }),
+      }).format(d)
+    expect(link).toHaveTextContent(`Son: ${day(today)} · Bitiş ~${day(finish)}`)
     expect(link).toHaveTextContent('%25')
     expect(link).not.toHaveAttribute('aria-current')
   })

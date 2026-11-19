@@ -137,6 +137,18 @@ Birden fazla oturumun dokunabileceği dosyalar. Genel kural: **yalnızca ekleme 
 - Native hissi: iOS benzeri liste/sayfa düzeni, sistem fontu, hareket azaltma (`prefers-reduced-motion`) desteği.
 - Türkçe metinler: doğru büyük/küçük harf (`İ/ı`), `toLocaleUpperCase('tr-TR')`, sayılar `Intl.NumberFormat('tr-TR')`.
 
+## Claude Code oturumları ve alt ajanlar
+
+İşi alt ajanlara bölerken modeli işe göre ölçekle (maliyet):
+
+| İş                                                                                         | Model                 |
+| ------------------------------------------------------------------------------------------ | --------------------- |
+| Kod yazan / düzenleyen / test yazan ajan                                                   | `model: "sonnet"`     |
+| Yalnızca okuyan ajan (keşif, kod/doküman okuma, arama, Explore)                            | `model: "haiku"`      |
+| Gerçekten zor tasarım kararı (ör. veri modeli, CloudKit eşlemesi, modüller arası sözleşme) | Oturumun kendi modeli |
+
+Paralel çalıştırılabilen bağımsız parçaları aynı anda başlat; ama işi tek ajana sığıyorsa bölme.
+
 ## Git
 
 - Her modül/iş için ayrı dal: `feat/focus-timer`, `fix/tasks-due-date`, `docs/architecture`.

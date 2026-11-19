@@ -15,6 +15,7 @@ export const COLOR_TOKENS = [
   'surface-elevated',
   'fill',
   'control-thumb',
+  'switch-thumb-off',
   'label',
   'secondary-label',
   'tertiary-label',
@@ -39,6 +40,7 @@ export const COLORS: Readonly<Record<ThemeName, Readonly<Record<ColorToken, stri
     'surface-elevated': '#FFFFFF',
     fill: '#E3E3E8',
     'control-thumb': '#FFFFFF',
+    'switch-thumb-off': '#6E6E73',
     label: '#1C1C1E',
     'secondary-label': '#5F5F66',
     'tertiary-label': '#7C7C82',
@@ -58,6 +60,7 @@ export const COLORS: Readonly<Record<ThemeName, Readonly<Record<ColorToken, stri
     'surface-elevated': '#2C2C2E',
     fill: '#38383A',
     'control-thumb': '#636366',
+    'switch-thumb-off': '#FFFFFF',
     label: '#FFFFFF',
     'secondary-label': '#AEAEB2',
     'tertiary-label': '#8E8E93',
@@ -148,6 +151,8 @@ export const CONTRAST_PAIRS: readonly ContrastPair[] = [
   { foreground: 'secondary-label', background: 'fill', minRatio: 4.5 },
   { foreground: 'label', background: 'control-thumb', minRatio: 4.5 },
   { foreground: 'accent-contrast', background: 'accent', minRatio: 4.5 },
+  // Switch topuzu rayından ayırt edilmeli (WCAG 1.4.11, 3:1). Açık: accent-contrast/accent (yukarıda).
+  { foreground: 'switch-thumb-off', background: 'fill', minRatio: 3 },
   { foreground: 'accent', background: 'accent-subtle', minRatio: 4.5 },
   { foreground: 'danger', background: 'danger-subtle', minRatio: 4.5 },
 ]

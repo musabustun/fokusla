@@ -166,6 +166,17 @@ tone?: 'accent' | 'success'; children? (ortadaki içerik); className? }`. `label
 `role="progressbar"` + `aria-valuenow` (0–100, yuvarlanmış) / `aria-valuemin=0` / `aria-valuemax=100`;
 verilmezse `aria-hidden` (değeri metin olarak başka yerde ver). `clampProgress()` da dışa açıktır.
 
+### `ProgressBar` → `ProgressView(value:).progressViewStyle(.linear)`
+
+```tsx
+<ProgressBar value={summary.ratio ?? 0} label="Kitap ilerlemesi" tone="success" />
+```
+
+`{ value: number (0–1, sınırlanır; NaN → 0); label?: string; tone?: 'accent' | 'success';
+size?: 'small' (4px, liste satırı) | 'medium' (8px, varsayılan); className? }`. Erişilebilirlik
+`ProgressRing` ile aynıdır: `label` varsa `role="progressbar"` + `aria-valuenow` (0–100), yoksa
+`aria-hidden`. Hareket azaltma açıkken genişlik animasyonu yapılmaz.
+
 ### `EmptyState` → `ContentUnavailableView(title, systemImage:, description:)`
 
 `{ icon?: ReactNode; title: string; message?: ReactNode; action?: ReactNode; className? }`.

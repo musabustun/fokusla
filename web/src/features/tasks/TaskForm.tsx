@@ -1,8 +1,15 @@
 import { ChevronDown } from 'lucide-react'
 import { useId, type ReactNode } from 'react'
 import type { ISODate, TaskKind } from '@/domain'
-import { SegmentedControl, cx, type SegmentedOption } from '@/ui'
-import { INPUT_CLASS } from './styles'
+import {
+  FIELD_ERROR_CLASS,
+  FIELD_HINT_CLASS,
+  FIELD_LABEL_CLASS,
+  SegmentedControl,
+  cx,
+  type SegmentedOption,
+} from '@/ui'
+import { INPUT_CLASS, TEXTAREA_CLASS } from './styles'
 import type { SubjectGroup } from './subjectOptions'
 import { NOTES_MAX_LENGTH, TITLE_MAX_LENGTH, UNIT_MAX_LENGTH, type TaskDraft } from './taskModel'
 import type { TaskFormState } from './useTaskForm'
@@ -32,16 +39,16 @@ function Field({ label, htmlFor, error, errorId, hint, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
       {htmlFor ? (
-        <label htmlFor={htmlFor} className="text-subheadline font-semibold text-label">
+        <label htmlFor={htmlFor} className={FIELD_LABEL_CLASS}>
           {label}
         </label>
       ) : (
-        <span className="text-subheadline font-semibold text-label">{label}</span>
+        <span className={FIELD_LABEL_CLASS}>{label}</span>
       )}
       {children}
-      {hint && !error && <p className="text-footnote text-secondary-label">{hint}</p>}
+      {hint && !error && <p className={FIELD_HINT_CLASS}>{hint}</p>}
       {error && (
-        <p id={errorId} className="text-footnote text-danger">
+        <p id={errorId} className={FIELD_ERROR_CLASS}>
           {error}
         </p>
       )}
@@ -222,7 +229,7 @@ export function TaskFormFields({
           maxLength={NOTES_MAX_LENGTH * 2}
           placeholder="İsteğe bağlı"
           onChange={(event) => update({ notes: event.target.value })}
-          className={cx(INPUT_CLASS, 'resize-y')}
+          className={cx(TEXTAREA_CLASS, 'resize-y')}
           {...invalidProps('notes')}
         />
       </Field>

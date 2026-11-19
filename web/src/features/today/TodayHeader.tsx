@@ -31,11 +31,11 @@ export function TodayHeader({ now }: TodayHeaderProps) {
       title="Bugün"
       subtitle={
         <>
-          <span className="block">{DATE_FORMAT.format(now)}</span>
-          <span className="mt-1 flex flex-wrap items-center gap-2">
+          <span className="block eyebrow">{DATE_FORMAT.format(now)}</span>
+          <span className="mt-2 flex flex-wrap items-center gap-3">
             <span>{greeting}</span>
             {profile && (
-              <span className="rounded-full bg-accent-subtle px-2.5 py-0.5 text-footnote font-semibold text-accent-ink">
+              <span className="rounded-full border border-separator-strong px-2.5 py-0.5 text-footnote font-medium text-label">
                 {FIELD_LABELS[profile.field]}
                 <span className="sr-only"> alanı</span>
               </span>

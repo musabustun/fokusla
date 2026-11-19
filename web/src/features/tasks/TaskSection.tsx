@@ -10,16 +10,16 @@ export interface TaskSectionProps {
   onSelect: (model: TaskRowModel) => void
 }
 
-/** Başlıklı görev listesi (iOS inset grouped bölüm). Boşsa hiç çizilmez. */
+/** Eyebrow başlıklı, çizgili görev listesi. Boşsa hiç çizilmez. */
 export function TaskSection({ title, rows, selectedId, onToggle, onSelect }: TaskSectionProps) {
   const headingId = useId()
   if (rows.length === 0) return null
   return (
-    <section aria-labelledby={headingId} className="mb-8">
-      <h2 id={headingId} className="mb-1.5 px-4 text-footnote text-secondary-label uppercase">
+    <section aria-labelledby={headingId} className="mb-10">
+      <h2 id={headingId} className="mb-2 eyebrow">
         {title}
       </h2>
-      <ul role="list" className="overflow-hidden rounded-lg bg-surface">
+      <ul role="list" className="border-y border-separator">
         {rows.map((row) => (
           <TaskRow
             key={row.task.id}

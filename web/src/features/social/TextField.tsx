@@ -1,5 +1,5 @@
 import { useId, type InputHTMLAttributes, type ReactNode } from 'react'
-import { cx } from '@/ui'
+import { cx, FIELD_ERROR_CLASS, FIELD_HINT_CLASS, FIELD_LABEL_CLASS, inputStyles } from '@/ui'
 
 // Sosyal modülüne özel metin alanı. Başka bir modül de ihtiyaç duyarsa @/ui'ye taşınmalı.
 interface TextFieldProps extends Omit<
@@ -28,37 +28,43 @@ export function TextField({
   const inputId = useId()
   const messageId = useId()
   const message = error ?? hint
+  const sharedProps = {
+    id: inputId,
+    value,
+    onChange: (event: React.ChangeEvent<HTMLInputElement>) => onValueChange(event.target.value),
+    'aria-invalid': error ? true : undefined,
+    'aria-describedby': message ? messageId : undefined,
+    ...inputProps,
+  }
   return (
     <div className={cx('flex flex-col gap-1.5', className)}>
-      <label htmlFor={inputId} className="text-subheadline font-semibold text-label">
+      <label htmlFor={inputId} className={FIELD_LABEL_CLASS}>
         {label}
       </label>
-      <div
-        className={cx(
-          'flex min-h-11 items-center rounded-md bg-fill px-3 focus-within:outline-2 focus-within:outline-accent-ink',
-          error && 'outline-2 outline-danger',
-        )}
-      >
-        {prefix && (
-          <span aria-hidden className="pr-0.5 text-body text-secondary-label">
+      {prefix ? (
+        <div
+          className={cx(
+            inputStyles(),
+            'flex items-center gap-0.5 focus-within:outline-2 focus-within:outline-accent-ink',
+            error && 'border-danger',
+          )}
+        >
+          <span aria-hidden className="text-body text-secondary-label">
             {prefix}
           </span>
-        )}
-        <input
-          id={inputId}
-          value={value}
-          onChange={(event) => onValueChange(event.target.value)}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={message ? messageId : undefined}
-          className="min-h-11 w-full min-w-0 bg-transparent text-body text-label placeholder:text-secondary-label focus:outline-none"
-          {...inputProps}
-        />
-      </div>
+          <input
+            {...sharedProps}
+            className="min-h-11 w-full min-w-0 bg-transparent text-body text-label placeholder:text-secondary-label focus:outline-none"
+          />
+        </div>
+      ) : (
+        <input {...sharedProps} className={inputStyles()} />
+      )}
       {message && (
         <p
           id={messageId}
           role={error ? 'alert' : undefined}
-          className={cx('text-footnote', error ? 'text-danger' : 'text-secondary-label')}
+          className={error ? FIELD_ERROR_CLASS : FIELD_HINT_CLASS}
         >
           {message}
         </p>

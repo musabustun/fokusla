@@ -54,7 +54,7 @@ export function Metric({
         <span className="min-w-0 truncate">{value}</span>
         {unit && (
           <span className="font-sans text-subheadline tracking-normal text-secondary-label">
-            {unit}
+            {/* Baştaki boşluk görünmez (flex öğesi) ama metin "35 dk" olarak okunur. */} {unit}
           </span>
         )}
       </span>

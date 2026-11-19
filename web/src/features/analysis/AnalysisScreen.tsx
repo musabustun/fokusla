@@ -76,11 +76,7 @@ export function AnalysisScreen() {
   const openTest = (result?: TestResult) => setSheet({ kind: 'test', result })
 
   const actions = (
-    <Button
-      variant="plain"
-      icon={<Plus aria-hidden className="size-6" />}
-      onClick={() => openTest()}
-    >
+    <Button icon={<Plus aria-hidden />} onClick={() => openTest()}>
       Test ekle
     </Button>
   )

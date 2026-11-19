@@ -47,7 +47,7 @@ export function SocialHome({ snapshot }: { snapshot: SocialSnapshot }) {
   if (!profile) return null
 
   return (
-    <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-6">
+    <div className="flex flex-col lg:grid lg:grid-cols-2 lg:items-start lg:gap-x-10">
       <div className="order-2 lg:order-1">
         <RequestsSection requests={snapshot.requests} />
         <FriendsSection

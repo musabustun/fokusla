@@ -8,7 +8,7 @@ describe('Metric', () => {
     const { container } = render(
       <Metric label="Bugün" value="2:45" unit="sa" caption="Hedefin 3 sa" size="hero" />,
     )
-    expect(container).toHaveTextContent('Bugün2:45saHedefin 3 sa')
+    expect(container).toHaveTextContent('Bugün2:45 saHedefin 3 sa')
     expect(screen.getByText('2:45').parentElement).toHaveClass('numeric', 'text-numeral-hero')
   })
 

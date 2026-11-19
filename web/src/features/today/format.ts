@@ -36,6 +36,15 @@ export function formatDuration(ms: number): string {
   return minutes === 0 ? `${hours} sa` : `${hours} sa ${minutes} dk`
 }
 
+/** Süreyi saat + dakika parçalarına böler (aşağı yuvarlar); `formatDuration` ile aynı kural. */
+export function splitDuration(ms: number): { hours: number; minutes: number } {
+  const totalMinutes = Math.floor(toWholeSeconds(ms) / SECONDS_PER_MINUTE)
+  return {
+    hours: Math.floor(totalMinutes / SECONDS_PER_MINUTE),
+    minutes: totalMinutes % SECONDS_PER_MINUTE,
+  }
+}
+
 /** Tam sayı: "1.250". */
 export function formatInteger(value: number): string {
   return integerFormat.format(value)

@@ -37,10 +37,11 @@ export function WeekdayPicker({ value, onChange, invalid, describedBy }: Weekday
             aria-label={weekdayLongName(weekday)}
             onClick={() => toggle(weekday)}
             className={cx(
-              'flex min-h-11 min-w-0 items-center justify-center rounded-md text-subheadline transition-colors',
+              'flex min-h-11 min-w-0 items-center justify-center rounded-full border text-subheadline',
+              'transition-[background-color,transform] duration-200 ease-standard active:scale-97 motion-reduce:active:scale-100',
               isSelected
-                ? 'bg-accent font-semibold text-accent-contrast'
-                : 'bg-fill text-label active:opacity-70',
+                ? 'border-control-thumb bg-control-thumb font-semibold text-background'
+                : 'border-separator-strong text-label hover:bg-fill',
             )}
           >
             {weekdayShortName(weekday)}

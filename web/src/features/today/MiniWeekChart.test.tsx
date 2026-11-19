@@ -40,7 +40,7 @@ describe('MiniWeekChart', () => {
 
     const bars = within(screen.getByRole('list', { name: 'Son 7 gün' }))
       .getAllByRole('listitem')
-      .map((day) => day.querySelector<HTMLElement>('.bg-accent')?.style.height)
+      .map((day) => day.querySelector<HTMLElement>('[data-bar]')?.style.height)
     expect(bars[0]).toBe('0%')
     expect(bars[3]).toBe('100%')
     expect(Number.parseFloat(bars[1] ?? '')).toBeCloseTo((30 / 90) * 100, 2)

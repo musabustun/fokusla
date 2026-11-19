@@ -13,7 +13,7 @@ export interface LongBreakAlertProps {
 export function LongBreakAlert({ onResume, onFinish }: LongBreakAlertProps) {
   const headingId = useId()
   return (
-    <div role="alert" aria-labelledby={headingId} className="rounded-md bg-accent-subtle p-4">
+    <div role="alert" aria-labelledby={headingId} className="border-y border-separator py-5">
       <div className="flex items-start gap-3">
         <AlarmClock aria-hidden className="mt-0.5 size-5 shrink-0 text-warning" />
         <div className="min-w-0 flex-1">

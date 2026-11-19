@@ -1,7 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { useServices } from '@/data'
 import type { UserProfile } from '@/domain'
-import { Button, Sheet } from '@/ui'
+import { Button, FIELD_ERROR_CLASS, FIELD_LABEL_CLASS, Sheet, inputStyles } from '@/ui'
 import { saveDisplayName } from './actions'
 import { DISPLAY_NAME_MAX_LENGTH } from './constants'
 import { useAsyncAction } from './useAsyncAction'
@@ -45,7 +45,7 @@ export function DisplayNameSheet({ open, onClose, profile }: DisplayNameSheetPro
       }
     >
       <form id={formId} onSubmit={handleSubmit} className="flex flex-col gap-2 pt-2">
-        <label htmlFor={`${formId}-input`} className="text-subheadline text-secondary-label">
+        <label htmlFor={`${formId}-input`} className={FIELD_LABEL_CLASS}>
           Ad
         </label>
         <input
@@ -56,10 +56,10 @@ export function DisplayNameSheet({ open, onClose, profile }: DisplayNameSheetPro
           autoComplete="nickname"
           placeholder="Adın"
           onChange={(event) => setDraft(event.target.value)}
-          className="min-h-11 w-full rounded-md bg-fill px-3 text-body text-label placeholder:text-secondary-label"
+          className={inputStyles()}
         />
         {error ? (
-          <p role="alert" className="text-subheadline text-danger">
+          <p role="alert" className={FIELD_ERROR_CLASS}>
             {error}
           </p>
         ) : null}

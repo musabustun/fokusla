@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button } from '@/ui'
+import { Button, FIELD_ERROR_CLASS } from '@/ui'
 import { DELETE_FAILED_MESSAGE } from './formStyles'
 
 export interface DeleteConfirmProps {
@@ -44,7 +44,7 @@ export function DeleteConfirm({ message, onConfirm, disabled = false }: DeleteCo
     <div className="flex flex-col gap-2">
       <p className="text-subheadline text-label">{message}</p>
       {error && (
-        <p role="alert" className="text-footnote text-danger">
+        <p role="alert" className={FIELD_ERROR_CLASS}>
           {error}
         </p>
       )}

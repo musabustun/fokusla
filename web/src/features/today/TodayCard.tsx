@@ -14,7 +14,7 @@ export interface TodayCardProps {
 }
 
 /**
- * Bugün ekranındaki her kartın ortak kabuğu: başlık + "Tümü" bağlantısı + içerik.
+ * Bugün ekranındaki her bölümün ortak kabuğu (çizgili `Card`): başlık + "Tümü" bağlantısı + içerik.
  * SwiftUI: `Section(header:)` içinde `NavigationLink("Tümü")`.
  */
 export function TodayCard({ title, linkTo, linkLabel, className, children }: TodayCardProps) {
@@ -23,7 +23,10 @@ export function TodayCard({ title, linkTo, linkLabel, className, children }: Tod
       to={linkTo}
       // Görünür metin ("Tümü") erişilebilir adın başında olmalı (WCAG 2.5.3).
       aria-label={`Tümü: ${linkLabel ?? title}`}
-      className={cx(buttonStyles({ variant: 'plain', size: 'small' }), '-my-2 -mr-2')}
+      className={cx(
+        buttonStyles({ variant: 'plain', size: 'small' }),
+        '-mr-2 text-secondary-label',
+      )}
     >
       Tümü
     </Link>

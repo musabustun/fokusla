@@ -16,7 +16,7 @@ function subtitleParts(model: TaskRowModel): ReactNode[] {
   if (model.due) {
     parts.push(
       model.due.overdue ? (
-        <span className="inline-flex items-center gap-1 font-semibold text-danger">
+        <span className="inline-flex items-center gap-1 font-medium text-danger">
           <CircleAlert aria-hidden className="size-3.5 shrink-0" strokeWidth={2.5} />
           {model.due.text}
         </span>
@@ -27,7 +27,7 @@ function subtitleParts(model: TaskRowModel): ReactNode[] {
   }
   if (model.recurrence) parts.push(model.recurrence)
   if (model.subjectName) parts.push(model.subjectName)
-  if (model.quantity) parts.push(model.quantity)
+  if (model.quantity) parts.push(<span className="numeric">{model.quantity}</span>)
   if (model.streak !== null) {
     parts.push(
       <span className="inline-flex items-center gap-1">
@@ -57,7 +57,9 @@ function CheckControl({ model, onToggle }: Pick<TaskRowProps, 'model' | 'onToggl
         aria-hidden
         className={cx(
           'flex size-6 items-center justify-center rounded-full border-2 motion-safe:transition-colors',
-          done ? 'border-success bg-success text-surface' : 'border-tertiary-label',
+          done
+            ? 'border-success bg-success text-success-contrast'
+            : 'border-separator-strong group-hover:border-label',
         )}
       >
         {done && <Check className="size-4" strokeWidth={3} />}
@@ -73,9 +75,9 @@ export function TaskRow({ model, selected = false, onToggle, onSelect }: TaskRow
   return (
     <li
       className={cx(
-        'relative flex items-stretch pl-2',
-        'before:absolute before:top-0 before:right-0 before:left-14 before:h-px before:bg-separator first:before:hidden',
-        selected && 'bg-accent-subtle',
+        'relative flex items-stretch border-t border-separator first:border-t-0',
+        selected &&
+          'bg-fill before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-accent',
       )}
     >
       <div className="flex items-center">
@@ -87,7 +89,7 @@ export function TaskRow({ model, selected = false, onToggle, onSelect }: TaskRow
         aria-current={selected || undefined}
         aria-describedby={parts.length > 0 ? subtitleId : undefined}
         onClick={() => onSelect(model)}
-        className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-2.5 pr-4 pl-1 text-left active:bg-fill motion-safe:transition-colors"
+        className="flex min-h-11 min-w-0 flex-1 items-center gap-3 py-3 pr-1 pl-1 text-left transition-[background-color,transform] duration-200 ease-standard hover:bg-fill motion-reduce:active:scale-100"
       >
         <span className="flex min-w-0 flex-1 flex-col">
           <span

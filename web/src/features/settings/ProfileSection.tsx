@@ -2,7 +2,7 @@ import { GraduationCap, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { FIELD_LABELS } from '@/curriculum'
 import type { UserProfile } from '@/domain'
-import { ListRow, ListSection } from '@/ui'
+import { ListRow, ListSection, cx } from '@/ui'
 import { ICON_CLASS } from './constants'
 import { DisplayNameSheet } from './DisplayNameSheet'
 import { FieldSheet } from './FieldSheet'
@@ -23,7 +23,11 @@ export function ProfileSection({ profile }: ProfileSectionProps) {
         <ListRow
           title="Görünen ad"
           icon={<UserRound className={ICON_CLASS} />}
-          value={profile.displayName ?? 'Eklenmedi'}
+          value={
+            <span className={cx(profile.displayName && 'font-display text-title2 text-label')}>
+              {profile.displayName ?? 'Eklenmedi'}
+            </span>
+          }
           onClick={() => setNameOpen(true)}
         />
         <ListRow

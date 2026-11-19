@@ -43,12 +43,12 @@ export function SubjectList({
                 key={subject.id}
                 title={subject.name}
                 subtitle={compact ? stat : undefined}
-                value={compact ? undefined : <span className="tabular-nums">{stat}</span>}
+                value={compact ? undefined : <span className="numeric text-label">{stat}</span>}
                 render={(props) => (
                   <Link
                     to={analysisHref({ subjectId: subject.id })}
                     aria-current={isSelected ? 'page' : undefined}
-                    className={cx(props.className, isSelected && 'bg-accent-subtle')}
+                    className={cx(props.className, isSelected && 'bg-fill')}
                   >
                     {props.children}
                   </Link>

@@ -1,7 +1,7 @@
 import { EyeOff, ShieldCheck, Timer, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useServices } from '@/data'
-import { AppleSignInButton, Card } from '@/ui'
+import { AppleSignInButton } from '@/ui'
 import { socialErrorMessage } from './socialErrors'
 
 const POINTS = [
@@ -34,26 +34,33 @@ export function SignInGate() {
   }
 
   return (
-    <Card className="mx-auto max-w-md">
-      <h2 className="text-title3">Birlikte çalışmak için giriş yap</h2>
-      <p className="mt-1 text-subheadline text-secondary-label">
-        Arkadaşlarını bulabilmek için bir hesaba ihtiyaç var. Fokus'un geri kalanı girişsiz de tam
-        çalışır.
-      </p>
-      <ul className="my-5 flex flex-col gap-3">
+    <div className="mx-auto flex max-w-md flex-col gap-8 py-6">
+      <div>
+        <h2 className="text-title1">Birlikte çalışmak için giriş yap</h2>
+        <p className="mt-3 text-callout text-secondary-label">
+          Arkadaşlarını bulabilmek için bir hesaba ihtiyaç var. Fokus'un geri kalanı girişsiz de tam
+          çalışır.
+        </p>
+      </div>
+      <div className="flex flex-col gap-3">
+        {error && (
+          <p role="alert" className="text-subheadline text-danger">
+            {error}
+          </p>
+        )}
+        <AppleSignInButton loading={busy} onClick={handleSignIn} />
+      </div>
+      <ul className="border-t border-separator">
         {POINTS.map(({ icon: Icon, text }) => (
-          <li key={text} className="flex items-start gap-3 text-subheadline">
-            <Icon aria-hidden className="mt-0.5 size-5 shrink-0 text-accent-ink" />
+          <li
+            key={text}
+            className="flex items-start gap-3 border-b border-separator py-3 text-subheadline text-secondary-label"
+          >
+            <Icon aria-hidden className="mt-0.5 size-5 shrink-0" />
             <span>{text}</span>
           </li>
         ))}
       </ul>
-      {error && (
-        <p role="alert" className="mb-3 text-subheadline text-danger">
-          {error}
-        </p>
-      )}
-      <AppleSignInButton loading={busy} onClick={handleSignIn} />
-    </Card>
+    </div>
   )
 }

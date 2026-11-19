@@ -38,7 +38,7 @@ export function NetTrendChart({ points, label }: NetTrendChartProps) {
     <figure className="m-0">
       <div role="img" aria-label={describe(points, label)}>
         <div aria-hidden className="flex gap-2">
-          <div className="relative h-32 w-12 shrink-0 text-right text-caption text-secondary-label tabular-nums">
+          <div className="relative h-32 w-12 shrink-0 text-right numeric text-caption text-secondary-label">
             <span className="absolute top-[8%] right-0 -translate-y-1/2">
               {formatNet(domain.max)}
             </span>
@@ -77,7 +77,7 @@ export function NetTrendChart({ points, label }: NetTrendChartProps) {
                 d={linePath}
                 fill="none"
                 className="stroke-accent-ink"
-                strokeWidth={2}
+                strokeWidth={1.5}
                 strokeLinejoin="round"
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
@@ -88,7 +88,7 @@ export function NetTrendChart({ points, label }: NetTrendChartProps) {
                 key={points[i]?.date ?? i}
                 d={`M${c.x} ${c.y} h0`}
                 className="stroke-accent-ink"
-                strokeWidth={8}
+                strokeWidth={5}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
                 data-testid="trend-point"
@@ -98,7 +98,7 @@ export function NetTrendChart({ points, label }: NetTrendChartProps) {
         </div>
         <div
           aria-hidden
-          className="mt-1 flex justify-between pl-14 text-caption text-secondary-label tabular-nums"
+          className="mt-1 flex justify-between pl-14 numeric text-caption text-secondary-label"
         >
           <span>{first ? formatShortDay(first.date) : null}</span>
           {last && points.length > 1 && <span>{formatShortDay(last.date)}</span>}

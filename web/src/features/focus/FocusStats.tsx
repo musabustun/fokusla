@@ -1,5 +1,5 @@
 import type { DailyFocusTotal } from '@/domain/calc/focus'
-import { Card } from '@/ui'
+import { Card, Metric } from '@/ui'
 import { formatDurationText } from './formatDuration'
 import { WeeklyChart } from './WeeklyChart'
 
@@ -10,23 +10,47 @@ export interface FocusStatsProps {
   weeklyTotals: readonly DailyFocusTotal[]
 }
 
-function StatCard({
+/** "1 sa 5 dk" → büyük rakamlar + küçük, ikincil birimler (boşluklu; metin olarak "1 sa 5 dk"). */
+function DurationValue({ ms }: { ms: number }) {
+  const tokens = formatDurationText(ms).split(' ')
+  return (
+    <>
+      {tokens.map((token, index) =>
+        index % 2 === 0 ? (
+          <span key={index}>{token}</span>
+        ) : (
+          <span
+            key={index}
+            className="font-sans text-subheadline tracking-normal text-secondary-label"
+          >
+            {` ${token} `}
+          </span>
+        ),
+      )}
+    </>
+  )
+}
+
+function StatRegion({
   title,
   valueMs,
+  size,
   className,
 }: {
   title: string
   valueMs: number
+  size: 'xl' | 'lg'
   className?: string
 }) {
+  // `region` adı aria-label'dan gelir; görünür etiket Metric'te. Metin "25 dk" olarak okunur.
   return (
-    <Card title={title} className={className}>
-      <p className="text-title2 tabular-nums">{formatDurationText(valueMs)}</p>
-    </Card>
+    <section aria-label={title} className={className}>
+      <Metric label={title} value={<DurationValue ms={valueMs} />} size={size} />
+    </section>
   )
 }
 
-/** Odak istatistik kartları ve son 7 günün grafiği. */
+/** Odak istatistikleri (büyük mono rakamlar, 1px çizgiler) ve son 7 günün grafiği. */
 export function FocusStats({
   averageFocusMs,
   averageBreakMs,
@@ -35,16 +59,23 @@ export function FocusStats({
 }: FocusStatsProps) {
   const weekTotalMs = weeklyTotals.reduce((sum, total) => sum + total.focusMs, 0)
   return (
-    <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
-        <StatCard title="Bugün toplam" valueMs={todayTotalMs} className="col-span-2" />
-        <StatCard title="Ortalama kesintisiz odak" valueMs={averageFocusMs} />
-        <StatCard title="Ortalama mola" valueMs={averageBreakMs} />
+    <div className="flex flex-col gap-10">
+      <div className="border-t border-separator pt-6">
+        <StatRegion title="Bugün toplam" valueMs={todayTotalMs} size="xl" />
+        <div className="mt-8 grid grid-cols-2 border-t border-separator pt-6">
+          <StatRegion title="Ortalama kesintisiz odak" valueMs={averageFocusMs} size="lg" />
+          <StatRegion
+            title="Ortalama mola"
+            valueMs={averageBreakMs}
+            size="lg"
+            className="border-l border-separator pl-6"
+          />
+        </div>
       </div>
       <Card
         title="Son 7 gün"
         trailing={
-          <span className="text-subheadline text-secondary-label tabular-nums">
+          <span className="numeric text-subheadline text-secondary-label">
             {formatDurationText(weekTotalMs)}
           </span>
         }

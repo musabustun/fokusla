@@ -58,6 +58,7 @@ export function RequestsSection({ requests }: { requests: readonly FriendRequest
                   </Button>
                   <Button
                     size="small"
+                    variant="tinted"
                     loading={isBusy}
                     aria-label={`${name} isteğini kabul et`}
                     onClick={() => run(request.id, () => social.respondToRequest(request.id, true))}

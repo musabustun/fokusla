@@ -27,9 +27,9 @@ function SocialContent({ snapshot }: { snapshot: ReturnType<typeof useSocialSnap
       return <SignInGate />
     case 'needsUsername':
       return (
-        <Card className="mx-auto max-w-md">
-          <h2 className="text-title3">Kullanıcı adını seç</h2>
-          <p className="mt-1 mb-4 text-subheadline text-secondary-label">
+        <Card className="mx-auto max-w-md pt-6">
+          <h2 className="text-title1">Kullanıcı adını seç</h2>
+          <p className="mt-2 mb-6 text-callout text-secondary-label">
             Arkadaşların seni yalnızca bu adla görür. Adın, e-postan ve çalışma içeriğin
             paylaşılmaz.
           </p>

@@ -1,6 +1,6 @@
 import type { FocusSessionStats } from '@/domain/calc/focus'
-import { Button, ListRow, ListSection, Sheet } from '@/ui'
-import { formatDurationText } from './formatDuration'
+import { Button, ListRow, ListSection, Metric, Sheet } from '@/ui'
+import { formatClock, formatDurationText } from './formatDuration'
 
 export interface SessionSummarySheetProps {
   /** Gösterilecek özet; null iken sheet kapalıdır. */
@@ -24,11 +24,29 @@ export function SessionSummarySheet({ stats, onClose }: SessionSummarySheetProps
       }
     >
       {stats && (
-        <ListSection className="mb-0">
-          <ListRow title="Toplam odak" value={formatDurationText(stats.focusMs)} />
-          <ListRow title="Mola sayısı" value={countFormat.format(stats.breakCount)} />
-          <ListRow title="Toplam mola" value={formatDurationText(stats.breakMs)} />
-        </ListSection>
+        <>
+          <Metric
+            size="xl"
+            tone="accent"
+            label="Bu oturumda odak"
+            value={formatClock(stats.focusMs)}
+            className="mb-8"
+          />
+          <ListSection className="mb-0">
+            <ListRow
+              title="Toplam odak"
+              value={<span className="numeric">{formatDurationText(stats.focusMs)}</span>}
+            />
+            <ListRow
+              title="Mola sayısı"
+              value={<span className="numeric">{countFormat.format(stats.breakCount)}</span>}
+            />
+            <ListRow
+              title="Toplam mola"
+              value={<span className="numeric">{formatDurationText(stats.breakMs)}</span>}
+            />
+          </ListSection>
+        </>
       )}
     </Sheet>
   )

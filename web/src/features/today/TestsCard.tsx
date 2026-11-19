@@ -3,6 +3,7 @@ import { ROUTES } from '@/app/routes'
 import type { ISODate } from '@/domain'
 import { MIN_QUESTIONS_FOR_WEAKNESS, type WeakTopic } from '@/domain/calc/tests'
 import { recentTestsSummary, weakestTopicsForToday } from '@/domain/calc/today'
+import { cx } from '@/ui'
 import { CardEmpty, TodayCard } from './TodayCard'
 import { formatInteger, formatNet, formatPercent } from './format'
 import { useTodayTestsData, type TodayTestsData } from './useTodayData'
@@ -20,17 +21,26 @@ interface Stat {
   value: string
   /** Değerin yanındaki küçük birim, ör. "soru". */
   unit?: string
+  /** true: ekranın bu bölümündeki ana rakam (net) daha büyük. */
+  emphasis?: boolean
 }
 
 /** Sayılar: görünürde büyük değer + küçük etiket; ekran okuyucu "etiket: değer" okur. */
 function StatList({ stats }: { stats: readonly Stat[] }) {
   return (
-    <dl className="grid grid-cols-3 gap-x-3 gap-y-2">
+    <dl className="grid grid-cols-3 gap-x-4 gap-y-3">
       {stats.map((stat) => (
-        <div key={stat.label} className="flex min-w-0 flex-col-reverse">
-          <dt className="truncate text-footnote text-secondary-label">{stat.label}</dt>
+        <div key={stat.label} className="flex min-w-0 flex-col-reverse gap-1.5">
+          <dt className="truncate eyebrow">{stat.label}</dt>
           <dd className="truncate">
-            <span className="text-title2 tabular-nums">{stat.value}</span>
+            <span
+              className={cx(
+                'numeric text-label',
+                stat.emphasis ? 'text-numeral-lg' : 'text-numeral',
+              )}
+            >
+              {stat.value}
+            </span>
             {stat.unit && (
               <>
                 {' '}
@@ -56,7 +66,7 @@ function WeakTopicRow({ weak, data }: { weak: WeakTopic; data: TodayTestsData })
           <p className="truncate text-footnote text-secondary-label">{subjectName}</p>
         )}
       </div>
-      <p className="shrink-0 text-subheadline text-secondary-label tabular-nums">
+      <p className="shrink-0 numeric text-subheadline text-secondary-label">
         {formatPercent(weak.summary.accuracy)} doğru
       </p>
     </li>
@@ -66,8 +76,8 @@ function WeakTopicRow({ weak, data }: { weak: WeakTopic; data: TodayTestsData })
 function WeakTopics({ data }: { data: TodayTestsData }) {
   const weakTopics = useMemo(() => weakestTopicsForToday(data.results), [data.results])
   return (
-    <div className="mt-4 border-t border-separator pt-3">
-      <h3 className="text-subheadline font-semibold">En zayıf konular</h3>
+    <div className="mt-8 border-t border-separator pt-3">
+      <h3 className="mb-1 eyebrow">En zayıf konular</h3>
       {weakTopics.length === 0 ? (
         <p className="mt-1 text-footnote text-secondary-label">
           Zayıf konular için bir konuda en az {formatInteger(MIN_QUESTIONS_FOR_WEAKNESS)} soru çöz.
@@ -110,7 +120,7 @@ export function TestsCard({ today, className }: TestsCardProps) {
   const stats: Stat[] = [
     { label: 'Bugün', value: formatInteger(summary.todayQuestions), unit: 'soru' },
     { label: 'Son 7 gün', value: formatInteger(summary.window.totalQuestions), unit: 'soru' },
-    { label: '7 günde net', value: formatNet(summary.window.net) },
+    { label: '7 günde net', value: formatNet(summary.window.net), emphasis: true },
   ]
 
   return (

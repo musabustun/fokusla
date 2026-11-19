@@ -1,7 +1,7 @@
 import { FIELD_DESCRIPTIONS, FIELD_LABELS } from '@/curriculum'
 import { useServices } from '@/data'
 import type { UserProfile, YksField } from '@/domain'
-import { Sheet, cx } from '@/ui'
+import { FIELD_ERROR_CLASS, Sheet, cx } from '@/ui'
 import { changeField } from './actions'
 import { useAsyncAction } from './useAsyncAction'
 
@@ -38,8 +38,8 @@ export function FieldSheet({ open, onClose, profile }: FieldSheetProps) {
             <label
               key={field}
               className={cx(
-                'flex min-h-11 cursor-pointer gap-3 rounded-lg border-2 bg-surface p-4 transition-colors has-focus-visible:outline-2 has-focus-visible:outline-accent-ink',
-                checked ? 'border-accent-ink' : 'border-transparent',
+                'flex min-h-11 cursor-pointer items-start gap-3 rounded-lg border p-4 transition-[background-color,border-color,transform] duration-200 ease-standard hover:bg-fill active:scale-99 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent-ink motion-reduce:active:scale-100',
+                checked ? 'border-label' : 'border-separator',
               )}
             >
               <input
@@ -49,8 +49,17 @@ export function FieldSheet({ open, onClose, profile }: FieldSheetProps) {
                 checked={checked}
                 onChange={() => void handleSelect(field)}
                 aria-describedby={descriptionId}
-                className="mt-0.5 size-5 shrink-0 accent-accent focus-visible:outline-none"
+                className="peer sr-only"
               />
+              <span
+                aria-hidden
+                className={cx(
+                  'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full border transition-colors duration-200',
+                  checked ? 'border-control-thumb bg-control-thumb' : 'border-separator-strong',
+                )}
+              >
+                {checked ? <span className="size-2 rounded-full bg-accent" /> : null}
+              </span>
               <span>
                 <span className="block text-headline">{FIELD_LABELS[field]}</span>
                 <span
@@ -65,7 +74,7 @@ export function FieldSheet({ open, onClose, profile }: FieldSheetProps) {
         })}
       </fieldset>
       {error ? (
-        <p role="alert" className="mt-3 text-subheadline text-danger">
+        <p role="alert" className={cx('mt-3', FIELD_ERROR_CLASS)}>
           {error}
         </p>
       ) : null}

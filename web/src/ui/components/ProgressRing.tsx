@@ -11,7 +11,8 @@ export interface ProgressRingProps {
   strokeWidth?: number
   /**
    * Erişilebilir ad (ör. "Günlük odak hedefi"). Verilirse `role="progressbar"`; verilmezse
-   * halka dekoratif kabul edilir (`aria-hidden`) ve değer metin olarak başka yerde verilmelidir.
+   * halka (SVG) dekoratif kabul edilir ve değer metin olarak verilmelidir. `children` her iki
+   * durumda da erişilebilir kalır (ör. ortadaki `role="timer"` saat).
    */
   label?: string
   /** Ortadaki içerik (ör. "45 dk"). */
@@ -45,7 +46,7 @@ export function ProgressRing({
         'aria-valuemax': 100,
         'aria-valuenow': Math.round(progress * 100),
       }
-    : { 'aria-hidden': true }
+    : {}
 
   return (
     <div
@@ -53,7 +54,13 @@ export function ProgressRing({
       className={cx('relative inline-flex shrink-0 items-center justify-center', className)}
       style={{ width: size, height: size }}
     >
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="-rotate-90">
+      <svg
+        aria-hidden
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        className="-rotate-90"
+      >
         <circle
           cx={size / 2}
           cy={size / 2}

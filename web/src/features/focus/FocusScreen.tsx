@@ -95,7 +95,7 @@ export function FocusScreen() {
       <p role="status" className="sr-only">
         {announcement}
       </p>
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+      <div className="grid gap-12 lg:grid-cols-2 lg:items-start lg:gap-16">
         <div className="lg:sticky lg:top-6">
           <TimerPanel
             phase={phase}
@@ -119,7 +119,7 @@ export function FocusScreen() {
             onFinish={() => void handleFinish()}
           />
         </div>
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-10">
           <FocusStats
             averageFocusMs={overall.averageFocusMs}
             averageBreakMs={overall.averageBreakMs}

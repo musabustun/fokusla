@@ -45,9 +45,12 @@ export function TodayTaskRow({ item, today, pending, onToggle }: TodayTaskRowPro
         aria-checked={done}
         aria-label={task.title}
         aria-describedby={subtitleId}
-        disabled={pending}
-        onClick={() => onToggle(item)}
-        className="group -ml-2 flex size-11 shrink-0 items-center justify-center rounded-full disabled:cursor-not-allowed disabled:opacity-40"
+        // `disabled` yerine aria-disabled: yazma sürerken klavye odağı düğmede kalsın.
+        aria-disabled={pending || undefined}
+        onClick={() => {
+          if (!pending) onToggle(item)
+        }}
+        className="group -ml-2 flex size-11 shrink-0 items-center justify-center rounded-full aria-disabled:cursor-progress aria-disabled:opacity-40"
       >
         <span
           aria-hidden

@@ -98,7 +98,7 @@ describe('FriendsCard', () => {
     )
     expect(link).toHaveAttribute('href', ROUTES.social)
     expect(within(card()).getByText('Arkadaşlarınla aynı anda odaklan.')).toBeVisible()
-    expect(within(card()).queryByRole('link', { name: 'Sosyal ekranı' })).toBeNull()
+    expect(within(card()).queryByRole('link', { name: 'Tümü: Sosyal ekranı' })).toBeNull()
   })
 
   it('kullanıcı adı yoksa seçmeye yönlendirir', async () => {
@@ -125,7 +125,7 @@ describe('FriendsCard', () => {
 
     expect(within(card()).getByText('Şu an odakta arkadaşın yok.')).toBeVisible()
     expect(within(card()).queryByRole('list', { name: 'Odaktaki arkadaşlar' })).toBeNull()
-    expect(within(card()).getByRole('link', { name: 'Sosyal ekranı' })).toHaveAttribute(
+    expect(within(card()).getByRole('link', { name: 'Tümü: Sosyal ekranı' })).toHaveAttribute(
       'href',
       ROUTES.social,
     )

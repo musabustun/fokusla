@@ -110,7 +110,7 @@ export function TestsCard({ today, className }: TestsCardProps) {
   const stats: Stat[] = [
     { label: 'Bugün', value: formatInteger(summary.todayQuestions), unit: 'soru' },
     { label: 'Son 7 gün', value: formatInteger(summary.window.totalQuestions), unit: 'soru' },
-    { label: 'Toplam net', value: formatNet(summary.window.net) },
+    { label: '7 günde net', value: formatNet(summary.window.net) },
   ]
 
   return (

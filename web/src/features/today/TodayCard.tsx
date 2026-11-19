@@ -7,7 +7,7 @@ export interface TodayCardProps {
   title: string
   /** Sağ üstteki "Tümü" bağlantısının hedefi (`ROUTES.*`). Verilmezse bağlantı yok. */
   linkTo?: string
-  /** Bağlantının ekran okuyucu adı, ör. "Tüm görevler". Görünür metin her zaman "Tümü". */
+  /** Erişilebilir adın devamı, ör. "Tüm görevler" → "Tümü: Tüm görevler". Görünür metin "Tümü". */
   linkLabel?: string
   className?: string
   children: ReactNode
@@ -21,7 +21,8 @@ export function TodayCard({ title, linkTo, linkLabel, className, children }: Tod
   const trailing = linkTo ? (
     <Link
       to={linkTo}
-      aria-label={linkLabel ?? `Tümü: ${title}`}
+      // Görünür metin ("Tümü") erişilebilir adın başında olmalı (WCAG 2.5.3).
+      aria-label={`Tümü: ${linkLabel ?? title}`}
       className={cx(buttonStyles({ variant: 'plain', size: 'small' }), '-my-2 -mr-2')}
     >
       Tümü

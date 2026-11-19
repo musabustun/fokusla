@@ -117,7 +117,7 @@ describe('FocusCard', () => {
     expect(screen.queryByRole('link', { name: 'Devam et' })).not.toBeInTheDocument()
     expect(screen.getByTestId('today-focus-total')).toHaveTextContent('0 dk')
     expect(within(summaryList()).getByText('Ortalama kesintisiz odak: henüz yok')).toBeVisible()
-    expect(within(card()).getByRole('link', { name: 'Odak ekranı' })).toHaveAttribute(
+    expect(within(card()).getByRole('link', { name: 'Tümü: Odak ekranı' })).toHaveAttribute(
       'href',
       ROUTES.focus,
     )

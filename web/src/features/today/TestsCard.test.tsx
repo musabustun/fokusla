@@ -89,7 +89,7 @@ describe('TestsCard', () => {
     const link = await within(card()).findByRole('link', { name: 'İlk testini ekle' })
     expect(within(card()).getByText('Henüz test yok.')).toBeVisible()
     expect(link).toHaveAttribute('href', ROUTES.analysis)
-    expect(within(card()).queryByRole('link', { name: 'Analiz ekranı' })).toBeNull()
+    expect(within(card()).queryByRole('link', { name: 'Tümü: Analiz ekranı' })).toBeNull()
   })
 
   it('bugün, son 7 gün ve net özetini gösterir; zayıf konu yoksa ipucu verir', async () => {
@@ -112,11 +112,11 @@ describe('TestsCard', () => {
     await within(card()).findByText('Bugün', { selector: 'dt' })
     expect(statValue('Bugün')).toBe('20 soru')
     expect(statValue('Son 7 gün')).toBe('26 soru')
-    expect(statValue('Toplam net')).toBe('13,75')
+    expect(statValue('7 günde net')).toBe('13,75')
     expect(
       within(card()).getByText('Zayıf konular için bir konuda en az 20 soru çöz.'),
     ).toBeVisible()
-    expect(within(card()).getByRole('link', { name: 'Analiz ekranı' })).toHaveAttribute(
+    expect(within(card()).getByRole('link', { name: 'Tümü: Analiz ekranı' })).toHaveAttribute(
       'href',
       ROUTES.analysis,
     )

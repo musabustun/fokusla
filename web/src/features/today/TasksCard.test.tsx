@@ -84,7 +84,9 @@ describe('TasksCard', () => {
       ROUTES.tasks,
     )
     // Boş durumda tek sonraki adım gösterilir; "Tümü" bağlantısı yok.
-    expect(within(card()).queryByRole('link', { name: 'Tüm görevler' })).not.toBeInTheDocument()
+    expect(
+      within(card()).queryByRole('link', { name: 'Tümü: Tüm görevler' }),
+    ).not.toBeInTheDocument()
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
   })
 
@@ -188,6 +190,7 @@ describe('TasksCard', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('Görev güncellenemedi. Tekrar dene.')
     expect(consoleError).toHaveBeenCalled()
     expect(checkbox).toHaveAttribute('aria-checked', 'false')
-    expect(checkbox).toBeEnabled()
+    expect(checkbox).not.toHaveAttribute('aria-disabled')
+    expect(checkbox).toHaveFocus()
   })
 })

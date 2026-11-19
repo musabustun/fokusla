@@ -87,7 +87,7 @@ describe('BooksCard', () => {
     // Toplamı bilinmeyen kitap: yalnızca konum, yüzde ve çubuk yok.
     expect(within(card()).getByText('120. sayfa')).toBeVisible()
     expect(within(card()).getAllByRole('progressbar')).toHaveLength(1)
-    expect(within(card()).getByRole('link', { name: 'Tüm kitaplar' })).toHaveAttribute(
+    expect(within(card()).getByRole('link', { name: 'Tümü: Tüm kitaplar' })).toHaveAttribute(
       'href',
       ROUTES.books,
     )

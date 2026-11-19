@@ -159,6 +159,19 @@ kapanınca odak açan öğeye döner; açıkken sayfa kaydırması kilitlidir. <
 'aria-label': string (zorunlu); fullWidth?; className? }`. `radiogroup`/`radio` semantiği, roving
 tabindex; ←/↑ ve →/↓ seçer ve odaklar (uçlarda başa sarar), Home/End ilk/son.
 
+### `Toggle` → `Toggle(isOn:)`
+
+```tsx
+<ListRow
+  title="iCloud senkronu"
+  accessory={<Toggle aria-label="iCloud senkronu" checked={on} onChange={setOn} />}
+/>
+```
+
+`{ checked: boolean; onChange: (checked: boolean) => void; 'aria-label': string (zorunlu);
+disabled?; className? }`. `role="switch"` + `aria-checked`; Boşluk/Enter ile değişir. Görsel boyut 51×31,
+dokunma alanı ≥44px. Hareket azaltma tercihinde geçiş animasyonu kapanır.
+
 ### `ProgressRing` → `Circle().trim(from: 0, to: value).stroke(…).rotationEffect(.degrees(-90))`
 
 `{ value: number (0–1, sınırlanır; NaN → 0); size? = 120; strokeWidth? = 10; label?: string;

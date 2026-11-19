@@ -17,7 +17,7 @@ export function FieldStep({ value, onChange, onNext, onBack }: FieldStepProps) {
     <OnboardingStepLayout
       step="field"
       title="Alanın hangisi?"
-      subtitle="Derslerin ve konuların buna göre hazırlanır. Sonra Ayarlar'dan değiştirebilirsin."
+      subtitle="Derslerin ve konuların buna göre hazırlanır."
       actions={
         <>
           <Button size="large" fullWidth disabled={value === null} onClick={onNext}>

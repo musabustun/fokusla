@@ -16,7 +16,7 @@ export function AccountStep({ pending, error, onChoose, onBack }: AccountStepPro
     <OnboardingStepLayout
       step="account"
       title="Verilerini yedekle"
-      subtitle="Apple ile giriş yaparsan iPhone ve iPad'in arasında iCloud ile eşitleyebilirsin. Giriş zorunlu değil; her şey cihazında çalışır."
+      subtitle="Apple ile giriş yaparsan verilerini iCloud üzerinden iPhone ile iPad'in arasında eşitleyebilirsin. Giriş zorunlu değil; her şey cihazında çalışır."
       actions={
         <>
           {error ? (

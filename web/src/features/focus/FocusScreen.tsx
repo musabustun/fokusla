@@ -123,7 +123,6 @@ export function FocusScreen() {
           <FocusStats
             averageFocusMs={overall.averageFocusMs}
             averageBreakMs={overall.averageBreakMs}
-            todayTotalMs={todayTotalMs}
             weeklyTotals={dailyFocusTotals(sessions, segments, recentDays(now), now)}
           />
           {history && <SessionHistory rows={buildHistoryRows(history, now)} />}

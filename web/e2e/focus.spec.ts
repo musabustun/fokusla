@@ -81,7 +81,7 @@ test('başlat → mola → devam → bitir → istatistik', async ({ page }) => 
     '17 dk',
   )
   await expect(page.getByRole('region', { name: 'Ortalama mola' })).toContainText('5 dk')
-  await expect(page.getByRole('region', { name: 'Bugün toplam' })).toContainText('35 dk')
+  await expect(page.getByTestId('today-total')).toHaveText('35 dk')
   const week = page.getByRole('list', { name: 'Son 7 gün' })
   await expect(week.getByRole('listitem')).toHaveCount(7)
   await expect(week.getByRole('listitem').last()).toContainText('35 dk')

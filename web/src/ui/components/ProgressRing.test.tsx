@@ -38,4 +38,12 @@ describe('ProgressRing', () => {
     expect(clampProgress(Number.POSITIVE_INFINITY)).toBe(0)
     expect(clampProgress(0.25)).toBe(0.25)
   })
+  it('scales with its className when fluid instead of a fixed pixel size', () => {
+    render(<ProgressRing value={0.5} size={256} fluid className="w-64" label="Halka" />)
+    const bar = screen.getByRole('progressbar', { name: 'Halka' })
+    expect(bar).not.toHaveStyle({ width: '256px' })
+    expect(bar).toHaveClass('aspect-square', 'w-64')
+    expect(bar.querySelector('svg')).toHaveAttribute('width', '100%')
+    expect(bar.querySelector('svg')).toHaveAttribute('viewBox', '0 0 256 256')
+  })
 })

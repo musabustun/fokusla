@@ -18,6 +18,12 @@ export interface ProgressRingProps {
   /** Ortadaki içerik (ör. "45 dk"). */
   children?: ReactNode
   tone?: 'accent' | 'success'
+  /**
+   * true ise çap `className` ile verilir (ör. `w-64 xl:w-80`) ve halka genişliğe göre ölçeklenir;
+   * `size` yalnızca çizim ölçeğidir (kalınlık onunla orantılı büyür). SwiftUI: `.frame(width:)`
+   * yerine `.aspectRatio(1, contentMode: .fit)`.
+   */
+  fluid?: boolean
   className?: string
 }
 
@@ -33,6 +39,7 @@ export function ProgressRing({
   label,
   children,
   tone = 'accent',
+  fluid = false,
   className,
 }: ProgressRingProps) {
   const progress = clampProgress(value)
@@ -51,13 +58,17 @@ export function ProgressRing({
   return (
     <div
       {...a11y}
-      className={cx('relative inline-flex shrink-0 items-center justify-center', className)}
-      style={{ width: size, height: size }}
+      className={cx(
+        'relative inline-flex shrink-0 items-center justify-center',
+        fluid && 'aspect-square',
+        className,
+      )}
+      style={fluid ? undefined : { width: size, height: size }}
     >
       <svg
         aria-hidden
-        width={size}
-        height={size}
+        width={fluid ? '100%' : size}
+        height={fluid ? '100%' : size}
         viewBox={`0 0 ${size} ${size}`}
         className="-rotate-90"
       >

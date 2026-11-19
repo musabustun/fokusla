@@ -6,7 +6,6 @@ import { WeeklyChart } from './WeeklyChart'
 export interface FocusStatsProps {
   averageFocusMs: number
   averageBreakMs: number
-  todayTotalMs: number
   weeklyTotals: readonly DailyFocusTotal[]
 }
 
@@ -51,18 +50,12 @@ function StatRegion({
 }
 
 /** Odak istatistikleri (büyük mono rakamlar, 1px çizgiler) ve son 7 günün grafiği. */
-export function FocusStats({
-  averageFocusMs,
-  averageBreakMs,
-  todayTotalMs,
-  weeklyTotals,
-}: FocusStatsProps) {
+export function FocusStats({ averageFocusMs, averageBreakMs, weeklyTotals }: FocusStatsProps) {
   const weekTotalMs = weeklyTotals.reduce((sum, total) => sum + total.focusMs, 0)
   return (
     <div className="flex flex-col gap-10">
       <div className="border-t border-separator pt-6">
-        <StatRegion title="Bugün toplam" valueMs={todayTotalMs} size="xl" />
-        <div className="mt-8 grid grid-cols-2 border-t border-separator pt-6">
+        <div className="grid grid-cols-2">
           <StatRegion title="Ortalama kesintisiz odak" valueMs={averageFocusMs} size="lg" />
           <StatRegion
             title="Ortalama mola"

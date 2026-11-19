@@ -31,8 +31,9 @@ const PLACEHOLDER = '—'
 
 const EMPTY: never[] = []
 
-/** Halka çapı (px): iPhone 390px'e sığar, iPad'de de aynı kalır (ProgressRing çapı sayıdır). */
+/** Halkanın çizim ölçeği (px); ekrandaki çapı `RING_CLASS` belirler (iPad'de büyür). */
 const RING_SIZE = 256
+const RING_CLASS = 'w-64 md:w-72 xl:w-80'
 
 const RING_LABELS = {
   sessionLap: 'Oturumun saatlik turu',
@@ -192,6 +193,8 @@ export function FocusCard({ today, className }: FocusCardProps) {
           <ProgressRing
             value={ring.value}
             size={RING_SIZE}
+            fluid
+            className={RING_CLASS}
             label={RING_LABELS[ring.kind]}
             tone={active?.phase === 'break' ? 'success' : 'accent'}
           >

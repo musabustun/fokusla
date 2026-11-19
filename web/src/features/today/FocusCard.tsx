@@ -73,7 +73,7 @@ function StatsRow({ stats, isLoading }: { stats: StatItem[]; isLoading: boolean 
           <span
             aria-hidden
             data-testid={stat.testId}
-            className="text-title3 text-label tabular-nums"
+            className="text-title3 whitespace-nowrap text-label tabular-nums"
           >
             {stat.value}
           </span>

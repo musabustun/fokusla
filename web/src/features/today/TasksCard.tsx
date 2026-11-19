@@ -83,6 +83,7 @@ export function TasksCard({ today, className }: TasksCardProps) {
   const data = useTodayTasksData(today)
   const { pendingIds, error, toggle } = useTaskToggle(data, today)
   const overview = data ? todayTaskOverview(data.tasks, data.completions, today) : undefined
+  const hasItems = (overview?.items.length ?? 0) > 0
 
   const renderBody = () => {
     if (!overview) return <div aria-hidden className="min-h-11" />
@@ -124,7 +125,8 @@ export function TasksCard({ today, className }: TasksCardProps) {
   return (
     <TodayCard
       title="Bugünün görevleri"
-      linkTo={ROUTES.tasks}
+      // Boş durumda tek sonraki adım "Görev ekle"dir; "Tümü" yalnızca liste varken gösterilir.
+      linkTo={hasItems ? ROUTES.tasks : undefined}
       linkLabel="Tüm görevler"
       className={className}
     >

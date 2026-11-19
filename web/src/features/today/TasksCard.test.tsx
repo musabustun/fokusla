@@ -83,10 +83,8 @@ describe('TasksCard', () => {
       'href',
       ROUTES.tasks,
     )
-    expect(within(card()).getByRole('link', { name: 'Tüm görevler' })).toHaveAttribute(
-      'href',
-      ROUTES.tasks,
-    )
+    // Boş durumda tek sonraki adım gösterilir; "Tümü" bağlantısı yok.
+    expect(within(card()).queryByRole('link', { name: 'Tüm görevler' })).not.toBeInTheDocument()
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
   })
 

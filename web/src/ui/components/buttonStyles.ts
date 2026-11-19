@@ -3,7 +3,7 @@ import { cx } from '../cx'
 /**
  * - `filled`: ana eylem — kehribar hap (ekranda bir tane).
  * - `tinted`: ikincil eylem — çizgili hap (1px `separator-strong` sınır).
- * - `plain`: sessiz metin eylemi (araç çubuğu, "Tümü").
+ * - `plain`: sessiz, nötr metin eylemi (araç çubuğu, "Tümü", geri) — kehribar değil.
  * - `destructive`: yıkıcı eylem — kırmızı çizgili hap.
  */
 export type ButtonVariant = 'filled' | 'tinted' | 'plain' | 'destructive'
@@ -26,7 +26,7 @@ const BASE = [
 const VARIANTS: Record<ButtonVariant, string> = {
   filled: 'bg-accent text-accent-contrast hover:opacity-90',
   tinted: 'border border-separator-strong text-label hover:bg-fill',
-  plain: 'text-accent-ink hover:bg-fill',
+  plain: 'text-label hover:bg-fill',
   destructive: 'border border-danger text-danger hover:bg-danger-subtle',
 }
 

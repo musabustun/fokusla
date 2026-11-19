@@ -74,7 +74,7 @@ export function TodayTaskRow({ item, today, pending, onToggle }: TodayTaskRowPro
         <span
           id={subtitleId}
           className={cx(
-            'inline-flex items-center gap-1 numeric text-subheadline',
+            'inline-flex items-center gap-1 text-subheadline',
             isAlert ? 'font-semibold text-danger' : 'text-secondary-label',
           )}
         >

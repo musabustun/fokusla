@@ -22,6 +22,7 @@ export { Metric, type MetricProps, type MetricSize, type MetricTone } from './co
 export { clampProgress } from './components/clampProgress'
 export { ProgressBar, type ProgressBarProps } from './components/ProgressBar'
 export { ProgressRing, type ProgressRingProps } from './components/ProgressRing'
+export { RadioRow, type RadioRowProps } from './components/RadioRow'
 export { ScreenHeader, type ScreenHeaderProps } from './components/ScreenHeader'
 export {
   SegmentedControl,

@@ -59,9 +59,9 @@ function BookHeader({ titleId, title, meta, isWide }: BookHeaderProps) {
       {!isWide && (
         <Link
           to={ROUTES.books}
-          className="mb-1 -ml-2 inline-flex min-h-11 items-center gap-0.5 rounded-md pr-2 text-body text-accent-ink"
+          className="mb-1 -ml-2 inline-flex min-h-11 items-center gap-0.5 rounded-full pr-3 text-body text-secondary-label transition-[background-color,transform] duration-200 ease-standard hover:bg-fill active:scale-97 motion-reduce:active:scale-100"
         >
-          <ChevronLeft aria-hidden className="size-6" />
+          <ChevronLeft aria-hidden className="size-6" strokeWidth={2.5} />
           Kitaplar
         </Link>
       )}

@@ -125,8 +125,8 @@ Boyutlar `rem` (tarayıcı yazı boyutuyla ölçeklenir). Türkçe büyük harf 
 | …           | tüm `<button>` nitelikleri; `type` varsayılanı `"button"` |            |
 
 Görünüm: hepsi hap (`rounded-full`) ve basınca küçülür. filled = kehribar dolgu (ekranın ana eylemi,
-bir tane); tinted = 1px `separator-strong` çizgili, nötr metin (ikincil eylem); plain = kehribar mürekkep
-metin, hover'da `fill`; destructive = kırmızı çizgili.
+bir tane); tinted = 1px `separator-strong` çizgili, nötr metin (ikincil eylem); plain = nötr metin,
+hover'da `fill` (kehribar değil — vurgu ana eyleme ve ilerlemeye ayrılmıştır); destructive = kırmızı çizgili.
 SwiftUI: filled → `.borderedProminent` + `.buttonBorderShape(.capsule)`, tinted → `.bordered` + capsule
 stroke, plain → `.plain`/`.borderless`, destructive → `.bordered` + `role: .destructive`.
 
@@ -164,8 +164,38 @@ Ayarlar/onboarding) bunu kullanır.
 ```
 
 `{ label; value; unit?; caption?; size?: 'hero' | 'xl' | 'lg' (varsayılan) | 'md' | 'sm';
-tone?: 'default' | 'accent' | 'success'; className? }`. Etiket üstte (eyebrow), değer mono + tabular,
-birim küçük ve ikincil. `tone="accent"` yalnızca ekranın ana sayısı için.
+tone?: 'default' | 'accent' | 'success'; numeric? = true; className? }`. Etiket üstte (eyebrow), değer
+mono + tabular, birim küçük ve ikincil (metin olarak "35 dk" okunur). `tone="accent"` yalnızca ekranın
+ana sayısı için. **Rakam olmayan değerler** (tarih, "Yeterli veri yok") için `numeric={false}` →
+Bricolage, bir kademe küçük; mono yalnızca rakamlar içindir.
+
+### `RadioRow` → `Picker(...).pickerStyle(.inline)`
+
+```tsx
+<fieldset>
+  <legend className="sr-only">YKS alanı</legend>
+  <div className="border-t border-separator">
+    {FIELDS.map((field) => (
+      <RadioRow
+        key={field}
+        name="yks-field"
+        value={field}
+        code={FIELD_SHORT_LABELS[field]}
+        title={FIELD_LABELS[field]}
+        description={FIELD_DESCRIPTIONS[field]}
+        checked={value === field}
+        onChange={() => setValue(field)}
+      />
+    ))}
+  </div>
+</fieldset>
+```
+
+`{ name; value; checked; onChange; title; description?; code?; disabled? }`. Çizgili seçenek satırı;
+gerçek `<input type="radio">` satırın tamamını görünmez biçimde kaplar (tıklama/dokunma ve otomasyon
+doğrudan radyoya gider; ok tuşları grupta gezer). Erişilebilir ad yalnızca `title`, açıklama
+`aria-describedby`. Seçili: solda kehribar çizgi, `fill` zemin, sağda onay. Onboarding ve Ayarlar'daki
+alan seçimi bunu kullanır.
 
 ### `inputStyles()` + `FIELD_LABEL_CLASS` / `FIELD_HINT_CLASS` / `FIELD_ERROR_CLASS`
 

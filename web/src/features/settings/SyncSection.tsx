@@ -55,11 +55,7 @@ export function SyncSection({ session }: SyncSectionProps) {
     >
       <ListRow
         title="iCloud senkronu"
-        subtitle={
-          <span role="status" className="numeric">
-            {formatSyncStatus(state)}
-          </span>
-        }
+        subtitle={<span role="status">{formatSyncStatus(state)}</span>}
         icon={<Cloud className={ICON_CLASS} />}
         accessory={
           <Switch

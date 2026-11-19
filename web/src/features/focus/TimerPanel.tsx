@@ -95,9 +95,7 @@ function Dial(props: TimerPanelProps) {
           isBreak && 'text-success',
         )}
       >
-        {phase === 'focus' && (
-          <span aria-hidden className="size-1.5 rounded-full bg-accent motion-safe:animate-pulse" />
-        )}
+        {phase === 'focus' && <span aria-hidden className="size-1.5 rounded-full bg-accent" />}
         {PHASE_LABEL[phase]}
       </p>
       {/* Halka dekoratif (aria-hidden); saat erişilebilir kalsın diye halkanın içinde değil üstünde. */}

@@ -18,6 +18,15 @@ describe('Metric', () => {
   })
 })
 
+describe('Metric text values', () => {
+  it('renders non-numeric values in the display face instead of mono', () => {
+    render(<Metric label="Son ilerleme" value="19 Kasım" size="md" numeric={false} />)
+    const value = screen.getByText('19 Kasım').parentElement
+    expect(value).toHaveClass('font-display', 'text-title3')
+    expect(value).not.toHaveClass('numeric')
+  })
+})
+
 describe('inputStyles', () => {
   it('keeps a 44px minimum height and an outlined, token-only look', () => {
     expect(inputStyles()).toContain('min-h-11')

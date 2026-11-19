@@ -17,6 +17,11 @@ export interface MetricProps {
   size?: MetricSize
   /** `accent` yalnızca ekranın ana sayısı için (tek kehribar vurgu). */
   tone?: MetricTone
+  /**
+   * Değer rakam mı? Varsayılan `true` (mono + tabular). Tarih/metin değerleri ("19 Kasım",
+   * "Yeterli veri yok") için `false`: Bricolage, bir kademe küçük.
+   */
+  numeric?: boolean
   className?: string
 }
 
@@ -26,6 +31,14 @@ const VALUE_SIZES: Record<MetricSize, string> = {
   lg: 'text-numeral-lg',
   md: 'text-numeral',
   sm: 'text-numeral-sm',
+}
+
+const TEXT_SIZES: Record<MetricSize, string> = {
+  hero: 'text-title1',
+  xl: 'text-title1',
+  lg: 'text-title2',
+  md: 'text-title3',
+  sm: 'text-headline',
 }
 
 const TONES: Record<MetricTone, string> = {
@@ -45,12 +58,19 @@ export function Metric({
   caption,
   size = 'lg',
   tone = 'default',
+  numeric = true,
   className,
 }: MetricProps) {
   return (
     <div className={cx('flex min-w-0 flex-col gap-1.5', className)}>
       <span className="eyebrow">{label}</span>
-      <span className={cx('flex items-baseline gap-1.5 numeric', VALUE_SIZES[size], TONES[tone])}>
+      <span
+        className={cx(
+          'flex items-baseline gap-1.5',
+          numeric ? cx('numeric', VALUE_SIZES[size]) : cx('font-display', TEXT_SIZES[size]),
+          TONES[tone],
+        )}
+      >
         <span className="min-w-0 truncate">{value}</span>
         {unit && (
           <span className="font-sans text-subheadline tracking-normal text-secondary-label">

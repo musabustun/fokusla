@@ -36,14 +36,19 @@ export function SubjectList({
       {groups.map((group) => (
         <ListSection key={group.exam} header={group.exam}>
           {group.subjects.map((subject) => {
-            const stat = subjectStatText(subjectSummaries.get(subject.id))
+            const summary = subjectSummaries.get(subject.id)
+            const stat = subjectStatText(summary)
             const isSelected = subject.id === selectedSubjectId
             return (
               <ListRow
                 key={subject.id}
                 title={subject.name}
                 subtitle={compact ? stat : undefined}
-                value={compact ? undefined : <span className="numeric text-label">{stat}</span>}
+                value={
+                  compact ? undefined : (
+                    <span className={summary ? 'numeric text-label' : undefined}>{stat}</span>
+                  )
+                }
                 render={(props) => (
                   <Link
                     to={analysisHref({ subjectId: subject.id })}

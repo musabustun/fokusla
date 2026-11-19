@@ -139,7 +139,7 @@ export function TaskDetail({
     <div className="flex flex-col gap-5">
       {showTitle && (
         <header className="flex items-start gap-3">
-          <KindIcon aria-hidden className="mt-1 size-5 shrink-0 text-accent-ink" />
+          <KindIcon aria-hidden className="mt-1 size-5 shrink-0 text-secondary-label" />
           <h2 className="min-w-0 text-title3 break-words">{task.title}</h2>
         </header>
       )}

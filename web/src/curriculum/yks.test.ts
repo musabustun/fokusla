@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import type { ExamType, YksField } from '@/domain'
-import { findSubject, FIELD_DESCRIPTIONS, FIELD_LABELS, subjectsForField } from './helpers'
+import {
+  findSubject,
+  FIELD_DESCRIPTIONS,
+  FIELD_LABELS,
+  FIELD_SHORT_LABELS,
+  subjectsForField,
+} from './helpers'
 import { EXAM_QUESTION_TOTALS, YKS_TESTS } from './structure'
 import { yksCurriculum } from './yks'
 
@@ -210,6 +216,7 @@ describe('findSubject', () => {
 describe('field labels', () => {
   it('has a Turkish label and description for every field', () => {
     expect(FIELD_LABELS).toEqual({ SAY: 'Sayısal', EA: 'Eşit Ağırlık', SOZ: 'Sözel', DIL: 'Dil' })
+    expect(FIELD_SHORT_LABELS).toEqual({ SAY: 'SAY', EA: 'EA', SOZ: 'SÖZ', DIL: 'DİL' })
     for (const field of FIELDS) {
       expect(FIELD_DESCRIPTIONS[field].trim().length).toBeGreaterThan(0)
     }

@@ -12,6 +12,14 @@ export const FIELD_LABELS: Readonly<Record<YksField, string>> = {
   DIL: 'Dil',
 }
 
+/** Puan türlerinin Türkçe kısaltmaları (kod kimliği `SOZ`/`DIL`, görünen `SÖZ`/`DİL`). */
+export const FIELD_SHORT_LABELS: Readonly<Record<YksField, string>> = {
+  SAY: 'SAY',
+  EA: 'EA',
+  SOZ: 'SÖZ',
+  DIL: 'DİL',
+}
+
 /** Alan seçimi ekranı için kısa açıklamalar (ÖSYM 2026-YKS Kılavuzu, Tablo 1E). */
 export const FIELD_DESCRIPTIONS: Readonly<Record<YksField, string>> = {
   SAY: 'TYT ile birlikte AYT Matematik ve Fen Bilimleri (Fizik, Kimya, Biyoloji) testlerine girersin.',

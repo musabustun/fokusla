@@ -90,18 +90,21 @@ export function BookStatsSection({ summary, now }: { summary: BookSummary; now: 
           size="md"
           className="py-4"
           label="Son ilerleme"
+          numeric={false}
           value={lastProgressAt ? formatDay(new Date(lastProgressAt), now) : 'Henüz yok'}
         />
         <Metric
           size="md"
           className="py-4"
           label="Hız (son 7 gün)"
+          numeric={formatPace(book.unit, weeklyPace) !== null}
           value={formatPace(book.unit, weeklyPace) ?? 'Yeterli veri yok'}
         />
         <Metric
           size="md"
           className="py-4"
           label="Tahmini bitiş"
+          numeric={false}
           value={estimate.value}
           caption={estimate.subtitle}
         />

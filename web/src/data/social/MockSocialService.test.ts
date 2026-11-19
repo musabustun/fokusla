@@ -34,6 +34,9 @@ class FakeAuth implements AuthService {
   async signOut() {
     this.session = null
   }
+  async deleteAccount() {
+    this.session = null
+  }
 }
 
 /** Deterministik sözde rastgele üreteç (mulberry32). */

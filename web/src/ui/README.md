@@ -195,12 +195,36 @@ topuz açık temada `fill` üzerinde 1.3:1 kaldığı (ve koyu temada `accent` �
 durumda farklı topuz rengi kullanılır; durum ayrıca topuzun konumuyla anlatılır (yalnızca renk değil).
 SwiftUI: sistem `Toggle` + `.tint(Color("Accent"))`; topuz rengini sistem çizer.
 
+### `Toggle` → `Toggle(isOn:)`
+
+```tsx
+<ListRow
+  title="iCloud senkronu"
+  accessory={<Toggle aria-label="iCloud senkronu" checked={on} onChange={setOn} />}
+/>
+```
+
+`{ checked: boolean; onChange: (checked: boolean) => void; 'aria-label': string (zorunlu);
+disabled?; className? }`. `role="switch"` + `aria-checked`; Boşluk/Enter ile değişir. Görsel boyut 51×31,
+dokunma alanı ≥44px. Hareket azaltma tercihinde geçiş animasyonu kapanır.
+
 ### `ProgressRing` → `Circle().trim(from: 0, to: value).stroke(…).rotationEffect(.degrees(-90))`
 
 `{ value: number (0–1, sınırlanır; NaN → 0); size? = 120; strokeWidth? = 10; label?: string;
 tone?: 'accent' | 'success'; children? (ortadaki içerik); className? }`. `label` verilirse
 `role="progressbar"` + `aria-valuenow` (0–100, yuvarlanmış) / `aria-valuemin=0` / `aria-valuemax=100`;
 verilmezse `aria-hidden` (değeri metin olarak başka yerde ver). `clampProgress()` da dışa açıktır.
+
+### `ProgressBar` → `ProgressView(value:).progressViewStyle(.linear)`
+
+```tsx
+<ProgressBar value={summary.ratio ?? 0} label="Kitap ilerlemesi" tone="success" />
+```
+
+`{ value: number (0–1, sınırlanır; NaN → 0); label?: string; tone?: 'accent' | 'success';
+size?: 'small' (4px, liste satırı) | 'medium' (8px, varsayılan); className? }`. Erişilebilirlik
+`ProgressRing` ile aynıdır: `label` varsa `role="progressbar"` + `aria-valuenow` (0–100), yoksa
+`aria-hidden`. Hareket azaltma açıkken genişlik animasyonu yapılmaz.
 
 ### `EmptyState` → `ContentUnavailableView(title, systemImage:, description:)`
 

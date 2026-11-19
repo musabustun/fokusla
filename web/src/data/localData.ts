@@ -14,6 +14,11 @@ export interface DataExport {
   formatVersion: typeof DATA_EXPORT_FORMAT_VERSION
   exportedAt: ISODateTime
   entities: { [K in EntityName]: EntityMap[K][] }
+  /**
+   * Dexie dışındaki yerel depoların verisi (ör. `social`: sosyal mock önbelleği). Anahtar
+   * `LocalDataParticipant.key`. Yalnızca katılımcı varsa bulunur; eski yedeklerde yoktur.
+   */
+  extras?: Readonly<Record<string, unknown>>
 }
 
 export interface LocalDataService {

@@ -272,6 +272,32 @@ describe('MockSocialService — durum ve profil', () => {
   })
 })
 
+describe('MockSocialService — yerel veri (dışa aktarma / silme)', () => {
+  it('exports the stored social data of this device', async () => {
+    const { service } = await readySetup()
+
+    const exported = await service.exportLocalData()
+
+    expect(exported.accounts[SESSION.appleUserId]?.profile.username).toBe('ben.yks')
+  })
+
+  it('exports an empty document when nothing is stored', async () => {
+    const { service } = setup()
+
+    await expect(service.exportLocalData()).resolves.toEqual({ version: 1, accounts: {} })
+  })
+
+  it('clears stored social data and drops the in-memory profile', async () => {
+    const { service } = await readySetup()
+
+    await service.clearLocalData()
+
+    expect(localStorage.getItem(SOCIAL_MOCK_STORAGE_KEY)).toBeNull()
+    expect(service.getSnapshot()).toMatchObject({ status: 'needsUsername', profile: null })
+    expect(service.getSnapshot().friends).toEqual([])
+  })
+})
+
 describe('MockSocialService — abonelik ve değişmezlik', () => {
   it('returns the same snapshot until something changes and never mutates old ones', async () => {
     const { service } = await readySetup()

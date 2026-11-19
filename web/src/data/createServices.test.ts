@@ -51,4 +51,23 @@ describe('createServices', () => {
 
     expect(services.social.getSnapshot().status).toBe('needsUsername')
   })
+  it('includes the social mock data in local data export and delete-all', async () => {
+    const services = createServices({
+      dbName,
+      authDelayMs: 0,
+      syncDelayMs: 0,
+      social: { delayMs: 0, tickMs: 0, responseDelayMs: 0 },
+    })
+    await services.auth.signInWithApple()
+    await services.social.refresh()
+    await services.social.claimUsername('ben.yks')
+
+    const backup = await services.localData.exportAll()
+    expect(JSON.stringify(backup.extras?.social)).toContain('ben.yks')
+
+    await services.localData.deleteAll()
+    const afterWipe = await services.localData.exportAll()
+    expect(afterWipe.extras?.social).toEqual({ version: 1, accounts: {} })
+    expect(services.social.getSnapshot().profile).toBeNull()
+  })
 })

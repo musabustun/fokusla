@@ -1,0 +1,1652 @@
+{
+  "examYear": 2026,
+  "sources": [
+    "ÖSYM 2026-YKS Kılavuzu (Tablo 1A, 1B, 1C, 1D, 1E; bölüm 3.1 ve 3.10): https://dokuman.osym.gov.tr/pdfdokuman/2026/YKS/basvuru_kilavuz06022026.pdf",
+    "ÖSYM 2026-YKS Kılavuzu duyuru sayfası: https://www.osym.gov.tr/2026yuksekogretim-kurumlari-sinavi-yks-kilavuzu",
+    "MEB, (ÖSYM tarafından 2026 yılında gerçekleştirilecek TYT, AYT ve YDT sınavlarına esas) Ortak Derslere Ait Kazanım ve Açıklamalar: https://ttkb.meb.gov.tr/meb_iys_dosyalar/2025_11/26164023_2026_yks.pdf",
+    "Konu adları ve sıralaması: MEB ünite başlıkları + yaygın kullanılan \"YKS konuları\" listeleri (türetilmiş, düzenlenebilir)"
+  ],
+  "verifiedAt": "2026-11-19",
+  "subjects": [
+    {
+      "key": "tyt-turkce",
+      "name": "Türkçe",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 40,
+      "topics": [
+        {
+          "key": "tyt-turkce.sozcukte-anlam",
+          "name": "Sözcükte Anlam"
+        },
+        {
+          "key": "tyt-turkce.soz-yorumu",
+          "name": "Söz Yorumu"
+        },
+        {
+          "key": "tyt-turkce.deyim-ve-atasozu",
+          "name": "Deyim ve Atasözü"
+        },
+        {
+          "key": "tyt-turkce.cumlede-anlam",
+          "name": "Cümlede Anlam"
+        },
+        {
+          "key": "tyt-turkce.paragrafta-anlatim-teknikleri",
+          "name": "Paragrafta Anlatım Teknikleri"
+        },
+        {
+          "key": "tyt-turkce.paragrafta-yapi",
+          "name": "Paragrafta Yapı"
+        },
+        {
+          "key": "tyt-turkce.paragrafta-konu-ana-dusunce",
+          "name": "Paragrafta Konu ve Ana Düşünce"
+        },
+        {
+          "key": "tyt-turkce.paragrafta-yardimci-dusunce",
+          "name": "Paragrafta Yardımcı Düşünce"
+        },
+        {
+          "key": "tyt-turkce.ses-bilgisi",
+          "name": "Ses Bilgisi"
+        },
+        {
+          "key": "tyt-turkce.yazim-kurallari",
+          "name": "Yazım Kuralları"
+        },
+        {
+          "key": "tyt-turkce.noktalama-isaretleri",
+          "name": "Noktalama İşaretleri"
+        },
+        {
+          "key": "tyt-turkce.sozcukte-yapi-ekler",
+          "name": "Sözcükte Yapı ve Ekler"
+        },
+        {
+          "key": "tyt-turkce.isimler",
+          "name": "İsimler"
+        },
+        {
+          "key": "tyt-turkce.sifatlar",
+          "name": "Sıfatlar"
+        },
+        {
+          "key": "tyt-turkce.zamirler",
+          "name": "Zamirler"
+        },
+        {
+          "key": "tyt-turkce.zarflar",
+          "name": "Zarflar"
+        },
+        {
+          "key": "tyt-turkce.edat-baglac-unlem",
+          "name": "Edat, Bağlaç ve Ünlem"
+        },
+        {
+          "key": "tyt-turkce.fiiller",
+          "name": "Fiiller (Kip, Kişi, Yapı)"
+        },
+        {
+          "key": "tyt-turkce.ek-fiil",
+          "name": "Ek Fiil"
+        },
+        {
+          "key": "tyt-turkce.fiilimsi",
+          "name": "Fiilimsi"
+        },
+        {
+          "key": "tyt-turkce.fiilde-cati",
+          "name": "Fiilde Çatı"
+        },
+        {
+          "key": "tyt-turkce.sozcuk-gruplari",
+          "name": "Sözcük Grupları"
+        },
+        {
+          "key": "tyt-turkce.cumlenin-ogeleri",
+          "name": "Cümlenin Ögeleri"
+        },
+        {
+          "key": "tyt-turkce.cumle-turleri",
+          "name": "Cümle Türleri"
+        },
+        {
+          "key": "tyt-turkce.anlatim-bozuklugu",
+          "name": "Anlatım Bozukluğu"
+        }
+      ]
+    },
+    {
+      "key": "tyt-matematik",
+      "name": "Matematik",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": null,
+      "topics": [
+        {
+          "key": "tyt-matematik.temel-kavramlar",
+          "name": "Temel Kavramlar"
+        },
+        {
+          "key": "tyt-matematik.sayi-basamaklari",
+          "name": "Sayı Basamakları"
+        },
+        {
+          "key": "tyt-matematik.bolme-ve-bolunebilme",
+          "name": "Bölme ve Bölünebilme"
+        },
+        {
+          "key": "tyt-matematik.ebob-ekok",
+          "name": "EBOB – EKOK"
+        },
+        {
+          "key": "tyt-matematik.rasyonel-sayilar",
+          "name": "Rasyonel Sayılar"
+        },
+        {
+          "key": "tyt-matematik.basit-esitsizlikler",
+          "name": "Basit Eşitsizlikler"
+        },
+        {
+          "key": "tyt-matematik.mutlak-deger",
+          "name": "Mutlak Değer"
+        },
+        {
+          "key": "tyt-matematik.uslu-sayilar",
+          "name": "Üslü Sayılar"
+        },
+        {
+          "key": "tyt-matematik.koklu-sayilar",
+          "name": "Köklü Sayılar"
+        },
+        {
+          "key": "tyt-matematik.carpanlara-ayirma",
+          "name": "Çarpanlara Ayırma"
+        },
+        {
+          "key": "tyt-matematik.oran-oranti",
+          "name": "Oran – Orantı"
+        },
+        {
+          "key": "tyt-matematik.denklem-cozme",
+          "name": "Denklem Çözme"
+        },
+        {
+          "key": "tyt-matematik.sayi-kesir-problemleri",
+          "name": "Sayı ve Kesir Problemleri"
+        },
+        {
+          "key": "tyt-matematik.yas-problemleri",
+          "name": "Yaş Problemleri"
+        },
+        {
+          "key": "tyt-matematik.hareket-problemleri",
+          "name": "Hareket Problemleri"
+        },
+        {
+          "key": "tyt-matematik.isci-havuz-problemleri",
+          "name": "İşçi ve Havuz Problemleri"
+        },
+        {
+          "key": "tyt-matematik.yuzde-kar-zarar-problemleri",
+          "name": "Yüzde, Kâr – Zarar Problemleri"
+        },
+        {
+          "key": "tyt-matematik.karisim-problemleri",
+          "name": "Karışım Problemleri"
+        },
+        {
+          "key": "tyt-matematik.grafik-problemleri",
+          "name": "Grafik Problemleri"
+        },
+        {
+          "key": "tyt-matematik.rutin-olmayan-problemler",
+          "name": "Rutin Olmayan Problemler"
+        },
+        {
+          "key": "tyt-matematik.mantik",
+          "name": "Mantık"
+        },
+        {
+          "key": "tyt-matematik.kumeler-kartezyen-carpim",
+          "name": "Kümeler ve Kartezyen Çarpım"
+        },
+        {
+          "key": "tyt-matematik.fonksiyonlar",
+          "name": "Fonksiyonlar"
+        },
+        {
+          "key": "tyt-matematik.polinomlar",
+          "name": "Polinomlar"
+        },
+        {
+          "key": "tyt-matematik.ikinci-dereceden-denklemler",
+          "name": "İkinci Dereceden Denklemler"
+        },
+        {
+          "key": "tyt-matematik.permutasyon-kombinasyon",
+          "name": "Permütasyon ve Kombinasyon"
+        },
+        {
+          "key": "tyt-matematik.olasilik",
+          "name": "Olasılık"
+        },
+        {
+          "key": "tyt-matematik.veri-istatistik",
+          "name": "Veri ve İstatistik"
+        }
+      ]
+    },
+    {
+      "key": "tyt-geometri",
+      "name": "Geometri",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": null,
+      "topics": [
+        {
+          "key": "tyt-geometri.dogruda-ve-ucgende-acilar",
+          "name": "Doğruda ve Üçgende Açılar"
+        },
+        {
+          "key": "tyt-geometri.dik-ucgen",
+          "name": "Dik Üçgen ve Pisagor"
+        },
+        {
+          "key": "tyt-geometri.ikizkenar-eskenar-ucgen",
+          "name": "İkizkenar ve Eşkenar Üçgen"
+        },
+        {
+          "key": "tyt-geometri.ucgende-aciortay",
+          "name": "Üçgende Açıortay"
+        },
+        {
+          "key": "tyt-geometri.ucgende-kenarortay",
+          "name": "Üçgende Kenarortay"
+        },
+        {
+          "key": "tyt-geometri.ucgende-eslik-benzerlik",
+          "name": "Üçgende Eşlik ve Benzerlik"
+        },
+        {
+          "key": "tyt-geometri.ucgende-aci-kenar-bagintilari",
+          "name": "Üçgende Açı – Kenar Bağıntıları"
+        },
+        {
+          "key": "tyt-geometri.ucgende-alan",
+          "name": "Üçgende Alan"
+        },
+        {
+          "key": "tyt-geometri.cokgenler",
+          "name": "Çokgenler"
+        },
+        {
+          "key": "tyt-geometri.dortgenler",
+          "name": "Dörtgenler"
+        },
+        {
+          "key": "tyt-geometri.yamuk",
+          "name": "Yamuk"
+        },
+        {
+          "key": "tyt-geometri.paralelkenar",
+          "name": "Paralelkenar"
+        },
+        {
+          "key": "tyt-geometri.eskenar-dortgen-deltoid",
+          "name": "Eşkenar Dörtgen ve Deltoid"
+        },
+        {
+          "key": "tyt-geometri.dikdortgen-kare",
+          "name": "Dikdörtgen ve Kare"
+        },
+        {
+          "key": "tyt-geometri.cember-ve-daire",
+          "name": "Çember ve Daire"
+        },
+        {
+          "key": "tyt-geometri.noktanin-analitigi",
+          "name": "Noktanın Analitik İncelenmesi"
+        },
+        {
+          "key": "tyt-geometri.dogrunun-analitigi",
+          "name": "Doğrunun Analitik İncelenmesi"
+        },
+        {
+          "key": "tyt-geometri.kati-cisimler",
+          "name": "Katı Cisimler"
+        }
+      ]
+    },
+    {
+      "key": "tyt-tarih",
+      "name": "Tarih",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 5,
+      "topics": [
+        {
+          "key": "tyt-tarih.tarih-ve-zaman",
+          "name": "Tarih ve Zaman"
+        },
+        {
+          "key": "tyt-tarih.insanligin-ilk-donemleri",
+          "name": "İnsanlığın İlk Dönemleri"
+        },
+        {
+          "key": "tyt-tarih.orta-cagda-dunya",
+          "name": "Orta Çağ'da Dünya"
+        },
+        {
+          "key": "tyt-tarih.ilk-ve-orta-caglarda-turk-dunyasi",
+          "name": "İlk ve Orta Çağlarda Türk Dünyası"
+        },
+        {
+          "key": "tyt-tarih.islam-medeniyetinin-dogusu",
+          "name": "İslam Medeniyetinin Doğuşu"
+        },
+        {
+          "key": "tyt-tarih.ilk-turk-islam-devletleri",
+          "name": "Türklerin İslamiyet'i Kabulü ve İlk Türk İslam Devletleri"
+        },
+        {
+          "key": "tyt-tarih.selcuklu-turkiyesi",
+          "name": "Yerleşme ve Devletleşme Sürecinde Selçuklu Türkiyesi"
+        },
+        {
+          "key": "tyt-tarih.beylikten-devlete-osmanli",
+          "name": "Beylikten Devlete Osmanlı"
+        },
+        {
+          "key": "tyt-tarih.dunya-gucu-osmanli",
+          "name": "Dünya Gücü Osmanlı"
+        },
+        {
+          "key": "tyt-tarih.degisen-dunya-dengeleri-osmanli",
+          "name": "Değişen Dünya Dengeleri Karşısında Osmanlı"
+        },
+        {
+          "key": "tyt-tarih.degisim-caginda-avrupa-osmanli",
+          "name": "Değişim Çağında Avrupa ve Osmanlı"
+        },
+        {
+          "key": "tyt-tarih.xx-yuzyil-baslarinda-osmanli",
+          "name": "XX. Yüzyıl Başlarında Osmanlı Devleti ve Dünya"
+        },
+        {
+          "key": "tyt-tarih.milli-mucadele",
+          "name": "Millî Mücadele"
+        },
+        {
+          "key": "tyt-tarih.ataturkculuk-ve-turk-inkilabi",
+          "name": "Atatürkçülük ve Türk İnkılabı"
+        }
+      ]
+    },
+    {
+      "key": "tyt-cografya",
+      "name": "Coğrafya",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 5,
+      "topics": [
+        {
+          "key": "tyt-cografya.doga-ve-insan",
+          "name": "Doğa ve İnsan"
+        },
+        {
+          "key": "tyt-cografya.dunyanin-sekli-ve-hareketleri",
+          "name": "Dünya'nın Şekli ve Hareketleri"
+        },
+        {
+          "key": "tyt-cografya.cografi-konum",
+          "name": "Coğrafi Konum"
+        },
+        {
+          "key": "tyt-cografya.harita-bilgisi",
+          "name": "Harita Bilgisi"
+        },
+        {
+          "key": "tyt-cografya.atmosfer-ve-sicaklik",
+          "name": "Atmosfer ve Sıcaklık"
+        },
+        {
+          "key": "tyt-cografya.basinc-ve-ruzgarlar",
+          "name": "Basınç ve Rüzgârlar"
+        },
+        {
+          "key": "tyt-cografya.nem-yagis-buharlasma",
+          "name": "Nem, Yağış ve Buharlaşma"
+        },
+        {
+          "key": "tyt-cografya.iklim-tipleri",
+          "name": "İklim Tipleri"
+        },
+        {
+          "key": "tyt-cografya.ic-ve-dis-kuvvetler",
+          "name": "İç ve Dış Kuvvetler"
+        },
+        {
+          "key": "tyt-cografya.su-toprak-bitki",
+          "name": "Su, Toprak ve Bitki Örtüsü"
+        },
+        {
+          "key": "tyt-cografya.turkiyenin-yer-sekilleri",
+          "name": "Türkiye'nin Yer Şekilleri ve İklimi"
+        },
+        {
+          "key": "tyt-cografya.nufus",
+          "name": "Nüfus"
+        },
+        {
+          "key": "tyt-cografya.goc",
+          "name": "Göç"
+        },
+        {
+          "key": "tyt-cografya.yerlesme",
+          "name": "Yerleşme"
+        },
+        {
+          "key": "tyt-cografya.ekonomik-faaliyetler",
+          "name": "Ekonomik Faaliyetler"
+        },
+        {
+          "key": "tyt-cografya.bolgeler",
+          "name": "Bölgeler"
+        },
+        {
+          "key": "tyt-cografya.uluslararasi-ulasim-hatlari",
+          "name": "Uluslararası Ulaşım Hatları"
+        },
+        {
+          "key": "tyt-cografya.cevre-ve-toplum",
+          "name": "Çevre ve Toplum"
+        },
+        {
+          "key": "tyt-cografya.dogal-afetler",
+          "name": "Doğal Afetler"
+        }
+      ]
+    },
+    {
+      "key": "tyt-felsefe",
+      "name": "Felsefe",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 5,
+      "topics": [
+        {
+          "key": "tyt-felsefe.felsefeyi-tanima",
+          "name": "Felsefeyi Tanıma"
+        },
+        {
+          "key": "tyt-felsefe.felsefe-ile-dusunme",
+          "name": "Felsefe ile Düşünme"
+        },
+        {
+          "key": "tyt-felsefe.varlik-felsefesi",
+          "name": "Varlık Felsefesi"
+        },
+        {
+          "key": "tyt-felsefe.bilgi-felsefesi",
+          "name": "Bilgi Felsefesi"
+        },
+        {
+          "key": "tyt-felsefe.bilim-felsefesi",
+          "name": "Bilim Felsefesi"
+        },
+        {
+          "key": "tyt-felsefe.ahlak-felsefesi",
+          "name": "Ahlak Felsefesi"
+        },
+        {
+          "key": "tyt-felsefe.din-felsefesi",
+          "name": "Din Felsefesi"
+        },
+        {
+          "key": "tyt-felsefe.siyaset-felsefesi",
+          "name": "Siyaset Felsefesi"
+        },
+        {
+          "key": "tyt-felsefe.sanat-felsefesi",
+          "name": "Sanat Felsefesi"
+        }
+      ]
+    },
+    {
+      "key": "tyt-din",
+      "name": "Din Kültürü ve Ahlak Bilgisi",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 5,
+      "topics": [
+        {
+          "key": "tyt-din.bilgi-ve-inanc",
+          "name": "Bilgi ve İnanç"
+        },
+        {
+          "key": "tyt-din.islam-ve-ibadet",
+          "name": "İslam ve İbadet"
+        },
+        {
+          "key": "tyt-din.genclik-ve-degerler",
+          "name": "Gençlik ve Değerler"
+        },
+        {
+          "key": "tyt-din.allah-insan-iliskisi",
+          "name": "Allah – İnsan İlişkisi"
+        },
+        {
+          "key": "tyt-din.hz-muhammed",
+          "name": "Hz. Muhammed ve Gençlik"
+        },
+        {
+          "key": "tyt-din.din-ve-hayat",
+          "name": "Din ve Hayat"
+        },
+        {
+          "key": "tyt-din.ahlaki-tutum-ve-davranislar",
+          "name": "Ahlaki Tutum ve Davranışlar"
+        },
+        {
+          "key": "tyt-din.islam-dusuncesinde-yorumlar",
+          "name": "İslam Düşüncesinde Yorumlar"
+        },
+        {
+          "key": "tyt-din.din-kultur-medeniyet",
+          "name": "Din, Kültür ve Medeniyet"
+        }
+      ]
+    },
+    {
+      "key": "tyt-fizik",
+      "name": "Fizik",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 7,
+      "topics": [
+        {
+          "key": "tyt-fizik.fizik-bilimine-giris",
+          "name": "Fizik Bilimine Giriş"
+        },
+        {
+          "key": "tyt-fizik.madde-ve-ozellikleri",
+          "name": "Madde ve Özellikleri"
+        },
+        {
+          "key": "tyt-fizik.hareket-ve-kuvvet",
+          "name": "Hareket ve Kuvvet"
+        },
+        {
+          "key": "tyt-fizik.is-guc-enerji",
+          "name": "İş, Güç ve Enerji"
+        },
+        {
+          "key": "tyt-fizik.isi-sicaklik-genlesme",
+          "name": "Isı, Sıcaklık ve Genleşme"
+        },
+        {
+          "key": "tyt-fizik.elektrostatik",
+          "name": "Elektrostatik"
+        },
+        {
+          "key": "tyt-fizik.elektrik-akimi-ve-devreler",
+          "name": "Elektrik Akımı ve Devreler"
+        },
+        {
+          "key": "tyt-fizik.manyetizma",
+          "name": "Mıknatıslar ve Manyetizma"
+        },
+        {
+          "key": "tyt-fizik.basinc",
+          "name": "Basınç"
+        },
+        {
+          "key": "tyt-fizik.kaldirma-kuvveti",
+          "name": "Kaldırma Kuvveti"
+        },
+        {
+          "key": "tyt-fizik.dalgalar",
+          "name": "Dalgalar"
+        },
+        {
+          "key": "tyt-fizik.optik",
+          "name": "Optik"
+        }
+      ]
+    },
+    {
+      "key": "tyt-kimya",
+      "name": "Kimya",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 7,
+      "topics": [
+        {
+          "key": "tyt-kimya.kimya-bilimi",
+          "name": "Kimya Bilimi"
+        },
+        {
+          "key": "tyt-kimya.atom-ve-periyodik-sistem",
+          "name": "Atom ve Periyodik Sistem"
+        },
+        {
+          "key": "tyt-kimya.kimyasal-turler-arasi-etkilesimler",
+          "name": "Kimyasal Türler Arası Etkileşimler"
+        },
+        {
+          "key": "tyt-kimya.maddenin-halleri",
+          "name": "Maddenin Halleri"
+        },
+        {
+          "key": "tyt-kimya.doga-ve-kimya",
+          "name": "Doğa ve Kimya"
+        },
+        {
+          "key": "tyt-kimya.kimyanin-temel-kanunlari",
+          "name": "Kimyanın Temel Kanunları"
+        },
+        {
+          "key": "tyt-kimya.mol-kavrami",
+          "name": "Mol Kavramı"
+        },
+        {
+          "key": "tyt-kimya.kimyasal-tepkimeler-ve-hesaplamalar",
+          "name": "Kimyasal Tepkimeler ve Hesaplamalar"
+        },
+        {
+          "key": "tyt-kimya.karisimlar",
+          "name": "Karışımlar"
+        },
+        {
+          "key": "tyt-kimya.asitler-bazlar-tuzlar",
+          "name": "Asitler, Bazlar ve Tuzlar"
+        },
+        {
+          "key": "tyt-kimya.kimya-her-yerde",
+          "name": "Kimya Her Yerde"
+        }
+      ]
+    },
+    {
+      "key": "tyt-biyoloji",
+      "name": "Biyoloji",
+      "exam": "TYT",
+      "fields": [
+        "SAY",
+        "EA",
+        "SOZ",
+        "DIL"
+      ],
+      "questionCount": 6,
+      "topics": [
+        {
+          "key": "tyt-biyoloji.canlilarin-ortak-ozellikleri",
+          "name": "Canlıların Ortak Özellikleri"
+        },
+        {
+          "key": "tyt-biyoloji.temel-bilesenler",
+          "name": "Canlıların Yapısındaki Temel Bileşikler"
+        },
+        {
+          "key": "tyt-biyoloji.hucre-ve-organeller",
+          "name": "Hücre ve Organeller"
+        },
+        {
+          "key": "tyt-biyoloji.hucre-zarindan-madde-gecisi",
+          "name": "Hücre Zarından Madde Geçişi"
+        },
+        {
+          "key": "tyt-biyoloji.canlilarin-siniflandirilmasi",
+          "name": "Canlıların Çeşitliliği ve Sınıflandırılması"
+        },
+        {
+          "key": "tyt-biyoloji.canli-alemleri",
+          "name": "Canlı Âlemleri ve Özellikleri"
+        },
+        {
+          "key": "tyt-biyoloji.mitoz-ve-eseysiz-ureme",
+          "name": "Mitoz ve Eşeysiz Üreme"
+        },
+        {
+          "key": "tyt-biyoloji.mayoz-ve-eseyli-ureme",
+          "name": "Mayoz ve Eşeyli Üreme"
+        },
+        {
+          "key": "tyt-biyoloji.kalitim",
+          "name": "Kalıtımın Genel İlkeleri"
+        },
+        {
+          "key": "tyt-biyoloji.ekosistem-ekolojisi",
+          "name": "Ekosistem Ekolojisi"
+        },
+        {
+          "key": "tyt-biyoloji.guncel-cevre-sorunlari",
+          "name": "Güncel Çevre Sorunları ve İnsan"
+        }
+      ]
+    },
+    {
+      "key": "ayt-edebiyat",
+      "name": "Türk Dili ve Edebiyatı",
+      "exam": "AYT",
+      "fields": [
+        "EA",
+        "SOZ"
+      ],
+      "questionCount": 24,
+      "topics": [
+        {
+          "key": "ayt-edebiyat.anlam-bilgisi",
+          "name": "Anlam Bilgisi (Sözcük, Cümle, Paragraf)"
+        },
+        {
+          "key": "ayt-edebiyat.dil-bilgisi",
+          "name": "Dil Bilgisi"
+        },
+        {
+          "key": "ayt-edebiyat.siir-bilgisi",
+          "name": "Şiir Bilgisi (Nazım Birimi, Ölçü, Kafiye, Redif)"
+        },
+        {
+          "key": "ayt-edebiyat.edebi-sanatlar",
+          "name": "Edebî Sanatlar"
+        },
+        {
+          "key": "ayt-edebiyat.edebi-turler",
+          "name": "Metinlerin Sınıflandırılması ve Edebî Türler"
+        },
+        {
+          "key": "ayt-edebiyat.islamiyet-oncesi-turk-edebiyati",
+          "name": "İslamiyet Öncesi Türk Edebiyatı"
+        },
+        {
+          "key": "ayt-edebiyat.gecis-donemi-edebiyati",
+          "name": "Geçiş Dönemi Türk Edebiyatı"
+        },
+        {
+          "key": "ayt-edebiyat.halk-edebiyati",
+          "name": "Halk Edebiyatı"
+        },
+        {
+          "key": "ayt-edebiyat.divan-edebiyati",
+          "name": "Divan Edebiyatı"
+        },
+        {
+          "key": "ayt-edebiyat.tanzimat-edebiyati",
+          "name": "Tanzimat Edebiyatı"
+        },
+        {
+          "key": "ayt-edebiyat.servet-i-funun",
+          "name": "Servet-i Fünun Edebiyatı"
+        },
+        {
+          "key": "ayt-edebiyat.fecr-i-ati",
+          "name": "Fecr-i Âti Edebiyatı"
+        },
+        {
+          "key": "ayt-edebiyat.milli-edebiyat",
+          "name": "Millî Edebiyat Dönemi"
+        },
+        {
+          "key": "ayt-edebiyat.cumhuriyet-donemi-1923-1940",
+          "name": "Cumhuriyet Dönemi (1923–1940)"
+        },
+        {
+          "key": "ayt-edebiyat.cumhuriyet-donemi-1940-1960",
+          "name": "Cumhuriyet Dönemi (1940–1960)"
+        },
+        {
+          "key": "ayt-edebiyat.cumhuriyet-donemi-1960-sonrasi",
+          "name": "Cumhuriyet Dönemi (1960 Sonrası)"
+        },
+        {
+          "key": "ayt-edebiyat.edebi-akimlar",
+          "name": "Edebiyat Akımları"
+        },
+        {
+          "key": "ayt-edebiyat.dunya-edebiyati",
+          "name": "Dünya Edebiyatı"
+        }
+      ]
+    },
+    {
+      "key": "ayt-tarih-1",
+      "name": "Tarih-1",
+      "exam": "AYT",
+      "fields": [
+        "EA",
+        "SOZ"
+      ],
+      "questionCount": 10,
+      "topics": [
+        {
+          "key": "ayt-tarih-1.tarih-ve-zaman",
+          "name": "Tarih ve Zaman"
+        },
+        {
+          "key": "ayt-tarih-1.insanligin-ilk-donemleri",
+          "name": "İnsanlığın İlk Dönemleri"
+        },
+        {
+          "key": "ayt-tarih-1.orta-cagda-dunya",
+          "name": "Orta Çağ'da Dünya"
+        },
+        {
+          "key": "ayt-tarih-1.ilk-ve-orta-caglarda-turk-dunyasi",
+          "name": "İlk ve Orta Çağlarda Türk Dünyası"
+        },
+        {
+          "key": "ayt-tarih-1.islam-medeniyetinin-dogusu",
+          "name": "İslam Medeniyetinin Doğuşu"
+        },
+        {
+          "key": "ayt-tarih-1.ilk-turk-islam-devletleri",
+          "name": "Türklerin İslamiyet'i Kabulü ve İlk Türk İslam Devletleri"
+        },
+        {
+          "key": "ayt-tarih-1.selcuklu-turkiyesi",
+          "name": "Yerleşme ve Devletleşme Sürecinde Selçuklu Türkiyesi"
+        },
+        {
+          "key": "ayt-tarih-1.beylikten-devlete-osmanli-siyaseti",
+          "name": "Beylikten Devlete Osmanlı Siyaseti"
+        },
+        {
+          "key": "ayt-tarih-1.savascilar-ve-askerler",
+          "name": "Devletleşme Sürecinde Savaşçılar ve Askerler"
+        },
+        {
+          "key": "ayt-tarih-1.beylikten-devlete-osmanli-medeniyeti",
+          "name": "Beylikten Devlete Osmanlı Medeniyeti"
+        },
+        {
+          "key": "ayt-tarih-1.dunya-gucu-osmanli",
+          "name": "Dünya Gücü Osmanlı"
+        },
+        {
+          "key": "ayt-tarih-1.sultan-ve-merkez-teskilati",
+          "name": "Sultan ve Osmanlı Merkez Teşkilatı"
+        },
+        {
+          "key": "ayt-tarih-1.klasik-cagda-osmanli-toplum-duzeni",
+          "name": "Klasik Çağda Osmanlı Toplum Düzeni"
+        },
+        {
+          "key": "ayt-tarih-1.degisen-dunya-dengeleri-osmanli",
+          "name": "Değişen Dünya Dengeleri Karşısında Osmanlı Siyaseti"
+        },
+        {
+          "key": "ayt-tarih-1.degisim-caginda-avrupa-osmanli",
+          "name": "Değişim Çağında Avrupa ve Osmanlı"
+        },
+        {
+          "key": "ayt-tarih-1.denge-stratejisi-1774-1914",
+          "name": "Uluslararası İlişkilerde Denge Stratejisi (1774–1914)"
+        },
+        {
+          "key": "ayt-tarih-1.devrimler-caginda-devlet-toplum",
+          "name": "Devrimler Çağında Değişen Devlet – Toplum İlişkileri"
+        },
+        {
+          "key": "ayt-tarih-1.sermaye-ve-emek",
+          "name": "Sermaye ve Emek"
+        },
+        {
+          "key": "ayt-tarih-1.degisen-gundelik-hayat",
+          "name": "XIX. ve XX. Yüzyılda Değişen Gündelik Hayat"
+        },
+        {
+          "key": "ayt-tarih-1.xx-yuzyil-baslarinda-osmanli",
+          "name": "XX. Yüzyıl Başlarında Osmanlı Devleti ve Dünya"
+        },
+        {
+          "key": "ayt-tarih-1.milli-mucadele",
+          "name": "Millî Mücadele"
+        },
+        {
+          "key": "ayt-tarih-1.ataturkculuk-ve-turk-inkilabi",
+          "name": "Atatürkçülük ve Türk İnkılabı"
+        }
+      ]
+    },
+    {
+      "key": "ayt-cografya-1",
+      "name": "Coğrafya-1",
+      "exam": "AYT",
+      "fields": [
+        "EA",
+        "SOZ"
+      ],
+      "questionCount": 6,
+      "topics": [
+        {
+          "key": "ayt-cografya-1.ekosistemler",
+          "name": "Ekosistemler ve Biyoçeşitlilik"
+        },
+        {
+          "key": "ayt-cografya-1.nufus-politikalari",
+          "name": "Nüfus Politikaları"
+        },
+        {
+          "key": "ayt-cografya-1.turkiyede-nufus-ve-yerlesme",
+          "name": "Türkiye'de Nüfus ve Yerleşme"
+        },
+        {
+          "key": "ayt-cografya-1.ekonomik-faaliyetler-ve-dogal-kaynaklar",
+          "name": "Ekonomik Faaliyetler ve Doğal Kaynaklar"
+        },
+        {
+          "key": "ayt-cografya-1.turkiye-ekonomisi",
+          "name": "Türkiye Ekonomisi (Tarım, Madencilik, Sanayi, Hizmetler)"
+        },
+        {
+          "key": "ayt-cografya-1.islevsel-bolgeler-ve-kalkinma",
+          "name": "İşlevsel Bölgeler ve Kalkınma Projeleri"
+        },
+        {
+          "key": "ayt-cografya-1.kuresel-ticaret-ve-ulasim",
+          "name": "Küresel Ticaret ve Ulaşım"
+        },
+        {
+          "key": "ayt-cografya-1.bolgeler-ve-ulkeler",
+          "name": "Bölgeler ve Ülkeler"
+        },
+        {
+          "key": "ayt-cografya-1.cevre-ve-toplum",
+          "name": "Çevre ve Toplum"
+        },
+        {
+          "key": "ayt-cografya-1.dogal-afetler",
+          "name": "Doğal Afetler"
+        }
+      ]
+    },
+    {
+      "key": "ayt-tarih-2",
+      "name": "Tarih-2",
+      "exam": "AYT",
+      "fields": [
+        "SOZ"
+      ],
+      "questionCount": 11,
+      "topics": [
+        {
+          "key": "ayt-tarih-2.iki-savas-arasi-donem",
+          "name": "İki Savaş Arasındaki Dönemde Türkiye ve Dünya"
+        },
+        {
+          "key": "ayt-tarih-2.ii-dunya-savasi-sureci",
+          "name": "II. Dünya Savaşı Sürecinde Türkiye ve Dünya"
+        },
+        {
+          "key": "ayt-tarih-2.ii-dunya-savasi-sonrasi",
+          "name": "II. Dünya Savaşı Sonrasında Türkiye ve Dünya"
+        },
+        {
+          "key": "ayt-tarih-2.toplumsal-devrim-caginda-dunya",
+          "name": "Toplumsal Devrim Çağında Dünya ve Türkiye"
+        },
+        {
+          "key": "ayt-tarih-2.xxi-yuzyilin-esiginde",
+          "name": "XXI. Yüzyılın Eşiğinde Türkiye ve Dünya"
+        }
+      ]
+    },
+    {
+      "key": "ayt-cografya-2",
+      "name": "Coğrafya-2",
+      "exam": "AYT",
+      "fields": [
+        "SOZ"
+      ],
+      "questionCount": 11,
+      "topics": [
+        {
+          "key": "ayt-cografya-2.biyocesitlilik",
+          "name": "Biyoçeşitlilik"
+        },
+        {
+          "key": "ayt-cografya-2.ekosistemlerin-isleyisi",
+          "name": "Ekosistemlerin İşleyişi, Enerji Akışı ve Madde Döngüsü"
+        },
+        {
+          "key": "ayt-cografya-2.nufus-politikalari",
+          "name": "Nüfus Politikaları"
+        },
+        {
+          "key": "ayt-cografya-2.sehirlesme-ve-goc",
+          "name": "Şehirleşme ve Göç"
+        },
+        {
+          "key": "ayt-cografya-2.ekonomik-faaliyetler",
+          "name": "Ekonomik Faaliyetler ve Doğal Kaynaklar"
+        },
+        {
+          "key": "ayt-cografya-2.turkiyenin-islevsel-bolgeleri",
+          "name": "Türkiye'nin İşlevsel Bölgeleri"
+        },
+        {
+          "key": "ayt-cografya-2.kuresel-ve-bolgesel-orgutler",
+          "name": "Küresel ve Bölgesel Örgütler"
+        },
+        {
+          "key": "ayt-cografya-2.kultur-bolgeleri",
+          "name": "Kültür Bölgeleri"
+        },
+        {
+          "key": "ayt-cografya-2.ulkeler-arasi-etkilesim",
+          "name": "Ülkeler Arası Etkileşim ve Jeopolitik Konum"
+        },
+        {
+          "key": "ayt-cografya-2.catisma-bolgeleri",
+          "name": "Çatışma Bölgeleri"
+        },
+        {
+          "key": "ayt-cografya-2.cevre-sorunlari",
+          "name": "Küresel Çevre Sorunları"
+        }
+      ]
+    },
+    {
+      "key": "ayt-felsefe-grubu",
+      "name": "Felsefe Grubu",
+      "exam": "AYT",
+      "fields": [
+        "SOZ"
+      ],
+      "questionCount": 12,
+      "topics": [
+        {
+          "key": "ayt-felsefe-grubu.felsefe-mo6-ms2",
+          "name": "Felsefe: MÖ 6. – MS 2. Yüzyıl Felsefesi"
+        },
+        {
+          "key": "ayt-felsefe-grubu.felsefe-ms2-ms15",
+          "name": "Felsefe: MS 2. – MS 15. Yüzyıl Felsefesi"
+        },
+        {
+          "key": "ayt-felsefe-grubu.felsefe-15-17",
+          "name": "Felsefe: 15. – 17. Yüzyıl Felsefesi"
+        },
+        {
+          "key": "ayt-felsefe-grubu.felsefe-18-19",
+          "name": "Felsefe: 18. – 19. Yüzyıl Felsefesi"
+        },
+        {
+          "key": "ayt-felsefe-grubu.felsefe-20",
+          "name": "Felsefe: 20. Yüzyıl Felsefesi"
+        },
+        {
+          "key": "ayt-felsefe-grubu.psikoloji-bilimini-taniyalim",
+          "name": "Psikoloji: Psikoloji Bilimini Tanıyalım"
+        },
+        {
+          "key": "ayt-felsefe-grubu.psikolojinin-temel-surecleri",
+          "name": "Psikoloji: Psikolojinin Temel Süreçleri"
+        },
+        {
+          "key": "ayt-felsefe-grubu.ogrenme-bellek-dusunme",
+          "name": "Psikoloji: Öğrenme, Bellek, Düşünme"
+        },
+        {
+          "key": "ayt-felsefe-grubu.ruh-sagligi",
+          "name": "Psikoloji: Ruh Sağlığının Temelleri"
+        },
+        {
+          "key": "ayt-felsefe-grubu.sosyolojiye-giris",
+          "name": "Sosyoloji: Sosyolojiye Giriş"
+        },
+        {
+          "key": "ayt-felsefe-grubu.birey-ve-toplum",
+          "name": "Sosyoloji: Birey ve Toplum"
+        },
+        {
+          "key": "ayt-felsefe-grubu.toplumsal-yapi",
+          "name": "Sosyoloji: Toplumsal Yapı"
+        },
+        {
+          "key": "ayt-felsefe-grubu.toplumsal-degisme",
+          "name": "Sosyoloji: Toplumsal Değişme ve Gelişme"
+        },
+        {
+          "key": "ayt-felsefe-grubu.toplum-ve-kultur",
+          "name": "Sosyoloji: Toplum ve Kültür"
+        },
+        {
+          "key": "ayt-felsefe-grubu.toplumsal-kurumlar",
+          "name": "Sosyoloji: Toplumsal Kurumlar"
+        },
+        {
+          "key": "ayt-felsefe-grubu.mantiga-giris",
+          "name": "Mantık: Mantığa Giriş"
+        },
+        {
+          "key": "ayt-felsefe-grubu.klasik-mantik",
+          "name": "Mantık: Klasik Mantık"
+        },
+        {
+          "key": "ayt-felsefe-grubu.mantik-ve-dil",
+          "name": "Mantık: Mantık ve Dil"
+        },
+        {
+          "key": "ayt-felsefe-grubu.sembolik-mantik",
+          "name": "Mantık: Sembolik Mantık"
+        }
+      ]
+    },
+    {
+      "key": "ayt-din",
+      "name": "Din Kültürü ve Ahlak Bilgisi",
+      "exam": "AYT",
+      "fields": [
+        "SOZ"
+      ],
+      "questionCount": 6,
+      "topics": [
+        {
+          "key": "ayt-din.dunya-ve-ahiret",
+          "name": "Dünya ve Ahiret"
+        },
+        {
+          "key": "ayt-din.kurana-gore-hz-muhammed",
+          "name": "Kur'an'a Göre Hz. Muhammed"
+        },
+        {
+          "key": "ayt-din.kuranda-bazi-kavramlar",
+          "name": "Kur'an'da Bazı Kavramlar"
+        },
+        {
+          "key": "ayt-din.inancla-ilgili-meseleler",
+          "name": "İnançla İlgili Meseleler"
+        },
+        {
+          "key": "ayt-din.yahudilik-ve-hristiyanlik",
+          "name": "Yahudilik ve Hristiyanlık"
+        },
+        {
+          "key": "ayt-din.islam-ve-bilim",
+          "name": "İslam ve Bilim"
+        },
+        {
+          "key": "ayt-din.anadoluda-islam",
+          "name": "Anadolu'da İslam"
+        },
+        {
+          "key": "ayt-din.tasavvufi-yorumlar",
+          "name": "İslam Düşüncesinde Tasavvufi Yorumlar"
+        },
+        {
+          "key": "ayt-din.guncel-dini-meseleler",
+          "name": "Güncel Dinî Meseleler"
+        },
+        {
+          "key": "ayt-din.hint-ve-cin-dinleri",
+          "name": "Hint ve Çin Dinleri"
+        }
+      ]
+    },
+    {
+      "key": "ayt-matematik",
+      "name": "Matematik",
+      "exam": "AYT",
+      "fields": [
+        "SAY",
+        "EA"
+      ],
+      "questionCount": null,
+      "topics": [
+        {
+          "key": "ayt-matematik.fonksiyonlar",
+          "name": "Fonksiyonlar"
+        },
+        {
+          "key": "ayt-matematik.polinomlar",
+          "name": "Polinomlar"
+        },
+        {
+          "key": "ayt-matematik.ikinci-dereceden-denklemler",
+          "name": "İkinci Dereceden Denklemler"
+        },
+        {
+          "key": "ayt-matematik.esitsizlikler",
+          "name": "Eşitsizlikler ve Denklem Sistemleri"
+        },
+        {
+          "key": "ayt-matematik.parabol",
+          "name": "Parabol (İkinci Dereceden Fonksiyonlar)"
+        },
+        {
+          "key": "ayt-matematik.permutasyon-kombinasyon-binom",
+          "name": "Permütasyon, Kombinasyon ve Binom"
+        },
+        {
+          "key": "ayt-matematik.olasilik",
+          "name": "Olasılık"
+        },
+        {
+          "key": "ayt-matematik.trigonometri",
+          "name": "Trigonometri"
+        },
+        {
+          "key": "ayt-matematik.ustel-ve-logaritmik-fonksiyonlar",
+          "name": "Üstel ve Logaritmik Fonksiyonlar"
+        },
+        {
+          "key": "ayt-matematik.diziler",
+          "name": "Diziler"
+        },
+        {
+          "key": "ayt-matematik.limit-ve-sureklilik",
+          "name": "Limit ve Süreklilik"
+        },
+        {
+          "key": "ayt-matematik.turev",
+          "name": "Türev"
+        },
+        {
+          "key": "ayt-matematik.integral",
+          "name": "İntegral"
+        }
+      ]
+    },
+    {
+      "key": "ayt-geometri",
+      "name": "Geometri",
+      "exam": "AYT",
+      "fields": [
+        "SAY",
+        "EA"
+      ],
+      "questionCount": null,
+      "topics": [
+        {
+          "key": "ayt-geometri.ucgenler",
+          "name": "Üçgenler"
+        },
+        {
+          "key": "ayt-geometri.cokgenler-ve-dortgenler",
+          "name": "Çokgenler ve Dörtgenler"
+        },
+        {
+          "key": "ayt-geometri.cember-ve-daire",
+          "name": "Çember ve Daire"
+        },
+        {
+          "key": "ayt-geometri.dogrunun-analitigi",
+          "name": "Doğrunun Analitik İncelenmesi"
+        },
+        {
+          "key": "ayt-geometri.donusum-geometrisi",
+          "name": "Dönüşüm Geometrisi"
+        },
+        {
+          "key": "ayt-geometri.kati-cisimler",
+          "name": "Katı Cisimler"
+        },
+        {
+          "key": "ayt-geometri.cemberin-analitigi",
+          "name": "Çemberin Analitik İncelenmesi"
+        }
+      ]
+    },
+    {
+      "key": "ayt-fizik",
+      "name": "Fizik",
+      "exam": "AYT",
+      "fields": [
+        "SAY"
+      ],
+      "questionCount": 14,
+      "topics": [
+        {
+          "key": "ayt-fizik.vektorler",
+          "name": "Vektörler"
+        },
+        {
+          "key": "ayt-fizik.bagil-hareket",
+          "name": "Bağıl Hareket"
+        },
+        {
+          "key": "ayt-fizik.newtonun-hareket-yasalari",
+          "name": "Newton'un Hareket Yasaları"
+        },
+        {
+          "key": "ayt-fizik.bir-boyutta-sabit-ivmeli-hareket",
+          "name": "Bir Boyutta Sabit İvmeli Hareket"
+        },
+        {
+          "key": "ayt-fizik.atislar",
+          "name": "Atışlar (İki Boyutta Hareket)"
+        },
+        {
+          "key": "ayt-fizik.enerji-ve-hareket",
+          "name": "Enerji ve Hareket"
+        },
+        {
+          "key": "ayt-fizik.itme-ve-momentum",
+          "name": "İtme ve Çizgisel Momentum"
+        },
+        {
+          "key": "ayt-fizik.tork-ve-denge",
+          "name": "Tork ve Denge"
+        },
+        {
+          "key": "ayt-fizik.kutle-merkezi",
+          "name": "Kütle Merkezi"
+        },
+        {
+          "key": "ayt-fizik.basit-makineler",
+          "name": "Basit Makineler"
+        },
+        {
+          "key": "ayt-fizik.elektriksel-kuvvet-ve-alan",
+          "name": "Elektriksel Kuvvet ve Elektrik Alan"
+        },
+        {
+          "key": "ayt-fizik.elektriksel-potansiyel",
+          "name": "Elektriksel Potansiyel"
+        },
+        {
+          "key": "ayt-fizik.duzgun-elektrik-alan-ve-siga",
+          "name": "Düzgün Elektrik Alan ve Sığa"
+        },
+        {
+          "key": "ayt-fizik.manyetizma-ve-induksiyon",
+          "name": "Manyetizma ve Elektromanyetik İndüksiyon"
+        },
+        {
+          "key": "ayt-fizik.alternatif-akim-transformator",
+          "name": "Alternatif Akım ve Transformatörler"
+        },
+        {
+          "key": "ayt-fizik.cembersel-hareket",
+          "name": "Düzgün Çembersel Hareket"
+        },
+        {
+          "key": "ayt-fizik.donerek-oteleme-acisal-momentum",
+          "name": "Dönerek Öteleme ve Açısal Momentum"
+        },
+        {
+          "key": "ayt-fizik.kutle-cekim-kepler",
+          "name": "Kütle Çekim ve Kepler Yasaları"
+        },
+        {
+          "key": "ayt-fizik.basit-harmonik-hareket",
+          "name": "Basit Harmonik Hareket"
+        },
+        {
+          "key": "ayt-fizik.dalga-mekanigi",
+          "name": "Dalga Mekaniği"
+        },
+        {
+          "key": "ayt-fizik.atom-fizigi-radyoaktivite",
+          "name": "Atom Fiziğine Giriş ve Radyoaktivite"
+        },
+        {
+          "key": "ayt-fizik.modern-fizik",
+          "name": "Modern Fizik"
+        },
+        {
+          "key": "ayt-fizik.modern-fizigin-uygulamalari",
+          "name": "Modern Fiziğin Teknolojideki Uygulamaları"
+        }
+      ]
+    },
+    {
+      "key": "ayt-kimya",
+      "name": "Kimya",
+      "exam": "AYT",
+      "fields": [
+        "SAY"
+      ],
+      "questionCount": 13,
+      "topics": [
+        {
+          "key": "ayt-kimya.modern-atom-teorisi",
+          "name": "Modern Atom Teorisi"
+        },
+        {
+          "key": "ayt-kimya.gazlar",
+          "name": "Gazlar"
+        },
+        {
+          "key": "ayt-kimya.sivi-cozeltiler-cozunurluk",
+          "name": "Sıvı Çözeltiler ve Çözünürlük"
+        },
+        {
+          "key": "ayt-kimya.tepkimelerde-enerji",
+          "name": "Kimyasal Tepkimelerde Enerji"
+        },
+        {
+          "key": "ayt-kimya.tepkimelerde-hiz",
+          "name": "Kimyasal Tepkimelerde Hız"
+        },
+        {
+          "key": "ayt-kimya.tepkimelerde-denge",
+          "name": "Kimyasal Tepkimelerde Denge"
+        },
+        {
+          "key": "ayt-kimya.asit-baz-dengesi",
+          "name": "Asit – Baz Dengesi"
+        },
+        {
+          "key": "ayt-kimya.cozunurluk-dengesi",
+          "name": "Çözünürlük Dengesi"
+        },
+        {
+          "key": "ayt-kimya.kimya-ve-elektrik",
+          "name": "Kimya ve Elektrik"
+        },
+        {
+          "key": "ayt-kimya.karbon-kimyasina-giris",
+          "name": "Karbon Kimyasına Giriş"
+        },
+        {
+          "key": "ayt-kimya.organik-bilesikler",
+          "name": "Organik Bileşikler"
+        },
+        {
+          "key": "ayt-kimya.enerji-kaynaklari",
+          "name": "Enerji Kaynakları ve Bilimsel Gelişmeler"
+        }
+      ]
+    },
+    {
+      "key": "ayt-biyoloji",
+      "name": "Biyoloji",
+      "exam": "AYT",
+      "fields": [
+        "SAY"
+      ],
+      "questionCount": 13,
+      "topics": [
+        {
+          "key": "ayt-biyoloji.sinir-sistemi",
+          "name": "Sinir Sistemi"
+        },
+        {
+          "key": "ayt-biyoloji.endokrin-sistem",
+          "name": "Endokrin Sistem"
+        },
+        {
+          "key": "ayt-biyoloji.duyu-organlari",
+          "name": "Duyu Organları"
+        },
+        {
+          "key": "ayt-biyoloji.destek-ve-hareket-sistemi",
+          "name": "Destek ve Hareket Sistemi"
+        },
+        {
+          "key": "ayt-biyoloji.sindirim-sistemi",
+          "name": "Sindirim Sistemi"
+        },
+        {
+          "key": "ayt-biyoloji.dolasim-ve-bagisiklik",
+          "name": "Dolaşım Sistemi ve Bağışıklık"
+        },
+        {
+          "key": "ayt-biyoloji.solunum-sistemi",
+          "name": "Solunum Sistemi"
+        },
+        {
+          "key": "ayt-biyoloji.uriner-sistem",
+          "name": "Üriner Sistem"
+        },
+        {
+          "key": "ayt-biyoloji.ureme-ve-embriyonik-gelisim",
+          "name": "Üreme Sistemi ve Embriyonik Gelişim"
+        },
+        {
+          "key": "ayt-biyoloji.komunite-ekolojisi",
+          "name": "Komünite Ekolojisi"
+        },
+        {
+          "key": "ayt-biyoloji.populasyon-ekolojisi",
+          "name": "Popülasyon Ekolojisi"
+        },
+        {
+          "key": "ayt-biyoloji.nukleik-asitler-genetik-sifre",
+          "name": "Nükleik Asitler ve Genetik Şifre"
+        },
+        {
+          "key": "ayt-biyoloji.protein-sentezi",
+          "name": "Protein Sentezi"
+        },
+        {
+          "key": "ayt-biyoloji.canlilik-ve-enerji",
+          "name": "Canlılık ve Enerji (ATP)"
+        },
+        {
+          "key": "ayt-biyoloji.fotosentez",
+          "name": "Fotosentez"
+        },
+        {
+          "key": "ayt-biyoloji.kemosentez",
+          "name": "Kemosentez"
+        },
+        {
+          "key": "ayt-biyoloji.hucresel-solunum",
+          "name": "Hücresel Solunum"
+        },
+        {
+          "key": "ayt-biyoloji.bitkilerin-yapisi",
+          "name": "Bitkilerin Yapısı"
+        },
+        {
+          "key": "ayt-biyoloji.bitkilerde-madde-tasinmasi",
+          "name": "Bitkilerde Madde Taşınması"
+        },
+        {
+          "key": "ayt-biyoloji.bitkilerde-eseyli-ureme",
+          "name": "Bitkilerde Eşeyli Üreme"
+        },
+        {
+          "key": "ayt-biyoloji.canlilar-ve-cevre",
+          "name": "Canlılar ve Çevre"
+        }
+      ]
+    },
+    {
+      "key": "ydt-yabanci-dil",
+      "name": "Yabancı Dil (YDT)",
+      "exam": "YDT",
+      "fields": [
+        "DIL"
+      ],
+      "questionCount": 80,
+      "topics": [
+        {
+          "key": "ydt-yabanci-dil.kelime-bilgisi",
+          "name": "Kelime Bilgisi"
+        },
+        {
+          "key": "ydt-yabanci-dil.dil-bilgisi",
+          "name": "Dil Bilgisi"
+        },
+        {
+          "key": "ydt-yabanci-dil.cloze-test",
+          "name": "Cloze Test"
+        },
+        {
+          "key": "ydt-yabanci-dil.cumle-tamamlama",
+          "name": "Cümle Tamamlama"
+        },
+        {
+          "key": "ydt-yabanci-dil.ceviri-yabanci-dilden-turkceye",
+          "name": "Çeviri (Yabancı Dil → Türkçe)"
+        },
+        {
+          "key": "ydt-yabanci-dil.ceviri-turkceden-yabanci-dile",
+          "name": "Çeviri (Türkçe → Yabancı Dil)"
+        },
+        {
+          "key": "ydt-yabanci-dil.paragraf",
+          "name": "Paragraf (Okuduğunu Anlama)"
+        },
+        {
+          "key": "ydt-yabanci-dil.diyalog-tamamlama",
+          "name": "Diyalog Tamamlama"
+        },
+        {
+          "key": "ydt-yabanci-dil.anlamca-en-yakin-cumle",
+          "name": "Anlamca En Yakın Cümle"
+        },
+        {
+          "key": "ydt-yabanci-dil.paragraf-tamamlama",
+          "name": "Paragraf Tamamlama"
+        },
+        {
+          "key": "ydt-yabanci-dil.anlam-butunlugunu-bozan-cumle",
+          "name": "Paragrafta Anlam Bütünlüğünü Bozan Cümle"
+        }
+      ]
+    }
+  ]
+}

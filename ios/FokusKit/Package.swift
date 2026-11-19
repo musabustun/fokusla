@@ -29,7 +29,11 @@ let package = Package(
             resources: [.process("Resources")]
         ),
         .testTarget(name: "FokusDomainTests", dependencies: ["FokusDomain"]),
-        .testTarget(name: "FokusDataTests", dependencies: ["FokusData", "FokusDomain"]),
+        .testTarget(
+            name: "FokusDataTests",
+            dependencies: ["FokusData", "FokusDomain"],
+            resources: [.copy("Fixtures")]
+        ),
         .testTarget(name: "FokusDesignTests", dependencies: ["FokusDesign"]),
     ],
     swiftLanguageModes: [.v6]

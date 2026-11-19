@@ -27,10 +27,27 @@ public struct LineSection<Content: View>: View {
             }
             if let footer {
                 Text(footer)
-                    .font(.footnote)
+                    .fokusTextStyle(.footnote)
                     .foregroundStyle(.fkSecondaryLabel)
             }
         }
+    }
+}
+
+/// Satır sonundaki ">" işareti (yalnızca görsel; `tertiaryLabel`).
+public struct LineChevron: View {
+    private let isVisible: Bool
+
+    public init(isVisible: Bool = true) {
+        self.isVisible = isVisible
+    }
+
+    public var body: some View {
+        Image(systemName: "chevron.right")
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(.fkTertiaryLabel)
+            .opacity(isVisible ? 1 : 0)
+            .accessibilityHidden(true)
     }
 }
 
@@ -56,9 +73,9 @@ public struct LineRow<Accessory: View>: View {
         VStack(spacing: 0) {
             HStack(spacing: FokusSpacing.md) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(title).font(.body).foregroundStyle(.fkLabel)
+                    Text(title).fokusTextStyle(.body).foregroundStyle(.fkLabel)
                     if let subtitle {
-                        Text(subtitle).font(.subheadline).foregroundStyle(.fkSecondaryLabel)
+                        Text(subtitle).fokusTextStyle(.subheadline).foregroundStyle(.fkSecondaryLabel)
                     }
                 }
                 Spacer(minLength: FokusSpacing.sm)
@@ -78,5 +95,48 @@ public struct LineRow<Accessory: View>: View {
 extension LineRow where Accessory == EmptyView {
     public init(_ title: String, subtitle: String? = nil, value: String? = nil) {
         self.init(title, subtitle: subtitle, value: value) { EmptyView() }
+    }
+}
+
+extension LineRow where Accessory == LineChevron {
+    /// Gezinme satırı: sağda ">" gösterir (`showsChevron: true`). `NavigationLink`/`Button`
+    /// içinde `.buttonStyle(.fokusRow)` ile kullan.
+    public init(_ title: String, subtitle: String? = nil, value: String? = nil, showsChevron: Bool) {
+        self.init(title, subtitle: subtitle, value: value) {
+            LineChevron(isVisible: showsChevron)
+        }
+    }
+}
+
+/// Satır içeren `Button`/`NavigationLink` için: basılıyken `fill` zemin, nötr metin rengi.
+public struct FokusRowButtonStyle: ButtonStyle {
+    public init() {}
+
+    public func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background { Rectangle().fill(.fkFill).opacity(configuration.isPressed ? 1 : 0) }
+            .animation(FokusMotion.baseAnimation, value: configuration.isPressed)
+    }
+}
+
+extension ButtonStyle where Self == FokusRowButtonStyle {
+    public static var fokusRow: FokusRowButtonStyle { FokusRowButtonStyle() }
+}
+
+#Preview("LineSection — koyu") {
+    FokusPreviewCanvas(.dark) { LineListPreviewContent() }
+}
+
+#Preview("LineSection — açık") {
+    FokusPreviewCanvas(.light) { LineListPreviewContent() }
+}
+
+private struct LineListPreviewContent: View {
+    var body: some View {
+        LineSection("Bugün", footer: "Süreler zaman damgalarından hesaplanır.") {
+            LineRow("Matematik", subtitle: "TYT", value: "1:20")
+            LineRow("Fizik", value: "0:45")
+            LineRow("Kitaplar", showsChevron: true)
+        }
     }
 }

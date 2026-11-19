@@ -35,7 +35,7 @@ export function Sidebar() {
   return (
     <nav
       aria-label="Ana gezinme"
-      className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-separator bg-surface px-3 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] md:flex lg:w-72"
+      className="fixed inset-y-0 left-0 z-20 hidden w-60 flex-col border-r border-separator bg-surface px-3 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))] md:flex lg:w-64"
     >
       <p className="mb-4 px-3 text-title2">Fokus</p>
       <ul role="list" className="flex flex-col gap-0.5">

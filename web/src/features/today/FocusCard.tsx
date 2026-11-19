@@ -140,7 +140,7 @@ export function FocusCard({ today, className }: FocusCardProps) {
 
   return (
     <TodayCard title="Odak" linkTo={ROUTES.focus} linkLabel="Odak ekranı" className={className}>
-      <div className="grid gap-4 md:grid-cols-2 md:gap-x-8">
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-x-8">
         <div className="flex min-w-0 flex-col gap-4">
           {active && <ActiveSessionPanel state={active} />}
           <StatsRow stats={buildStats(summary)} isLoading={isLoading} />
@@ -157,7 +157,7 @@ export function FocusCard({ today, className }: FocusCardProps) {
             )}
           </div>
         </div>
-        <MiniWeekChart totals={totals} today={today} className="md:self-end" />
+        <MiniWeekChart totals={totals} today={today} className="lg:self-end" />
       </div>
     </TodayCard>
   )

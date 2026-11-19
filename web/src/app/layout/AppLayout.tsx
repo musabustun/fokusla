@@ -5,7 +5,8 @@ import { TabBar } from './TabBar'
 /**
  * Uyarlanabilir uygulama kabuğu.
  * - <768px (iPhone): içerik + alt tab bar (inTabBar olan 5 sekme).
- * - ≥768px (iPad): sol kenar çubuğu (tüm sekmeler) + sağda okunaklı genişlikte içerik.
+ * - ≥768px (iPad): sol kenar çubuğu (tüm sekmeler) + sağda içerik. İçerik büyük iPad/masaüstünde
+ *   de ekranı kullansın diye geniş (max-w-6xl) tutulur; iki sütunlu düzenler `lg:`'de açılır.
  */
 export function AppLayout() {
   return (
@@ -20,9 +21,9 @@ export function AppLayout() {
       <main
         id="main"
         tabIndex={-1}
-        className="px-[max(1rem,env(safe-area-inset-left))] pt-[max(1.5rem,env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] focus:outline-none md:pr-8 md:pb-12 md:pl-68 lg:pl-80"
+        className="px-[max(1rem,env(safe-area-inset-left))] pt-[max(1.5rem,env(safe-area-inset-top))] pb-[calc(5rem+env(safe-area-inset-bottom))] focus:outline-none md:pr-8 md:pb-12 md:pl-68 lg:pl-72"
       >
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full max-w-6xl">
           <Outlet />
         </div>
       </main>

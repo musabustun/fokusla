@@ -83,6 +83,7 @@ sequenceDiagram
 - **Senkron kaydı:** Her yazmadan sonra repository `SyncService.recordLocalChange()` çağırır. Web'de `MockSyncService` değişiklikleri yalnızca sayar ve durum makinesini (`disabled` / `idle` / `syncing` / `error`) taklit eder; hiçbir yere veri göndermez.
 - **Hesap:** Türetilmiş değerler (net, süre, ortalama, ilerleme) render sırasında `domain/calc` fonksiyonlarıyla hesaplanır, saklanmaz.
 - **Tohumlama:** Uygulama açılışında `ensureCurriculumSeeded` müfredat kataloğunu `Subject`/`Topic` kayıtları olarak `catalogKey` ile idempotent biçimde yazar.
+- **Yerel veri ve hesap silme (Ayarlar):** `LocalDataService` (`data/localData.ts`, `AppServices.localData`) tüm silinmemiş kayıtları JSON olarak dışa aktarır (`exportAll`) ve tüm tabloları KALICI boşaltır (`deleteAll`; tombstone dahil). `AuthService.deleteAccount()` oturumu ve Apple bağını siler, yerel verilere dokunmaz; yerel verilerin silinip silinmeyeceği kullanıcıya ayrıca sorulur. Native karşılıkları: `Codable` dışa aktarma, `ModelContext.delete(model:)`, Sign in with Apple token iptali (`/auth/revoke`). CloudKit mirroring açıkken `deleteAll` silmeyi diğer cihazlara da yansıtır; arayüz bunu belirtmelidir.
 - **UI state:** Tema gibi yalnızca arayüze ait durum zustand ile tutulur; domain verisi zustand'a konmaz.
 
 ## 3. Onboarding kapısı

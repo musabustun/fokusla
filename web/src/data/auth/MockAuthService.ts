@@ -76,6 +76,13 @@ export class MockAuthService implements AuthService {
     safeRemoveItem(this.storage, AUTH_SESSION_KEY)
   }
 
+  /** Oturumu ve cihaza özel sahte Apple kimliğini siler; sonraki giriş yeni bir kimlik üretir. */
+  async deleteAccount(): Promise<void> {
+    await wait(this.delayMs)
+    safeRemoveItem(this.storage, AUTH_SESSION_KEY)
+    safeRemoveItem(this.storage, MOCK_APPLE_USER_ID_KEY)
+  }
+
   private stableMockUserId(): string {
     const stored = safeGetItem(this.storage, MOCK_APPLE_USER_ID_KEY)
     if (stored?.startsWith('mock-apple-')) return stored

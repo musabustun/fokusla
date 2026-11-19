@@ -19,6 +19,7 @@ export {
   type SegmentedOption,
 } from './components/SegmentedControl'
 export { Sheet, type SheetProps } from './components/Sheet'
+export { Toggle, type ToggleProps } from './components/Toggle'
 export { cx } from './cx'
 export { ThemeProvider } from './theme/ThemeProvider'
 export {

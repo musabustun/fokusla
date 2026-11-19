@@ -5,6 +5,7 @@
 export type * from './repository'
 export { EntityNotFoundError } from './repository'
 export type { AppServices } from './services'
+export { DATA_EXPORT_FORMAT_VERSION, type DataExport, type LocalDataService } from './localData'
 export type { AuthService, AuthSession } from './auth/AuthService'
 export { AuthCancelledError } from './auth/AuthService'
 export type { LocalChange, SyncService, SyncState } from './sync/SyncService'

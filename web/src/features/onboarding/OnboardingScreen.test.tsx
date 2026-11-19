@@ -4,6 +4,7 @@ import { createMemoryRouter, Outlet, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ROUTES } from '@/app/routes'
 import { AuthCancelledError, ServicesProvider, type AppServices } from '@/data'
+import { ThemeProvider } from '@/ui'
 import { createTestServices, type TestServices } from '@/test/services'
 import { OnboardingGate } from './OnboardingGate'
 import { OnboardingScreen } from './OnboardingScreen'
@@ -25,14 +26,16 @@ function renderApp(services: AppServices, initialPath: string = ROUTES.today) {
     { initialEntries: [initialPath] },
   )
   render(
-    <ServicesProvider services={services}>
-      <RouterProvider router={router} />
-    </ServicesProvider>,
+    <ThemeProvider>
+      <ServicesProvider services={services}>
+        <RouterProvider router={router} />
+      </ServicesProvider>
+    </ThemeProvider>,
   )
   return router
 }
 
-async function goToAccountStep(fieldName: RegExp) {
+async function goToThemeStep(fieldName: RegExp) {
   const user = userEvent.setup()
   await user.click(await screen.findByRole('button', { name: 'Başla' }))
   const next = screen.getByRole('button', { name: 'Devam' })
@@ -40,6 +43,13 @@ async function goToAccountStep(fieldName: RegExp) {
   await user.click(screen.getByRole('radio', { name: fieldName }))
   expect(next).toBeEnabled()
   await user.click(next)
+  expect(await screen.findByRole('heading', { level: 1, name: 'Temanı seç' })).toBeInTheDocument()
+  return user
+}
+
+async function goToAccountStep(fieldName: RegExp) {
+  const user = await goToThemeStep(fieldName)
+  await user.click(screen.getByRole('button', { name: 'Devam' }))
   return user
 }
 
@@ -49,6 +59,7 @@ describe('Onboarding', () => {
 
   beforeEach(() => {
     localStorage.clear()
+    delete document.documentElement.dataset.palette
     ctx = createTestServices()
     services = ctx.services
   })
@@ -113,9 +124,43 @@ describe('Onboarding', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('tekrar dene')
   })
 
+  it('tema adımı 6 paleti gösterir ve varsayılan olarak Kahve seçilidir', async () => {
+    renderApp(services)
+    await goToThemeStep(/Sayısal/)
+
+    expect(screen.getAllByRole('radio')).toHaveLength(6)
+    for (const name of ['Kahve', 'Tek renk', 'Çilek', 'Matcha', 'Yaban mersini', 'Limonata']) {
+      expect(screen.getByRole('radio', { name })).toBeInTheDocument()
+    }
+    expect(screen.getByRole('radio', { name: 'Kahve' })).toBeChecked()
+  })
+
+  it('palet seçimi hemen uygulanır ve kalıcı olur', async () => {
+    renderApp(services)
+    const user = await goToThemeStep(/Sayısal/)
+
+    await user.click(screen.getByRole('radio', { name: 'Çilek' }))
+
+    expect(screen.getByRole('radio', { name: 'Çilek' })).toBeChecked()
+    expect(document.documentElement.dataset.palette).toBe('strawberry')
+    expect(localStorage.getItem('fokus.palette')).toBe('strawberry')
+  })
+
+  it('tema adımında Geri alan adımına döner ve alan seçili kalır', async () => {
+    renderApp(services)
+    const user = await goToThemeStep(/Eşit Ağırlık/)
+
+    await user.click(screen.getByRole('button', { name: 'Geri' }))
+
+    expect(screen.getByRole('heading', { level: 1, name: 'Alanın hangisi?' })).toBeVisible()
+    expect(screen.getByRole('radio', { name: /Eşit Ağırlık/ })).toBeChecked()
+  })
+
   it('geri düğmeleri önceki adıma döner ve seçimi korur', async () => {
     renderApp(services)
     const user = await goToAccountStep(/Sayısal/)
+    await user.click(screen.getByRole('button', { name: 'Geri' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Temanı seç' })).toBeVisible()
     await user.click(screen.getByRole('button', { name: 'Geri' }))
     expect(screen.getByRole('radio', { name: /Sayısal/ })).toBeChecked()
     await user.click(screen.getByRole('button', { name: 'Geri' }))

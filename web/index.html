@@ -16,16 +16,25 @@
     <meta name="apple-mobile-web-app-title" content="Fokus" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script>
-      // İlk boyamadan önce kayıtlı temayı uygula (yanlış tema parlamasını önler).
-      // Anahtar ve varsayılan: src/ui/theme/themeStorage.ts → THEME_STORAGE_KEY,
-      // DEFAULT_THEME_PREFERENCE ('dark'). Kayıt yoksa koyu tema.
-      var dark = true
+      // İlk boyamadan önce kayıtlı modu ve paleti uygula (yanlış tema parlamasını önler).
+      // Anahtarlar ve varsayılanlar: src/ui/theme/themeStorage.ts → THEME_STORAGE_KEY,
+      // PALETTE_STORAGE_KEY, DEFAULT_THEME_PREFERENCE ('system'); src/ui/tokens.ts → PALETTE_NAMES,
+      // DEFAULT_PALETTE ('coffee'). Kayıt yoksa cihazın açık/koyu ayarı ve Kahve paleti.
+      var root = document.documentElement
+      var pref = null
+      var palette = null
       try {
-        var pref = localStorage.getItem('fokus.theme')
-        if (pref === 'light') dark = false
-        else if (pref === 'system') dark = window.matchMedia('(prefers-color-scheme: dark)').matches
+        pref = localStorage.getItem('fokus.theme')
+        palette = localStorage.getItem('fokus.palette')
       } catch (e) {}
-      document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+      var dark =
+        pref === 'dark' ||
+        (pref !== 'light' &&
+          !!window.matchMedia &&
+          window.matchMedia('(prefers-color-scheme: dark)').matches)
+      var palettes = ['coffee', 'mono', 'strawberry', 'matcha', 'blueberry', 'lemonade']
+      root.dataset.theme = dark ? 'dark' : 'light'
+      root.dataset.palette = palettes.indexOf(palette) >= 0 ? palette : 'coffee'
     </script>
   </head>
   <body>

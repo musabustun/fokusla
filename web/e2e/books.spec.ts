@@ -11,6 +11,8 @@ async function skipOnboarding(page: Page) {
   await page.getByRole('button', { name: 'Başla' }).click()
   await page.getByRole('radio', { name: /Sayısal/ }).check()
   await page.getByRole('button', { name: 'Devam' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Temanı seç' })).toBeVisible()
+  await page.getByRole('button', { name: 'Devam' }).click()
   await page.getByRole('button', { name: 'Şimdilik atla' }).click()
   await expect(page.getByRole('heading', { level: 1, name: 'Bugün' })).toBeVisible()
 }

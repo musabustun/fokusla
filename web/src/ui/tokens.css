@@ -3,11 +3,15 @@
  * (tokens.test.ts senkronu doğrular). Bileşenler ham hex kullanmaz; yalnızca bu token'ları
  * Tailwind sınıfları üzerinden kullanır: bg-background, text-label, border-separator, bg-accent…
  *
- * Varsayılan tema koyudur ("gece"); açık tema ("gündüz") `data-theme='light'` ile gelir.
+ * `:root` = Kahve paletinin açık modu, `[data-theme='dark']` = koyu modu (varsayılan palet). Diğer
+ * paletler `data-palette` ile aşağıda. Mod `data-theme`, palet `data-palette` ile bağımsız seçilir.
+ * Seçiciler yalnızca `<html>`'e değil her öğeye uyar: `<div data-palette='matcha' data-theme='dark'>`
+ * içindeki token'lar o paletin koyu modunu kullanır (PalettePicker önizlemeleri böyle çalışır).
  * Yazı tipleri yerelde barındırılır (@fontsource-variable, src/index.css) — Google'a istek yok.
  */
 
-:root {
+:root,
+[data-palette='coffee'] {
   color-scheme: light;
   --fk-background: #f5f2ea;
   --fk-surface: #fbf9f4;
@@ -52,6 +56,252 @@
   --fk-success: #8fd3a6;
   --fk-success-contrast: #0b1a10;
   --fk-warning: #ffb547;
+  --fk-danger: #ff7a6b;
+  --fk-danger-subtle: #2c1613;
+  --fk-scrim: #000000b3;
+}
+
+/*
+ * Diğer paletler: `data-palette` ile. Açık blok tek öznitelik, koyu blok iki öznitelik seçicisidir
+ * (daha özgül) — her blok tüm token'ları tanımlar, böylece sıra/özgüllük çakışması olmaz.
+ * Değerler tokens.ts → PALETTES ile birebir aynıdır.
+ */
+
+[data-palette='mono'] {
+  --fk-background: #ffffff;
+  --fk-surface: #fafafa;
+  --fk-surface-elevated: #ffffff;
+  --fk-fill: #efefef;
+  --fk-control-thumb: #0a0a0a;
+  --fk-switch-thumb-off: #737373;
+  --fk-label: #0a0a0a;
+  --fk-secondary-label: #5c5c5c;
+  --fk-tertiary-label: #7a7a7a;
+  --fk-separator: #e3e3e3;
+  --fk-separator-strong: #8a8a8a;
+  --fk-accent: #0a0a0a;
+  --fk-accent-contrast: #ffffff;
+  --fk-accent-ink: #0a0a0a;
+  --fk-accent-subtle: #ededed;
+  --fk-success: #2f6b45;
+  --fk-success-contrast: #ffffff;
+  --fk-warning: #0a0a0a;
+  --fk-danger: #b3261e;
+  --fk-danger-subtle: #f9e3e0;
+  --fk-scrim: #0a0a0a66;
+}
+
+[data-palette='mono'][data-theme='dark'] {
+  --fk-background: #050505;
+  --fk-surface: #0d0d0d;
+  --fk-surface-elevated: #151515;
+  --fk-fill: #1f1f1f;
+  --fk-control-thumb: #f5f5f5;
+  --fk-switch-thumb-off: #8a8a8a;
+  --fk-label: #f5f5f5;
+  --fk-secondary-label: #a0a0a0;
+  --fk-tertiary-label: #707070;
+  --fk-separator: #262626;
+  --fk-separator-strong: #6b6b6b;
+  --fk-accent: #f5f5f5;
+  --fk-accent-contrast: #0a0a0a;
+  --fk-accent-ink: #f5f5f5;
+  --fk-accent-subtle: #262626;
+  --fk-success: #93cda5;
+  --fk-success-contrast: #0a1a0f;
+  --fk-warning: #f5f5f5;
+  --fk-danger: #ff7a6b;
+  --fk-danger-subtle: #2c1613;
+  --fk-scrim: #000000b3;
+}
+
+[data-palette='strawberry'] {
+  --fk-background: #fbf2f3;
+  --fk-surface: #fef8f8;
+  --fk-surface-elevated: #fffcfc;
+  --fk-fill: #f2e1e4;
+  --fk-control-thumb: #22161a;
+  --fk-switch-thumb-off: #7e6e73;
+  --fk-label: #22161a;
+  --fk-secondary-label: #64555a;
+  --fk-tertiary-label: #85747a;
+  --fk-separator: #ead7db;
+  --fk-separator-strong: #96858b;
+  --fk-accent: #d1335f;
+  --fk-accent-contrast: #ffffff;
+  --fk-accent-ink: #b42357;
+  --fk-accent-subtle: #f9dce5;
+  --fk-success: #2d6a43;
+  --fk-success-contrast: #ffffff;
+  --fk-warning: #b42357;
+  --fk-danger: #b53a12;
+  --fk-danger-subtle: #f8e2d8;
+  --fk-scrim: #22161a66;
+}
+
+[data-palette='strawberry'][data-theme='dark'] {
+  --fk-background: #120c0e;
+  --fk-surface: #181013;
+  --fk-surface-elevated: #1f161a;
+  --fk-fill: #2a1f23;
+  --fk-control-thumb: #f3eaec;
+  --fk-switch-thumb-off: #93868a;
+  --fk-label: #f3eaec;
+  --fk-secondary-label: #a6989c;
+  --fk-tertiary-label: #7a6d71;
+  --fk-separator: #30252a;
+  --fk-separator-strong: #75676c;
+  --fk-accent: #ff6f96;
+  --fk-accent-contrast: #2a0611;
+  --fk-accent-ink: #ff7fa1;
+  --fk-accent-subtle: #341821;
+  --fk-success: #8fd3a6;
+  --fk-success-contrast: #0b1a10;
+  --fk-warning: #ff7fa1;
+  --fk-danger: #ff8f5e;
+  --fk-danger-subtle: #2e1a10;
+  --fk-scrim: #000000b3;
+}
+
+[data-palette='matcha'] {
+  --fk-background: #f1f4ea;
+  --fk-surface: #f8faf3;
+  --fk-surface-elevated: #fcfdf9;
+  --fk-fill: #e1e7d5;
+  --fk-control-thumb: #171c14;
+  --fk-switch-thumb-off: #6e7566;
+  --fk-label: #171c14;
+  --fk-secondary-label: #545c4e;
+  --fk-tertiary-label: #737b6b;
+  --fk-separator: #d4dcc7;
+  --fk-separator-strong: #848c7b;
+  --fk-accent: #9cc25a;
+  --fk-accent-contrast: #141c06;
+  --fk-accent-ink: #4a6e12;
+  --fk-accent-subtle: #e1edc8;
+  --fk-success: #1f6480;
+  --fk-success-contrast: #ffffff;
+  --fk-warning: #4a6e12;
+  --fk-danger: #b3261e;
+  --fk-danger-subtle: #f6e1dc;
+  --fk-scrim: #171c1466;
+}
+
+[data-palette='matcha'][data-theme='dark'] {
+  --fk-background: #0c100b;
+  --fk-surface: #111610;
+  --fk-surface-elevated: #171c16;
+  --fk-fill: #1f261d;
+  --fk-control-thumb: #eaefe2;
+  --fk-switch-thumb-off: #858c7d;
+  --fk-label: #eaefe2;
+  --fk-secondary-label: #979f8e;
+  --fk-tertiary-label: #6c7364;
+  --fk-separator: #263024;
+  --fk-separator-strong: #677060;
+  --fk-accent: #b4d677;
+  --fk-accent-contrast: #141c06;
+  --fk-accent-ink: #b4d677;
+  --fk-accent-subtle: #222c16;
+  --fk-success: #7cc8e3;
+  --fk-success-contrast: #06161d;
+  --fk-warning: #b4d677;
+  --fk-danger: #ff7a6b;
+  --fk-danger-subtle: #2c1613;
+  --fk-scrim: #000000b3;
+}
+
+[data-palette='blueberry'] {
+  --fk-background: #f1f4f9;
+  --fk-surface: #f7f9fc;
+  --fk-surface-elevated: #fcfdff;
+  --fk-fill: #e0e6ef;
+  --fk-control-thumb: #141a24;
+  --fk-switch-thumb-off: #6c7480;
+  --fk-label: #141a24;
+  --fk-secondary-label: #525b68;
+  --fk-tertiary-label: #717a87;
+  --fk-separator: #d3dbe6;
+  --fk-separator-strong: #828b98;
+  --fk-accent: #2f6fe0;
+  --fk-accent-contrast: #ffffff;
+  --fk-accent-ink: #1f5cc7;
+  --fk-accent-subtle: #dce7fa;
+  --fk-success: #2d6a43;
+  --fk-success-contrast: #ffffff;
+  --fk-warning: #1f5cc7;
+  --fk-danger: #b3261e;
+  --fk-danger-subtle: #f7e1dc;
+  --fk-scrim: #141a2466;
+}
+
+[data-palette='blueberry'][data-theme='dark'] {
+  --fk-background: #0a0e14;
+  --fk-surface: #0f141b;
+  --fk-surface-elevated: #151b23;
+  --fk-fill: #1c2330;
+  --fk-control-thumb: #e8edf4;
+  --fk-switch-thumb-off: #848c98;
+  --fk-label: #e8edf4;
+  --fk-secondary-label: #949daa;
+  --fk-tertiary-label: #69717d;
+  --fk-separator: #232b37;
+  --fk-separator-strong: #646d7a;
+  --fk-accent: #7db1ff;
+  --fk-accent-contrast: #06142b;
+  --fk-accent-ink: #7db1ff;
+  --fk-accent-subtle: #16243a;
+  --fk-success: #8fd3a6;
+  --fk-success-contrast: #0b1a10;
+  --fk-warning: #7db1ff;
+  --fk-danger: #ff7a6b;
+  --fk-danger-subtle: #2c1613;
+  --fk-scrim: #000000b3;
+}
+
+[data-palette='lemonade'] {
+  --fk-background: #f8f6e6;
+  --fk-surface: #fcfbf1;
+  --fk-surface-elevated: #fffef8;
+  --fk-fill: #ece8d0;
+  --fk-control-thumb: #1c1a0e;
+  --fk-switch-thumb-off: #767260;
+  --fk-label: #1c1a0e;
+  --fk-secondary-label: #5c5947;
+  --fk-tertiary-label: #7b7763;
+  --fk-separator: #e0dbbf;
+  --fk-separator-strong: #8c8772;
+  --fk-accent: #f5d33d;
+  --fk-accent-contrast: #1c1700;
+  --fk-accent-ink: #785f00;
+  --fk-accent-subtle: #f6ebb3;
+  --fk-success: #2d6a43;
+  --fk-success-contrast: #ffffff;
+  --fk-warning: #785f00;
+  --fk-danger: #b3261e;
+  --fk-danger-subtle: #f7e1dc;
+  --fk-scrim: #1c1a0e66;
+}
+
+[data-palette='lemonade'][data-theme='dark'] {
+  --fk-background: #0f0e08;
+  --fk-surface: #15140d;
+  --fk-surface-elevated: #1b1a12;
+  --fk-fill: #24231a;
+  --fk-control-thumb: #efeddf;
+  --fk-switch-thumb-off: #8b8878;
+  --fk-label: #efeddf;
+  --fk-secondary-label: #9c998a;
+  --fk-tertiary-label: #716e60;
+  --fk-separator: #2b2a1f;
+  --fk-separator-strong: #6c695a;
+  --fk-accent: #f7da4f;
+  --fk-accent-contrast: #1c1700;
+  --fk-accent-ink: #f7da4f;
+  --fk-accent-subtle: #2c2812;
+  --fk-success: #8fd3a6;
+  --fk-success-contrast: #0b1a10;
+  --fk-warning: #f7da4f;
   --fk-danger: #ff7a6b;
   --fk-danger-subtle: #2c1613;
   --fk-scrim: #000000b3;

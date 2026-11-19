@@ -2,11 +2,11 @@ import { expect, test, type Page } from '@playwright/test'
 
 /**
  * Duman testi: onboarding uçtan uca (iPhone ve iPad projelerinde çalışır).
- * Hoş geldin → alan seçimi → Apple ile Giriş (mock) / Şimdilik atla → Bugün.
+ * Hoş geldin → alan seçimi → Temanı seç → Apple ile Giriş (mock) / Şimdilik atla → Bugün.
  * İkinci açılışta onboarding gösterilmez.
  */
 
-async function completeWelcomeAndField(page: Page, fieldLabel: RegExp) {
+async function goToThemeStep(page: Page, fieldLabel: RegExp) {
   await page.goto('/')
   await expect(page).toHaveURL(/\/hos-geldin$/)
   await expect(page.getByRole('heading', { level: 1, name: /Fokus/ })).toBeVisible()
@@ -15,6 +15,13 @@ async function completeWelcomeAndField(page: Page, fieldLabel: RegExp) {
   await expect(page.getByRole('heading', { level: 1, name: /alanın/i })).toBeVisible()
   await page.getByRole('radio', { name: fieldLabel }).check()
   await page.getByRole('button', { name: 'Devam' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Temanı seç' })).toBeVisible()
+}
+
+async function completeWelcomeAndField(page: Page, fieldLabel: RegExp) {
+  await goToThemeStep(page, fieldLabel)
+  await page.getByRole('button', { name: 'Devam' }).click()
+  await expect(page.getByRole('button', { name: 'Şimdilik atla' })).toBeVisible()
 }
 
 test('şimdilik atla ile onboarding tamamlanır ve tekrar gösterilmez', async ({ page }) => {
@@ -58,4 +65,29 @@ test('gezinme tüm modül ekranlarına ulaşır', async ({ page }) => {
     await page.goto(path)
     await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible()
   }
+})
+
+test('tema adımında seçilen palet anında uygulanır ve kalıcıdır', async ({ page }) => {
+  await goToThemeStep(page, /Sayısal/)
+
+  await page.getByRole('radio', { name: 'Yaban mersini' }).check()
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'blueberry')
+
+  await page.getByRole('button', { name: 'Devam' }).click()
+  await page.getByRole('button', { name: 'Şimdilik atla' }).click()
+  await expect(page.getByRole('heading', { level: 1, name: 'Bugün' })).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'blueberry')
+
+  await page.reload()
+  await expect(page.getByRole('heading', { level: 1, name: 'Bugün' })).toBeVisible()
+  await expect(page.locator('html')).toHaveAttribute('data-palette', 'blueberry')
+})
+
+test('tema adımında Geri alan seçimine döner', async ({ page }) => {
+  await goToThemeStep(page, /Sayısal/)
+
+  await page.getByRole('button', { name: 'Geri' }).click()
+
+  await expect(page.getByRole('heading', { level: 1, name: /alanın/i })).toBeVisible()
+  await expect(page.getByRole('radio', { name: /Sayısal/ })).toBeChecked()
 })

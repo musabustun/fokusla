@@ -2,19 +2,28 @@ import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ThemeProvider } from './ThemeProvider'
-import { readStoredPreference, THEME_STORAGE_KEY } from './themeStorage'
+import {
+  PALETTE_STORAGE_KEY,
+  readStoredPalette,
+  readStoredPreference,
+  THEME_STORAGE_KEY,
+} from './themeStorage'
 import { useThemeStore } from './themeStore'
 import { useTheme } from './useTheme'
 
 function ThemeProbe() {
-  const { preference, resolved, setPreference } = useTheme()
+  const { preference, resolved, setPreference, palette, setPalette } = useTheme()
   return (
     <div>
       <p>
         {preference}/{resolved}
       </p>
+      <p>palet: {palette}</p>
       <button type="button" onClick={() => setPreference('dark')}>
         Koyu
+      </button>
+      <button type="button" onClick={() => setPalette('matcha')}>
+        Matcha
       </button>
     </div>
   )
@@ -39,12 +48,14 @@ function mockMatchMedia(initialDark: boolean) {
 
 beforeEach(() => {
   window.localStorage.clear()
-  useThemeStore.setState({ preference: 'system', systemDark: false })
+  useThemeStore.setState({ preference: 'system', palette: 'coffee', systemDark: false })
 })
 
 afterEach(() => {
   vi.unstubAllGlobals()
+  vi.restoreAllMocks()
   delete document.documentElement.dataset.theme
+  delete document.documentElement.dataset.palette
 })
 
 describe('theme', () => {
@@ -98,16 +109,57 @@ describe('theme', () => {
     expect(screen.getByText('system/dark')).toBeInTheDocument()
   })
 
-  it('defaults to the dark preference when nothing is stored', () => {
-    expect(readStoredPreference()).toBe('dark')
+  it('follows the device (system) and the Kahve palette when nothing is stored', () => {
+    expect(readStoredPreference()).toBe('system')
+    expect(readStoredPalette()).toBe('coffee')
   })
 
   it('ignores invalid stored values and survives storage errors', () => {
     window.localStorage.setItem(THEME_STORAGE_KEY, 'neon')
-    expect(readStoredPreference()).toBe('dark')
+    window.localStorage.setItem(PALETTE_STORAGE_KEY, 'grape')
+    expect(readStoredPreference()).toBe('system')
+    expect(readStoredPalette()).toBe('coffee')
     vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
       throw new Error('blocked')
     })
-    expect(readStoredPreference()).toBe('dark')
+    expect(readStoredPreference()).toBe('system')
+    expect(readStoredPalette()).toBe('coffee')
+  })
+
+  it('applies and persists the palette independently of the mode', async () => {
+    const meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.append(meta)
+    render(
+      <ThemeProvider>
+        <ThemeProbe />
+      </ThemeProvider>,
+    )
+    expect(document.documentElement).toHaveAttribute('data-palette', 'coffee')
+    await userEvent.click(screen.getByRole('button', { name: 'Matcha' }))
+    expect(document.documentElement).toHaveAttribute('data-palette', 'matcha')
+    expect(document.documentElement).toHaveAttribute('data-theme', 'light')
+    expect(window.localStorage.getItem(PALETTE_STORAGE_KEY)).toBe('matcha')
+    expect(screen.getByText('palet: matcha')).toBeInTheDocument()
+    expect(meta).toHaveAttribute('content', '#F1F4EA')
+    await userEvent.click(screen.getByRole('button', { name: 'Koyu' }))
+    expect(document.documentElement).toHaveAttribute('data-palette', 'matcha')
+    expect(meta).toHaveAttribute('content', '#0C100B')
+    meta.remove()
+  })
+
+  it('logs instead of throwing when storage writes fail', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota')
+    })
+    render(
+      <ThemeProvider>
+        <ThemeProbe />
+      </ThemeProvider>,
+    )
+    await userEvent.click(screen.getByRole('button', { name: 'Matcha' }))
+    expect(document.documentElement).toHaveAttribute('data-palette', 'matcha')
+    expect(warn).toHaveBeenCalled()
   })
 })

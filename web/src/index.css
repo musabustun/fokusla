@@ -1,2 +1,5 @@
 @import 'tailwindcss';
-/* İSKELET STUB — ui/shell ajanı token'ları ekleyecek. */
+@import './ui/tokens.css';
+
+/* Token'lar tema değişiminde kendiliğinden değişir; `dark:` yalnızca istisnalar içindir. */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));

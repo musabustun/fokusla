@@ -1,0 +1,130 @@
+/*
+ * Fokus tasarım token'ları — CSS tarafı. Değerler src/ui/tokens.ts ile birebir aynıdır
+ * (tokens.test.ts senkronu doğrular). Bileşenler ham hex kullanmaz; yalnızca bu token'ları
+ * Tailwind sınıfları üzerinden kullanır: bg-background, bg-surface, text-label, border-separator…
+ */
+
+:root {
+  color-scheme: light;
+  --fk-background: #f2f2f7;
+  --fk-surface: #ffffff;
+  --fk-surface-elevated: #ffffff;
+  --fk-fill: #e3e3e8;
+  --fk-control-thumb: #ffffff;
+  --fk-label: #1c1c1e;
+  --fk-secondary-label: #5f5f66;
+  --fk-tertiary-label: #7c7c82;
+  --fk-separator: #c6c6c8;
+  --fk-accent: #4b48d6;
+  --fk-accent-contrast: #ffffff;
+  --fk-accent-subtle: #e9e8fb;
+  --fk-success: #1f7a35;
+  --fk-warning: #a35200;
+  --fk-danger: #c9001a;
+  --fk-danger-subtle: #fce8ea;
+  --fk-scrim: #00000066;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --fk-background: #000000;
+  --fk-surface: #1c1c1e;
+  --fk-surface-elevated: #2c2c2e;
+  --fk-fill: #38383a;
+  --fk-control-thumb: #636366;
+  --fk-label: #ffffff;
+  --fk-secondary-label: #aeaeb2;
+  --fk-tertiary-label: #8e8e93;
+  --fk-separator: #38383a;
+  --fk-accent: #9895ff;
+  --fk-accent-contrast: #0b0a2e;
+  --fk-accent-subtle: #25234d;
+  --fk-success: #30d158;
+  --fk-warning: #ffb340;
+  --fk-danger: #ff6961;
+  --fk-danger-subtle: #3d1c1e;
+  --fk-scrim: #00000099;
+}
+
+/* Tailwind'in varsayılan renk, yazı boyutu ve yarıçap ölçeklerini kapatır: yalnızca token'lar. */
+@theme {
+  --color-*: initial;
+  --text-*: initial;
+  --radius-*: initial;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, 'Segoe UI', Roboto, sans-serif;
+
+  /* iOS Dynamic Type (px → rem, 1rem = 16px; tarayıcı yazı boyutuyla ölçeklenir) */
+  --text-large-title: 2.125rem;
+  --text-large-title--line-height: 2.5625rem;
+  --text-large-title--font-weight: 700;
+  --text-title1: 1.75rem;
+  --text-title1--line-height: 2.125rem;
+  --text-title1--font-weight: 700;
+  --text-title2: 1.375rem;
+  --text-title2--line-height: 1.75rem;
+  --text-title2--font-weight: 700;
+  --text-title3: 1.25rem;
+  --text-title3--line-height: 1.5625rem;
+  --text-title3--font-weight: 600;
+  --text-headline: 1.0625rem;
+  --text-headline--line-height: 1.375rem;
+  --text-headline--font-weight: 600;
+  --text-body: 1.0625rem;
+  --text-body--line-height: 1.375rem;
+  --text-callout: 1rem;
+  --text-callout--line-height: 1.3125rem;
+  --text-subheadline: 0.9375rem;
+  --text-subheadline--line-height: 1.25rem;
+  --text-footnote: 0.8125rem;
+  --text-footnote--line-height: 1.125rem;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1rem;
+
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.375rem;
+}
+
+@theme inline {
+  --color-background: var(--fk-background);
+  --color-surface: var(--fk-surface);
+  --color-surface-elevated: var(--fk-surface-elevated);
+  --color-fill: var(--fk-fill);
+  --color-control-thumb: var(--fk-control-thumb);
+  --color-label: var(--fk-label);
+  --color-secondary-label: var(--fk-secondary-label);
+  --color-tertiary-label: var(--fk-tertiary-label);
+  --color-separator: var(--fk-separator);
+  --color-accent: var(--fk-accent);
+  --color-accent-contrast: var(--fk-accent-contrast);
+  --color-accent-subtle: var(--fk-accent-subtle);
+  --color-success: var(--fk-success);
+  --color-warning: var(--fk-warning);
+  --color-danger: var(--fk-danger);
+  --color-danger-subtle: var(--fk-danger-subtle);
+  --color-scrim: var(--fk-scrim);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-body text-label antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--fk-accent);
+    outline-offset: 2px;
+  }
+
+  /* Açık bir modal (Sheet) varken arka plan kaymaz. */
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+}

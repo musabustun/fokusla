@@ -95,6 +95,21 @@ describe('SocialScreen', () => {
     expect(await within(friendsRegion()).findByRole('button', { name: /@deniz_ea/ })).toBeVisible()
   })
 
+  it('arkadaş sayfası canlı listeden okunur ve arkadaşlıktan çıkarır', async () => {
+    const user = userEvent.setup()
+    renderSocial(services)
+    await signInAndClaim(user, 'test_ogrenci')
+
+    await user.click(within(friendsRegion()).getByRole('button', { name: /@mert_ayt/ }))
+    const sheet = await screen.findByRole('dialog', { name: '@mert_ayt' })
+    expect(within(sheet).getByText(/Molada/)).toBeVisible()
+
+    await user.click(within(sheet).getByRole('button', { name: 'Arkadaşlıktan çıkar' }))
+
+    expect(screen.queryByRole('dialog', { name: '@mert_ayt' })).toBeNull()
+    expect(within(friendsRegion()).queryByRole('button', { name: /@mert_ayt/ })).toBeNull()
+  })
+
   it('bilinmeyen davet kodunda hata gösterir', async () => {
     const user = userEvent.setup()
     renderSocial(services)

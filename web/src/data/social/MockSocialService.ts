@@ -310,6 +310,9 @@ export class MockSocialService implements SocialService {
     for (const request of this.account?.requests ?? []) {
       if (request.direction === 'outgoing') this.scheduleAcceptance(request.id)
     }
+    // Kendi odama henüz kimse katılmadıysa simüle edilen katılım da yeniden planlansın.
+    const room = this.account?.room
+    if (room?.kind === 'hosted' && room.guests.length === 0) this.scheduleGuestJoin(room.id)
   }
 
   /** Oturum başka bir kullanıcıya geçtiyse (ya da çıkıldıysa) hesabı yeniden yükler. */

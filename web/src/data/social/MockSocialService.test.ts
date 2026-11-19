@@ -538,6 +538,25 @@ describe('MockSocialService — odalar', () => {
     ])
   })
 
+  it('a reload reschedules the guest join for my still-empty hosted room', async () => {
+    vi.useFakeTimers()
+    const { service } = await readySetup({ responseDelayMs: 1500 })
+    await service.createRoom('Gece')
+    service.dispose()
+
+    const reloaded = setup({ responseDelayMs: 1500 })
+    reloaded.auth.session = SESSION
+    await reloaded.service.refresh()
+    expect(reloaded.service.getSnapshot().room?.members).toHaveLength(1)
+
+    await vi.advanceTimersByTimeAsync(1500)
+
+    expect(reloaded.service.getSnapshot().room?.members.map((m) => m.username)).toEqual([
+      'ben.yks',
+      'elif.say',
+    ])
+  })
+
   it('a friend joins immediately when responseDelayMs is 0', async () => {
     const { service } = await readySetup()
     await service.removeFriend(ELIF)

@@ -18,7 +18,9 @@ interface FriendsSectionProps {
 
 /** Arkadaş listesi: odakta → molada → çevrimdışı; bugünkü toplam süre. */
 export function FriendsSection({ friends, now, onAddFriend }: FriendsSectionProps) {
-  const [selected, setSelected] = useState<SocialFriend | null>(null)
+  // Kimlik tutulur; sayfa canlı listeden okunur (durum güncellemeleri sayfaya da yansır).
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = friends.find((friend) => friend.userId === selectedId) ?? null
   const rows = friends
     .map((friend) => ({ friend, state: effectivePresenceState(friend.presence, now) }))
     .sort((a, b) => STATE_ORDER[a.state] - STATE_ORDER[b.state])
@@ -56,11 +58,11 @@ export function FriendsSection({ friends, now, onAddFriend }: FriendsSectionProp
                 {formatDurationShort(liveTodayFocusMs(friend.presence, now))}
               </span>
             }
-            onClick={() => setSelected(friend)}
+            onClick={() => setSelectedId(friend.userId)}
           />
         ))}
       </ListSection>
-      <FriendSheet friend={selected} onClose={() => setSelected(null)} now={now} />
+      <FriendSheet friend={selected} onClose={() => setSelectedId(null)} now={now} />
     </>
   )
 }

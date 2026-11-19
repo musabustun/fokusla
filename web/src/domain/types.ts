@@ -119,8 +119,13 @@ export interface TestResult extends BaseEntity {
   subjectId: UUID
   topicId: UUID | null
   bookId: UUID | null
-  /** Serbest kaynak etiketi, ör. "Test 12" veya "3D Deneme 4". */
+  /** Serbest kaynak etiketi / kitaptaki yer, ör. "Test 12" veya "s. 45". */
   label: string | null
+  /**
+   * Kayıtlı bir Book seçilmediğinde serbest metin kaynak adı (ör. "Okul fasikülü").
+   * bookId doluysa null. Opsiyonel: bu alandan önce yazılmış kayıtlarda bulunmaz.
+   */
+  sourceName?: string | null
   takenAt: ISODateTime
   correct: number
   wrong: number

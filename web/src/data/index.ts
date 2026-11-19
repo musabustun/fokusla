@@ -30,7 +30,16 @@ export { ROOM_NAME_MAX_LENGTH, SocialError } from './social/SocialService'
 export { ServicesProvider, useServices } from './ServicesContext'
 export { createServices, type CreateServicesOptions } from './createServices'
 export { ensureCurriculumSeeded, type SeedResult } from './seed/ensureCurriculumSeeded'
-export { useLiveData, useCurrentProfile, useSyncState, type CurrentProfileState } from './hooks'
+export {
+  msUntilNextLocalMidnight,
+  useCurrentProfile,
+  useLiveData,
+  useLocalToday,
+  useNow,
+  useSocialSnapshot,
+  useSyncState,
+  type CurrentProfileState,
+} from './hooks'
 export { MockAuthService, type MockAuthServiceOptions } from './auth/MockAuthService'
 export { MockSyncService, type MockSyncServiceOptions } from './sync/MockSyncService'
 export { MockSocialService, type MockSocialServiceOptions } from './social/MockSocialService'

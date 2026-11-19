@@ -18,6 +18,12 @@ export function createTestServices(
   options: Omit<CreateServicesOptions, 'dbName'> = {},
 ): TestServices {
   const dbName = `test-${crypto.randomUUID()}`
-  const services = createServices({ authDelayMs: 0, syncDelayMs: 0, ...options, dbName })
+  const services = createServices({
+    authDelayMs: 0,
+    syncDelayMs: 0,
+    ...options,
+    social: { delayMs: 0, tickMs: 0, responseDelayMs: 0, ...options.social },
+    dbName,
+  })
   return { services, dispose: () => Dexie.delete(dbName) }
 }

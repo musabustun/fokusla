@@ -2,6 +2,7 @@ import { MockAuthService } from './auth/MockAuthService'
 import { createDatabase, DEFAULT_DB_NAME } from './dexie/db'
 import { createRepositories } from './dexie/repositories'
 import type { AppServices } from './services'
+import { MockSocialService, type MockSocialServiceOptions } from './social/MockSocialService'
 import { MockSyncService } from './sync/MockSyncService'
 
 export interface CreateServicesOptions {
@@ -13,9 +14,11 @@ export interface CreateServicesOptions {
   syncDelayMs?: number
   /** Zaman kaynağı; testlerde sabitlenebilir. */
   now?: () => Date
+  /** Mock sosyal servisin gecikme/simülasyon ayarları. Testlerde gecikmeler 0. */
+  social?: Pick<MockSocialServiceOptions, 'delayMs' | 'tickMs' | 'responseDelayMs' | 'random'>
 }
 
-/** Uygulama servislerini kurar: Dexie repository'leri + mock auth + mock sync. */
+/** Uygulama servislerini kurar: Dexie repository'leri + mock auth + mock sync + mock sosyal. */
 export function createServices(options: CreateServicesOptions = {}): AppServices {
   const now = options.now ?? (() => new Date())
   const db = createDatabase(options.dbName ?? DEFAULT_DB_NAME)
@@ -25,5 +28,6 @@ export function createServices(options: CreateServicesOptions = {}): AppServices
     now,
     onChange: (change) => sync.recordLocalChange(change),
   })
-  return { repositories, auth, sync }
+  const social = new MockSocialService({ auth, now, ...options.social })
+  return { repositories, auth, sync, social }
 }

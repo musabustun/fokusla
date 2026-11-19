@@ -186,13 +186,30 @@ export interface Task extends BaseEntity {
   /** Yalnızca assignment: tamamlanma zamanı. Rutinler için TaskCompletion kullanılır. */
   completedAt: ISODateTime | null
   order: number
+  /**
+   * Yalnızca routine: rutinin geçerli olduğu ilk YEREL gün. Yoksa/null ise `createdAt`'in yerel
+   * günü kullanılır (domain/calc/tasks.ts → routineStartDate). Seri/oran bu günden önceye bakmaz.
+   * (Sonradan eklenen alanlar opsiyoneldir: eski kayıtlarda bulunmaz.)
+   */
+  startDate?: ISODate | null
+  /** Opsiyonel hedef miktar, ör. 50 (soru). Pozitif tam sayı. */
+  targetQuantity?: number | null
+  /** Hedef miktarın birimi, ör. "soru", "sayfa". Serbest metin. */
+  quantityUnit?: string | null
+  /** Yalnızca assignment: tamamlarken girilen gerçekleşen miktar. */
+  completedQuantity?: number | null
 }
 
-/** Bir rutinin belirli bir günde tamamlanması. (taskId, date) çifti tekildir. */
+/**
+ * Bir rutinin belirli bir YEREL günde tamamlanması. (taskId, date) çifti tekildir; CloudKit tekilliği
+ * zorlayamadığı için okumada tekilleştirilir. Geri alma = soft delete.
+ */
 export interface TaskCompletion extends BaseEntity {
   taskId: UUID
   date: ISODate
   completedAt: ISODateTime
+  /** Opsiyonel: o gün gerçekleşen miktar (ör. 42 soru). */
+  quantity?: number | null
 }
 
 // ---------------------------------------------------------------------------

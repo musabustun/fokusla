@@ -22,7 +22,7 @@ Modüller: **Odak** (kronometre, duraklat/devam, oturum süresi, günlük toplam
 
 ## Komutlar
 
-Hepsi `web/` içinde çalışır (Node ≥ 22.12; repo kökündeki `.nvmrc` = 26).
+Web komutları; iOS komutları için aşağıdaki "iOS (`ios/`)" bölümüne bak. Hepsi `web/` içinde çalışır (Node ≥ 22.12; repo kökündeki `.nvmrc` = 26).
 
 ```bash
 cd web
@@ -136,6 +136,49 @@ Birden fazla oturumun dokunabileceği dosyalar. Genel kural: **yalnızca ekleme 
 - 390px (iPhone) ve 1024px (iPad yatay) genişlikte, açık ve koyu temada kontrol et. iPhone: alt tab bar; iPad: kenar çubuğu (`app/layout/`).
 - Native hissi: iOS benzeri liste/sayfa düzeni, sistem fontu, hareket azaltma (`prefers-reduced-motion`) desteği.
 - Türkçe metinler: doğru büyük/küçük harf (`İ/ı`), `toLocaleUpperCase('tr-TR')`, sayılar `Intl.NumberFormat('tr-TR')`.
+
+## iOS (`ios/`)
+
+Native uygulama: SwiftUI + SwiftData + CloudKit, iPhone + iPad (Universal), iOS 18.0+, Swift 6 dil modu (strict concurrency). Ayrıntı ve cihaz kurulumu: [ios/README.md](ios/README.md). Web sözleşmeleri (varlıklar, enum raw value'ları, calc vakaları, katalog id'leri) BİREBİR korunur; web ve iOS ayrıştığında kaynak `web/src/domain/types.ts` + [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) 4. bölümdür.
+
+### Komutlar (`ios/` içinde)
+
+```bash
+xcodegen generate                      # Fokus.xcodeproj üretir (git'e girmez)
+xcodebuild build -project Fokus.xcodeproj -scheme Fokus -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO
+xcodebuild test  -project Fokus.xcodeproj -scheme Fokus -destination 'platform=iOS Simulator,name=iPhone 17' CODE_SIGNING_ALLOWED=NO
+xcodebuild test  -project Fokus.xcodeproj -scheme Fokus -destination 'platform=iOS Simulator,name=iPad Pro 11-inch (M5)' CODE_SIGNING_ALLOWED=NO
+cd FokusKit && swift test --filter FokusDomainTests   # hızlı döngü (macOS)
+```
+
+PR öncesi `xcodegen generate` + `build` + iki `test` yeşil. Paralel oturumlar kendi `-derivedDataPath`'ini (ör. `build/DerivedData`, gitignore'da) ve farklı simülatörler kullanır. Apple Developer hesabında kayıt/oluşturma (`-allowProvisioningUpdates`, App ID, iCloud kapsayıcısı) yalnızca kullanıcının onayıyla yapılır.
+
+### Katmanlar ve sınırlar
+
+| Katman (hedef)                 | İçerir                                                                                                                      | Bağlanabilir                                             | Bağlanamaz                                          |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------- |
+| `FokusKit/Sources/FokusDomain` | Enum'lar, `RecurrenceRule`, `Identifiers` (UUID v5, `isoDate`), snapshot değer tipleri, `Calc/` saf hesaplar                | Foundation, CryptoKit                                    | SwiftUI, SwiftData, UIKit, diğer FokusKit hedefleri |
+| `FokusKit/Sources/FokusData`   | `@Model`'ler, `FokusSchemaV1`, `FokusStore`, `EntityStore`/repository'ler, `CurriculumSeeder`, `AuthService`, `SyncService` | FokusDomain, SwiftData, CoreData, AuthenticationServices | FokusDesign, SwiftUI görünümleri                    |
+| `FokusKit/Sources/FokusDesign` | Renk tokenları (Asset Catalog, palet × açık/koyu), tipografi, boşluk/radius/hareket, ortak bileşenler, gömülü fontlar       | FokusDomain, SwiftUI                                     | FokusData, SwiftData                                |
+| `Fokus/App`                    | `FokusApp`, container kurulumu, kök kapı, kabuk (iPhone `TabView`, iPad `NavigationSplitView`), ortam servisleri            | Hepsi                                                    | —                                                   |
+| `Fokus/Features/<Modül>`       | Modül ekranları (web modül sahipliği tablosu aynen geçerli)                                                                 | FokusKit'in üç hedefi                                    | Başka `Features/<Modül>` tipleri                    |
+
+Modüller arası paylaşılacak her şey FokusKit'e taşınır (UI → FokusDesign, veri → FokusData, hesap → FokusDomain); feature'lar birbirinin tipine dokunmaz. FokusKit'in public API'si yalnızca eklenerek genişler.
+
+### Model kuralları (SwiftData + CloudKit)
+
+- Model = `@Model public final class`, `SyncedEntity`'ye uyar; adı `docs/ARCHITECTURE.md` 4.3'teki gibi (CloudKit kayıt tipi `CD_<Model>` — yeniden adlandırma YOK; `Task` → `StudyTask`).
+- `@Attribute(.unique)` YOK; her özellik opsiyonel ya da varsayılanlı; `@Relationship` yerine düz `UUID?` yabancı anahtar; enum'lar `xxxRaw: String` + hesaplanan özellik; `ISODate` = `String`, `ISODateTime` = `Date`.
+- Şema yalnızca büyür: yeni alan opsiyonel/varsayılanlı, yeni model `FokusSchemaV1.models`'e eklenir ve ARCHITECTURE 4.3 aynı PR'da güncellenir. `SchemaCloudKitRulesTests` yeşil kalmalı.
+- Silme yalnızca `deletedAt` (`EntityStore.softDelete`); okumalar silinenleri hariç tutar (`@Query` filtresi `deletedAt == nil`). Aynı `id`'li kopyalarda en eski `createdAt` kazanır.
+- Türetilmiş değer saklanmaz; hesaplar `FokusDomain/Calc/` içinde saf `enum`, `now: Date` ve `calendar: Calendar` parametreleriyle. Katalog kayıtlarını yalnızca `CurriculumSeeder` yazar.
+
+### Test beklentileri (iOS)
+
+- Swift Testing (`@Test`, `@Suite`, `#expect`) birim testleri `FokusKit/Tests/<Hedef>Tests/`; web calc vakaları tablo tabanlı olarak birebir taşınır (`@Test(arguments:)`), aynı vaka adlarıyla.
+- Veri testleri bellek içi container (`FokusStore.makeInMemoryContainer()`), `@MainActor`.
+- XCUITest duman testleri `FokusUITests/` (`-FokusUITestMode` = bellek içi depo); her modül kritik akışını ekler. Erişilebilirlik tanımlayıcıları `screen.<bölüm>`, `onboarding.*`.
+- Kapsam hedefi web ile aynı: dokunulan kod ≥ %80, `Calc/` %100.
 
 ## Claude Code oturumları ve alt ajanlar
 

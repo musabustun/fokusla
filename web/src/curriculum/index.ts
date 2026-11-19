@@ -1,2 +1,5 @@
 export type * from './types'
-// İSKELET STUB — müfredat ajanı yks.ts dosyasını ve yardımcıları ekleyecek.
+export type { ExamTest } from './structure'
+export { yksCurriculum } from './yks'
+export { FIELD_DESCRIPTIONS, FIELD_LABELS, findSubject, subjectsForField } from './helpers'
+export { EXAM_QUESTION_TOTALS, YKS_TESTS } from './structure'

@@ -112,14 +112,12 @@ export function weeklyPace(entries: readonly BookProgress[], now: Date): number 
   const nowMs = now.getTime()
   const windowStartMs = nowMs - PACE_WINDOW_DAYS * DAY_MS
   const usable = sortProgressHistory(entries).filter((e) => Date.parse(e.recordedAt) <= nowMs)
-  const end = usable[0]
+  const [end, ...older] = usable
   if (end === undefined) return null
 
   const beforeWindow = usable.find((e) => Date.parse(e.recordedAt) <= windowStartMs)
-  if (beforeWindow !== undefined) return Math.max(0, end.reachedUnit - beforeWindow.reachedUnit)
-
-  const start = usable[usable.length - 1] ?? end
-  if (start === end) return null
+  const start = beforeWindow ?? older.at(-1)
+  if (start === undefined) return null
   return Math.max(0, end.reachedUnit - start.reachedUnit)
 }
 

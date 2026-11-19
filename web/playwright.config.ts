@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test'
 
-const PORT = 4173
+// Paralel worktree'lerde başka bir önizleme sunucusunu yeniden kullanmamak için E2E_PORT ile değiştirilebilir.
+const PORT = Number(process.env.E2E_PORT ?? 4173)
 const isCI = Boolean(process.env.CI)
 
 export default defineConfig({

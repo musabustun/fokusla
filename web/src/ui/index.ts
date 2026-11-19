@@ -11,6 +11,7 @@ export { EmptyState, type EmptyStateProps } from './components/EmptyState'
 export { ListRow, type ListRowProps, type ListRowRenderProps } from './components/ListRow'
 export { ListSection, type ListSectionProps } from './components/ListSection'
 export { clampProgress } from './components/clampProgress'
+export { ProgressBar, type ProgressBarProps } from './components/ProgressBar'
 export { ProgressRing, type ProgressRingProps } from './components/ProgressRing'
 export { ScreenHeader, type ScreenHeaderProps } from './components/ScreenHeader'
 export {

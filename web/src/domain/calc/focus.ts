@@ -27,7 +27,10 @@ export function segmentDurationMs(_segment: FocusSegment, _now: Date): number {
 }
 
 /** Bir oturumun segmentlerinden istatistik üretir. */
-export function computeSessionStats(_segments: readonly FocusSegment[], _now: Date): FocusSessionStats {
+export function computeSessionStats(
+  _segments: readonly FocusSegment[],
+  _now: Date,
+): FocusSessionStats {
   throw new NotImplementedError('computeSessionStats')
 }
 

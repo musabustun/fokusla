@@ -10,7 +10,12 @@
  *  - Kod tanımlayıcıları İngilizce, kullanıcıya görünen metinler Türkçedir.
  */
 
-/** RFC 4122 v4 UUID (küçük harf). Swift: `UUID`, CloudKit: `CKRecord.ID.recordName`. */
+/**
+ * RFC 4122 UUID, küçük harf (v4 rastgele; katalog kayıtları için v5 deterministik).
+ * Swift: `UUID` (dikkat: `uuidString` BÜYÜK harf döner — karşılaştırmada lowercased() kullan).
+ * CloudKit: CKSyncEngine ile `CKRecord.ID.recordName` olur; SwiftData'nın otomatik CloudKit
+ * aynalaması kendi recordName'ini üretir, bu id ise sıradan bir alan olarak taşınır.
+ */
 export type UUID = string
 
 /** ISO 8601 UTC zaman damgası, ör. `2026-11-19T07:30:00.000Z`. Swift: `Date`. */

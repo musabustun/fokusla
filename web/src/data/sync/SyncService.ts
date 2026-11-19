@@ -22,7 +22,7 @@ export interface SyncService {
   getState(): SyncState
   /** Durum değişikliklerini dinler; aboneliği kaldıran fonksiyon döner. */
   subscribe(listener: (state: SyncState) => void): () => void
-  /** Senkronu açar (Apple ile giriş gerektirir — native'de iCloud hesabı). */
+  /** Senkronu açar. Native'de Apple ile girişe değil, cihazdaki iCloud hesabına bağlıdır. */
   enable(): Promise<void>
   disable(): Promise<void>
   /** Bekleyen değişiklikleri gönderir/çeker. */

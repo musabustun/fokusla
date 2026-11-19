@@ -7,31 +7,54 @@ import Testing
 import UIKit
 #endif
 
-/// Web `tokens.ts` `COLORS` tablosunun kopyası (kaynak). Palet eklenince buraya da eklenir.
-private let webColors: [FokusPalette: [String: [String: String]]] = [
-    .kahve: [
-        "light": [
-            "Background": "#F5F2EA", "Surface": "#FBF9F4", "SurfaceElevated": "#FFFDF8",
-            "Fill": "#E8E3D7", "ControlThumb": "#1B1A16", "SwitchThumbOff": "#77736A",
-            "Label": "#1B1A16", "SecondaryLabel": "#5C5950", "TertiaryLabel": "#7A766C",
-            "Separator": "#DCD6C9", "SeparatorStrong": "#8C877B",
-            "Accent": "#FFB547", "AccentContrast": "#1A1205", "AccentInk": "#955500",
-            "AccentSubtle": "#F8E5C0", "Success": "#2D6A43", "SuccessContrast": "#FFFFFF",
-            "Warning": "#955500", "Danger": "#B3261E", "DangerSubtle": "#F7E1DC",
-            "Scrim": "#1B1A1666",
-        ],
-        "dark": [
-            "Background": "#0E0F0C", "Surface": "#141511", "SurfaceElevated": "#1A1B17",
-            "Fill": "#22231E", "ControlThumb": "#EDEAE2", "SwitchThumbOff": "#8A877F",
-            "Label": "#EDEAE2", "SecondaryLabel": "#9A978E", "TertiaryLabel": "#6F6C64",
-            "Separator": "#2A2A25", "SeparatorStrong": "#6A675F",
-            "Accent": "#FFB547", "AccentContrast": "#1A1205", "AccentInk": "#FFB547",
-            "AccentSubtle": "#2A2214", "Success": "#8FD3A6", "SuccessContrast": "#0B1A10",
-            "Warning": "#FFB547", "Danger": "#FF7A6B", "DangerSubtle": "#2C1613",
-            "Scrim": "#000000B3",
-        ],
-    ]
-]
+/// Web `tokens.ts` paletleri — `npm run export:ios-palettes` çıktısı (`Fixtures/palettes.web.json`).
+private struct WebPalettes: Decodable {
+    let `default`: String
+    let order: [String]
+    let labels: [String: String]
+    let tokens: [String]
+    let palettes: [String: [String: [String: String]]]
+
+    static let shared: WebPalettes = {
+        guard
+            let url = Bundle.module.url(forResource: "palettes.web", withExtension: "json", subdirectory: "Fixtures"),
+            let data = try? Data(contentsOf: url),
+            let decoded = try? JSONDecoder().decode(WebPalettes.self, from: data)
+        else { fatalError("Fixtures/palettes.web.json okunamadı") }
+        return decoded
+    }()
+
+    /// palet → mod → asset adı (PascalCase) → hex.
+    func table(_ palette: FokusPalette, _ mode: String) -> [String: String] {
+        let raw = palettes[palette.rawValue]?[mode] ?? [:]
+        return Dictionary(uniqueKeysWithValues: raw.map { (pascal($0.key), $0.value) })
+    }
+
+    private func pascal(_ token: String) -> String {
+        token.split(separator: "-").map { $0.prefix(1).uppercased() + $0.dropFirst() }.joined()
+    }
+}
+
+private let web = WebPalettes.shared
+
+@Suite("Paletler")
+struct PaletteTests {
+    @Test func casesMatchWebOrderAndDefault() {
+        #expect(FokusPalette.allCases.map(\.rawValue) == web.order)
+        #expect(FokusPalette.default.rawValue == web.default)
+    }
+
+    @Test(arguments: FokusPalette.allCases)
+    func displayNameAndFolderMatchWeb(palette: FokusPalette) {
+        #expect(palette.displayName == web.labels[palette.rawValue])
+        #expect(palette.assetFolder == palette.rawValue.prefix(1).uppercased() + palette.rawValue.dropFirst())
+    }
+
+    @Test func storageKeysMatchWeb() {
+        #expect(FokusThemeKeys.palette == "fokus.palette")
+        #expect(FokusThemeKeys.appearance == "fokus.theme")
+    }
+}
 
 @Suite("Renk token'ları")
 struct ColorTokenTests {
@@ -45,8 +68,8 @@ struct ColorTokenTests {
     @Test func tokenSetMatchesWeb() {
         let names = Set(FokusColorToken.allCases.map(\.assetName))
         for palette in FokusPalette.allCases {
-            #expect(names == Set(webColors[palette]?["light"]?.keys ?? [:].keys))
-            #expect(names == Set(webColors[palette]?["dark"]?.keys ?? [:].keys))
+            #expect(names == Set(web.table(palette, "light").keys))
+            #expect(names == Set(web.table(palette, "dark").keys))
         }
     }
 }
@@ -81,7 +104,8 @@ struct ResourceTests {
     @Test(arguments: FokusPalette.allCases, [UIUserInterfaceStyle.light, .dark])
     func colorsResolveToWebHex(palette: FokusPalette, style: UIUserInterfaceStyle) throws {
         let key = style == .dark ? "dark" : "light"
-        let table = try #require(webColors[palette]?[key])
+        let table = web.table(palette, key)
+        try #require(!table.isEmpty)
         let traits = UITraitCollection(userInterfaceStyle: style)
         for token in FokusColorToken.allCases {
             let color = try #require(

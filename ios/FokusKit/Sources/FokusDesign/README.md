@@ -62,22 +62,26 @@ VStack(alignment: .leading, spacing: FokusSpacing.xl) {
 
 Her bileşen dosyasında koyu ve açık `#Preview` vardır (`Components/`).
 
-## Yeni palet ekleme (2 adım)
+## Paletler
 
-Web'de yeni paletin renkleri (`COLORS`) birleştirildikten sonra:
+Altı palet (web `PALETTE_NAMES` sırasıyla): `coffee` Kahve (varsayılan), `mono` Tek renk,
+`strawberry` Çilek, `matcha` Matcha, `blueberry` Yaban mersini, `lemonade` Limonata; her biri
+açık (Any) + koyu (Dark). Tercihler web ile aynı anahtarlarda: `@AppStorage("fokus.palette")`,
+`@AppStorage("fokus.theme")` (`system`/`light`/`dark`). Seçim için `PalettePicker`.
 
-1. **Enum case'i:** `Theme/FokusPalette.swift` içinde `FokusPalette`'e case ekle ve
-   `displayName` / `assetFolder` `switch`'lerine birer satır yaz (klasör adı PascalCase, ör. `TekRenk`).
-   Raw value web palet kimliğiyle aynı olsun.
-2. **Asset klasörü:** `ios/scripts/generate_palette_assets.py` içindeki `PALETTES` sözlüğüne
-   web'deki hex değerlerini (light + dark, 21 token) aynen ekle ve çalıştır:
-   `python3 ios/scripts/generate_palette_assets.py <Palet>`. Üretilen
-   `Colors.xcassets/<Palet>/` dosyalarını commit'le.
+### Palet ekleme / renk değiştirme
 
-Ardından `Tests/FokusDesignTests/FokusDesignTests.swift` içindeki `webColors` tablosuna paletin
-hex'lerini ekle: test, her token'ın açık/koyu çözümlenmiş RGBA'sını web ile karşılaştırır. Ayar
-ekranı `FokusPalette.allCases` ile listelediği için ek UI işi yoktur. Paletlerin renklerini
-uydurma; yalnızca web'deki değerler kullanılır.
+Tek kaynak web `web/src/ui/tokens.ts` (`PALETTES`, `PALETTE_LABELS`, `PALETTE_NAMES`). Renkleri
+burada uydurma.
+
+1. Web'de paleti ekle/güncelle (kontrast testleri `tokens.test.ts`'te).
+2. `cd web && npm run export:ios-palettes` → `Tests/FokusDesignTests/Fixtures/palettes.web.json`.
+3. `python3 ios/scripts/generate_palette_assets.py` → `Resources/Colors.xcassets/<Palet>/`
+   (Any/Dark, 21 token; kaynakta olmayan eski klasörler silinir). Üretilenleri commit'le.
+4. Yeni paletse `Theme/FokusPalette.swift`'e case + `displayName` satırı ekle (raw value = web adı).
+
+`FokusDesignTests` sırayı, adları, anahtarları ve her token'ın açık/koyu RGBA'sını JSON'la
+karşılaştırır; web tarafında `src/ui/iosPalettes.test.ts` JSON'un güncel olduğunu denetler.
 
 ## Kurallar
 

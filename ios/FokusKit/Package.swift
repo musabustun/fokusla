@@ -26,6 +26,7 @@ let package = Package(
         .target(
             name: "FokusDesign",
             dependencies: ["FokusDomain"],
+            exclude: ["README.md"],
             resources: [.process("Resources")]
         ),
         .testTarget(name: "FokusDomainTests", dependencies: ["FokusDomain"]),
@@ -34,7 +35,11 @@ let package = Package(
             dependencies: ["FokusData", "FokusDomain"],
             resources: [.copy("Fixtures")]
         ),
-        .testTarget(name: "FokusDesignTests", dependencies: ["FokusDesign"]),
+        .testTarget(
+            name: "FokusDesignTests",
+            dependencies: ["FokusDesign"],
+            resources: [.copy("Fixtures")]
+        ),
     ],
     swiftLanguageModes: [.v6]
 )

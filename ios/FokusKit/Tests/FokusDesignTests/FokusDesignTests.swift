@@ -109,7 +109,7 @@ struct ResourceTests {
         let traits = UITraitCollection(userInterfaceStyle: style)
         for token in FokusColorToken.allCases {
             let color = try #require(
-                UIColor(named: "\(palette.assetFolder)/\(token.assetName)", in: .module, compatibleWith: traits),
+                UIColor(named: "\(palette.assetFolder)/\(token.assetName)", in: FokusDesignResources.bundle, compatibleWith: traits),
                 "Eksik asset: \(palette.assetFolder)/\(token.assetName)"
             )
             var (r, g, b, a) = (CGFloat(0), CGFloat(0), CGFloat(0), CGFloat(0))

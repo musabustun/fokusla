@@ -50,3 +50,8 @@ extension ShapeStyle where Self == FokusColor {
     public static var fkWarning: FokusColor { FokusColor(.warning) }
     public static var fkDanger: FokusColor { FokusColor(.danger) }
 }
+
+/// FokusDesign kaynak paketi (renk kataloğu, fontlar). Testler ve önizlemeler için.
+public enum FokusDesignResources {
+    public static let bundle: Bundle = .module
+}

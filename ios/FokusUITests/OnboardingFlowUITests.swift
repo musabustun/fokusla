@@ -64,7 +64,9 @@ final class OnboardingFlowUITests: XCTestCase {
     func testThemeStepListsAllPalettesAndSelects() {
         XCTAssertTrue(element("onboarding.start").waitForExistence(timeout: 10))
         element("onboarding.start").tap()
+        XCTAssertTrue(element("onboarding.field.SAY").waitForExistence(timeout: 5))
         element("onboarding.field.SAY").tap()
+        XCTAssertTrue(element("onboarding.continue").waitForExistence(timeout: 5))
         element("onboarding.continue").tap()
         for palette in ["coffee", "mono", "strawberry", "matcha", "blueberry", "lemonade"] {
             XCTAssertTrue(element("palette.\(palette)").waitForExistence(timeout: 5), "\(palette) yok")

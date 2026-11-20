@@ -15,6 +15,14 @@ final class OnboardingFlowUITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
+    /// Ekran görüntüsünü test sonucuna ekler (xcresult; görsel kontrol için).
+    private func attachScreenshot(_ name: String) {
+        let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
     private func goToAccountStep() {
         XCTAssertTrue(element("onboarding.start").waitForExistence(timeout: 10))
         element("onboarding.start").tap()
@@ -32,6 +40,7 @@ final class OnboardingFlowUITests: XCTestCase {
         XCTAssertTrue(element("onboarding.skip").waitForExistence(timeout: 5))
         element("onboarding.skip").tap()
         XCTAssertTrue(element("screen.today").waitForExistence(timeout: 10))
+        attachScreenshot("shell-today")
 
         let sidebar = element("sidebar")
         if sidebar.waitForExistence(timeout: 3) {

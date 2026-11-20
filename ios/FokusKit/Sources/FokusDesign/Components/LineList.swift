@@ -80,7 +80,15 @@ public struct LineRow<Accessory: View>: View {
                 }
                 Spacer(minLength: FokusSpacing.sm)
                 if let value {
-                    Text(value).fokusTextStyle(.numeralSM).foregroundStyle(.fkSecondaryLabel)
+                    // Yalnızca rakam içeren değerler mono (web kuralı: rakam olmayan değer mono değil).
+                    Group {
+                        if LineRowValue.isNumeric(value) {
+                            Text(value).fokusTextStyle(.numeralSM)
+                        } else {
+                            Text(value).font(.body)
+                        }
+                    }
+                    .foregroundStyle(.fkSecondaryLabel)
                 }
                 accessory
             }
@@ -138,5 +146,13 @@ private struct LineListPreviewContent: View {
             LineRow("Fizik", value: "0:45")
             LineRow("Kitaplar", showsChevron: true)
         }
+    }
+}
+
+/// `LineRow` değer biçimlendirme kuralları.
+enum LineRowValue {
+    /// Değer rakam içeriyorsa sayısal kabul edilir (`1:20`, `%45`, `12 test`).
+    static func isNumeric(_ value: String) -> Bool {
+        value.contains { $0.isNumber }
     }
 }

@@ -74,6 +74,14 @@ struct ColorTokenTests {
     }
 }
 
+@Suite("LineRow")
+struct LineRowValueTests {
+    @Test(arguments: [("1:20", true), ("%45", true), ("12 test", true), ("Sayısal", false), ("Bağlı değil", false), ("—", false)])
+    func monoOnlyForNumericValues(value: String, expected: Bool) {
+        #expect(LineRowValue.isNumeric(value) == expected)
+    }
+}
+
 @Suite("Tipografi")
 struct TypographyTests {
     @Test(arguments: [

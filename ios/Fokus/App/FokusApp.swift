@@ -3,26 +3,23 @@ import FokusDesign
 import SwiftData
 import SwiftUI
 
-// GEÇİCİ iskelet — kabuk alt ajanı (AppEnvironment, AppRootView, onboarding) ile değiştirilecek.
 @main
 struct FokusApp: App {
-    private let container: ModelContainer
+    private let environment: AppEnvironment
 
     init() {
         FokusFonts.registerAll()
-        do {
-            container = try FokusStore.makeContainer(mode: .local)
-        } catch {
-            fatalError("ModelContainer kurulamadı: \(error)")
-        }
+        environment = AppEnvironment.make()
     }
 
     var body: some Scene {
         WindowGroup {
-            ScreenHeader("Bugün", eyebrow: "Fokus")
-                .padding()
+            AppRootView()
                 .fokusTheme()
+                .background(.fkBackground)
+                .environment(\.authService, environment.authService)
+                .environment(\.syncService, environment.syncService)
         }
-        .modelContainer(container)
+        .modelContainer(environment.container)
     }
 }

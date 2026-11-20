@@ -84,11 +84,11 @@ uygulama hepsine bağlı. Domain hiçbir şeye bağlı değildir; Design veri bi
 ## Tasarım ve paletler
 
 Rehber: [`FokusKit/Sources/FokusDesign/README.md`](FokusKit/Sources/FokusDesign/README.md).
-Tema = palet × görünüm. `@AppStorage("fokus.theme.palette")` (varsayılan `kahve`) ve
-`@AppStorage("fokus.theme.appearance")` (`system` / `light` / `dark`), kökte `.fokusTheme()`.
-Şimdilik yalnızca **Kahve** (mevcut "Gece mesaisi") var. Web'deki palet PR'ı birleşince her palet:
-`FokusPalette`'e bir case + `Colors.xcassets/<Palet>/` klasörü (Any = açık, Dark = koyu) +
-test tablosuna hex değerleri. Ardından onboarding'deki tema adımı (yer tutucu) açılır.
+Tema = palet × görünüm, web ile aynı anahtarlar: `@AppStorage("fokus.palette")` (`coffee` varsayılan,
+`mono`, `strawberry`, `matcha`, `blueberry`, `lemonade`) ve `@AppStorage("fokus.theme")`
+(`system` varsayılan / `light` / `dark`); kökte `.fokusTheme()`. Seçim: onboarding "Temanı seç" adımı ve
+Ayarlar (`PalettePicker`). Renklerin tek kaynağı web `tokens.ts`:
+`cd web && npm run export:ios-palettes` → `python3 scripts/generate_palette_assets.py`.
 
 ## Port edilecek hesaplar (modül oturumları)
 

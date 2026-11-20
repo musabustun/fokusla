@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { runnerImport } from 'vite'
+import type * as IosPalettes from '../src/ui/iosPalettes'
 import type * as Tokens from '../src/ui/tokens'
 
 const webRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -18,10 +19,9 @@ const { module: tokens } = await runnerImport<typeof Tokens>(resolve(webRoot, 's
   root: webRoot,
 })
 const { toIosPalettesJson } = (
-  await runnerImport<typeof import('../src/ui/iosPalettes')>(
-    resolve(webRoot, 'src/ui/iosPalettes.ts'),
-    { root: webRoot },
-  )
+  await runnerImport<typeof IosPalettes>(resolve(webRoot, 'src/ui/iosPalettes.ts'), {
+    root: webRoot,
+  })
 ).module
 
 mkdirSync(dirname(out), { recursive: true })

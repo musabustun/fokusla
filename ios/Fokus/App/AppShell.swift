@@ -43,16 +43,20 @@ private struct CompactShell: View {
 }
 
 private struct RegularShell: View {
+    @Environment(\.fokusPalette) private var palette
     @State private var selection: AppSection? = .today
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
         NavigationSplitView(columnVisibility: $columnVisibility) {
             List(AppSection.allCases, selection: $selection) { section in
+                // Seçili satır: vurgu dolgusu üzerinde `accentContrast` metin (AA); diğerleri `label`.
                 Label(section.title, systemImage: section.systemImage)
+                    .foregroundStyle(selection == section ? FokusColor(.accentContrast) : FokusColor(.label))
                     .tag(section)
                     .frame(minHeight: fokusMinTapTarget)
             }
+            .tint(FokusColor.color(.accent, palette: palette))
             .accessibilityIdentifier("sidebar")
             .navigationTitle("Fokus")
         } detail: {

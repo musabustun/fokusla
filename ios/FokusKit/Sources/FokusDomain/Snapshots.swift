@@ -109,3 +109,29 @@ public struct TaskCompletionSnapshot: Sendable, Hashable, Identifiable {
         self.quantity = quantity
     }
 }
+
+/// `TestResult`'ın hesaplar için gereken alanları (Analiz modülü).
+public struct TestResultSnapshot: Sendable, Hashable, Identifiable {
+    public var id: UUID
+    public var subjectId: UUID?
+    public var topicId: UUID?
+    public var takenAt: Date
+    public var correct: Int
+    public var wrong: Int
+    public var blank: Int
+    public var deletedAt: Date?
+
+    public init(
+        id: UUID = UUID(), subjectId: UUID?, topicId: UUID? = nil, takenAt: Date,
+        correct: Int, wrong: Int, blank: Int, deletedAt: Date? = nil
+    ) {
+        self.id = id
+        self.subjectId = subjectId
+        self.topicId = topicId
+        self.takenAt = takenAt
+        self.correct = correct
+        self.wrong = wrong
+        self.blank = blank
+        self.deletedAt = deletedAt
+    }
+}

@@ -1,0 +1,64 @@
+# XcodeGen spesifikasyonu. `.xcodeproj` ÜRETİLİR ve git'e girmez:
+#   cd ios && xcodegen generate
+name: Fokus
+options:
+  bundleIdPrefix: com.musabustun
+  deploymentTarget:
+    iOS: "18.0"
+  developmentLanguage: tr
+  createIntermediateGroups: true
+  groupSortPosition: top
+configFiles:
+  Debug: Config/Fokus.xcconfig
+  Release: Config/Fokus.xcconfig
+settings:
+  base:
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    LOCALIZATION_PREFERS_STRING_CATALOGS: YES
+packages:
+  FokusKit:
+    path: FokusKit
+targets:
+  Fokus:
+    type: application
+    platform: iOS
+    sources:
+      - path: Fokus
+    dependencies:
+      - package: FokusKit
+        products: [FokusDomain, FokusData, FokusDesign]
+    settings:
+      base:
+        INFOPLIST_FILE: Fokus/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Fokus/Fokus.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+  FokusUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: FokusUITests
+    dependencies:
+      - target: Fokus
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: com.musabustun.fokus.uitests
+        TEST_TARGET_NAME: Fokus
+schemes:
+  Fokus:
+    build:
+      targets:
+        Fokus: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - package: FokusKit/FokusDomainTests
+        - package: FokusKit/FokusDataTests
+        - package: FokusKit/FokusDesignTests
+        - name: FokusUITests

@@ -12,3 +12,8 @@ test-results/
 DerivedData/
 *.xcuserstate
 xcuserdata/
+# iOS (XcodeGen ile üretilir)
+ios/Fokus.xcodeproj/
+ios/FokusKit/.build/
+ios/FokusKit/.swiftpm/
+ios/build/

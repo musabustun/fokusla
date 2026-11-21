@@ -1,0 +1,19 @@
+// Fokus — kimlikler ve ortak derleme ayarları. TEK KAYNAK: bundle ID, iCloud kapsayıcısı ve takım
+// burada; project.yml, Info.plist ve entitlements bu değişkenleri kullanır.
+//
+// Apple tarafında kayıtlı olması gerekenler (cihaz imzalama için; bkz. ios/README.md):
+//   App ID  : com.musabustun.fokus  (iCloud/CloudKit, Sign in with Apple, Push Notifications)
+//   iCloud  : iCloud.com.musabustun.fokus
+
+PRODUCT_BUNDLE_IDENTIFIER = com.musabustun.fokus
+FOKUS_ICLOUD_CONTAINER = iCloud.com.musabustun.fokus
+DEVELOPMENT_TEAM = 395SFU52ZD
+CODE_SIGN_STYLE = Automatic
+
+MARKETING_VERSION = 0.1.0
+CURRENT_PROJECT_VERSION = 1
+
+IPHONEOS_DEPLOYMENT_TARGET = 18.0
+TARGETED_DEVICE_FAMILY = 1,2
+SWIFT_VERSION = 6.0
+SWIFT_STRICT_CONCURRENCY = complete

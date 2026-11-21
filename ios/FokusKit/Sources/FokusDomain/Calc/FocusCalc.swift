@@ -173,6 +173,48 @@ public enum FocusCalc {
         return openSegmentDurationMs(segments, kind: .break, now: now) >= thresholdMs
     }
 
+    // MARK: - Geçmiş oturumlar
+
+    /// Odak ekranındaki geçmiş listesi sayısı.
+    public static let historyLimit = 20
+
+    /// Geçmiş listesindeki bir bitmiş oturum.
+    public struct HistoryEntry: Sendable, Equatable, Identifiable {
+        public var id: UUID
+        public var startedAt: Date
+        /// Oturumun toplam odak süresi (ms).
+        public var focusMs: Double
+
+        public init(id: UUID, startedAt: Date, focusMs: Double) {
+            self.id = id
+            self.startedAt = startedAt
+            self.focusMs = focusMs
+        }
+    }
+
+    /// Son `limit` BİTMİŞ (silinmemiş, `endedAt != nil`) oturum, en yeni önce (`startedAt` azalan;
+    /// eşitlikte girdideki sıra korunur). Odak süresi yalnızca o oturumun segmentlerinden hesaplanır.
+    public static func historyEntries(
+        sessions: [FocusSessionSnapshot], segments: [FocusSegmentSnapshot],
+        now: Date, limit: Int = historyLimit
+    ) -> [HistoryEntry] {
+        let finished = sessions
+            .enumerated()
+            .filter { isLive($0.element) && $0.element.endedAt != nil }
+            .sorted { lhs, rhs in
+                let (left, right) = (toMs(lhs.element.startedAt), toMs(rhs.element.startedAt))
+                return left != right ? left > right : lhs.offset < rhs.offset
+            }
+            .prefix(Swift.max(0, limit))
+            .map(\.element)
+        let segmentsBySession = Dictionary(grouping: segments.filter { $0.sessionId != nil }) { $0.sessionId! }
+        return finished.map { session in
+            HistoryEntry(
+                id: session.id, startedAt: session.startedAt,
+                focusMs: computeSessionStats(segmentsBySession[session.id] ?? [], now: now).focusMs)
+        }
+    }
+
     // MARK: - Takvim günleri
 
     /// Yerel günün [başlangıç, sonraki günün başlangıcı) aralığı. Geçersiz biçimde `CalcError.invalidDay`.

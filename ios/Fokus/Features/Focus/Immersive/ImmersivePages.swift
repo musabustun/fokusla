@@ -194,7 +194,7 @@ struct ImmersiveNightPage: View {
     var body: some View {
         let snap = context.snapshot
         ZStack {
-            Color.black
+            Color.black.ignoresSafeArea()
             VStack(spacing: FokusSpacing.md) {
                 ZStack {
                     ImmersiveDigits(text: FocusFormat.clock(snap.shownMs))

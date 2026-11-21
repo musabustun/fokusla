@@ -111,15 +111,17 @@ struct ImmersiveFocusView: View {
         TabView(selection: pageBinding) {
             ForEach(ImmersivePage.allCases) { item in
                 pageView(item, context: context)
+                    .contentShape(Rectangle())
+                    // Her dokunuş kontrolleri gösterir/süreyi yeniler. Dokunuş sayfa içeriğinde
+                    // dinlenir (TabView dışında değil): sayfa kaydırıcısı kısa dokunuşları yutabiliyor.
+                    // Çocuk düğmeler/kaydırıcılar kendi dokunuşunu korur.
+                    .onTapGesture { controls.reveal() }
                     .tag(item)
                     .accessibilityHidden(item != page)
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .never))
         .ignoresSafeArea()
-        .contentShape(Rectangle())
-        // Her dokunuş kontrolleri gösterir/süreyi yeniler; çocuk düğmelerin dokunuşunu engellemez.
-        .simultaneousGesture(TapGesture().onEnded { controls.reveal() })
     }
 
     @ViewBuilder

@@ -64,6 +64,14 @@ struct TopicSheet: View {
         }
     }
 
+    private var saveItem: some ToolbarContent {
+        ToolbarItem(placement: .confirmationAction) {
+            Button("Kaydet", action: save)
+                .fontWeight(.semibold)
+                .accessibilityIdentifier("analysis.save")
+        }
+    }
+
     private var form: some View {
         Form {
             Section {
@@ -73,6 +81,7 @@ struct TopicSheet: View {
                         .accessibilityIdentifier("analysis.field.name")
                 }
                 FieldErrorText(text: nameError)
+                FieldErrorText(text: saveError)
             }
 .analysisRows()
             if editing != nil {
@@ -86,17 +95,9 @@ struct TopicSheet: View {
         .analysisFormStyle()
         .navigationTitle(editing == nil ? "Konu ekle" : "Konuyu düzenle")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { cancelItem }
-        .safeAreaInset(edge: .bottom) {
-            VStack(spacing: FokusSpacing.sm) {
-                if let saveError { FieldErrorText(text: saveError) }
-                Button("Kaydet", action: save)
-                    .buttonStyle(.fokusPrimary)
-                    .accessibilityIdentifier("analysis.save")
-            }
-            .padding(.horizontal, FokusSpacing.screenHorizontal)
-            .padding(.vertical, FokusSpacing.md)
-            .background(.fkBackground)
+        .toolbar {
+            cancelItem
+            saveItem
         }
     }
 

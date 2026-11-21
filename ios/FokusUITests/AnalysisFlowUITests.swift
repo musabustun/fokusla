@@ -98,10 +98,15 @@ final class AnalysisFlowUITests: XCTestCase {
         // Boş otomatik: 20 − 12 − 4 = 4; önizleme neti gösterir.
         XCTAssertTrue(hasText("Net: 11,00").waitForExistence(timeout: 5))
         app.buttons["analysis.save"].tap()
+        // Tek dokunuş kaydetmeli ve sayfayı kapatmalı (klavye açıkken de).
+        XCTAssertTrue(element("analysis.testSheet").waitForNonExistence(timeout: 5), "Kaydet tek dokunuşla sayfayı kapatmalı")
 
         XCTAssertTrue(element("analysis.summary.net").waitForExistence(timeout: 5))
         XCTAssertTrue(hasText("11,00").waitForExistence(timeout: 5), "Net 11,00 görünmeli")
         XCTAssertTrue(hasText("12D 4Y 4B").waitForExistence(timeout: 5), "Test satırı görünmeli")
+        let rows = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH 'analysis.result.'"))
+        XCTAssertEqual(rows.count, 1, "Tek kayıt oluşmalı (çift kaydetme yok)")
         attachScreenshot("analysis-topic-after-add")
     }
 

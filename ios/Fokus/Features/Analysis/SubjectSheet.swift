@@ -71,6 +71,14 @@ struct SubjectSheet: View {
         }
     }
 
+    private var saveItem: some ToolbarContent {
+        ToolbarItem(placement: .confirmationAction) {
+            Button("Kaydet", action: save)
+                .fontWeight(.semibold)
+                .accessibilityIdentifier("analysis.save")
+        }
+    }
+
     private var form: some View {
         Form {
             Section {
@@ -80,6 +88,7 @@ struct SubjectSheet: View {
                         .accessibilityIdentifier("analysis.field.name")
                 }
                 FieldErrorText(text: nameError)
+                FieldErrorText(text: saveError)
                 Picker("Sınav", selection: $exam) {
                     ForEach(ExamType.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                 }
@@ -98,17 +107,9 @@ struct SubjectSheet: View {
         .analysisFormStyle()
         .navigationTitle(editing == nil ? "Ders ekle" : "Dersi düzenle")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar { cancelItem }
-        .safeAreaInset(edge: .bottom) {
-            VStack(spacing: FokusSpacing.sm) {
-                if let saveError { FieldErrorText(text: saveError) }
-                Button("Kaydet", action: save)
-                    .buttonStyle(.fokusPrimary)
-                    .accessibilityIdentifier("analysis.save")
-            }
-            .padding(.horizontal, FokusSpacing.screenHorizontal)
-            .padding(.vertical, FokusSpacing.md)
-            .background(.fkBackground)
+        .toolbar {
+            cancelItem
+            saveItem
         }
     }
 

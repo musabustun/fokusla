@@ -71,8 +71,12 @@ struct TestResultSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Vazgeç", action: onClose).accessibilityIdentifier("analysis.cancel")
                 }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Kaydet", action: save)
+                        .fontWeight(.semibold)
+                        .accessibilityIdentifier("analysis.save")
+                }
             }
-            .safeAreaInset(edge: .bottom) { saveBar }
         }
         .presentationDetents([.large])
         .accessibilityIdentifier("analysis.testSheet")
@@ -147,6 +151,11 @@ struct TestResultSheet: View {
                 "Boş", id: "blank", text: blankBinding, error: errors[.blank], isEnabled: !values.blankAuto)
             Toggle("Boşu otomatik hesapla", isOn: blankAutoBinding)
                 .accessibilityIdentifier("analysis.field.blankAuto")
+            Text(previewText)
+                .fokusTextStyle(.numeralSM)
+                .foregroundStyle(.fkLabel)
+                .accessibilityIdentifier("analysis.preview")
+            FieldErrorText(text: saveError)
         }
 .analysisRows()
     }
@@ -169,23 +178,6 @@ struct TestResultSheet: View {
                 .accessibilityIdentifier("analysis.delete")
         }
 .analysisRows()
-    }
-
-    private var saveBar: some View {
-        VStack(spacing: FokusSpacing.sm) {
-            Text(previewText)
-                .fokusTextStyle(.numeralSM)
-                .foregroundStyle(.fkLabel)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityIdentifier("analysis.preview")
-            if let saveError { FieldErrorText(text: saveError) }
-            Button("Kaydet", action: save)
-                .buttonStyle(.fokusPrimary)
-                .accessibilityIdentifier("analysis.save")
-        }
-        .padding(.horizontal, FokusSpacing.screenHorizontal)
-        .padding(.vertical, FokusSpacing.md)
-        .background(.fkBackground)
     }
 
     private func numberField(

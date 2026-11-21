@@ -4,6 +4,7 @@
 //   FokusDomain  ← hiçbir şeye bağlı değil (Foundation + CryptoKit)
 //   FokusData    → FokusDomain (SwiftData, CloudKit mirroring, AuthenticationServices)
 //   FokusDesign  → FokusDomain (SwiftUI tokenları, fontlar, ortak bileşenler)
+//   FokusAudio   ← hiçbir şeye bağlı değil (AVFoundation: cihazda üretilen odak sesleri + MusicProvider sözleşmesi)
 // Uygulama hedefi (ios/Fokus) yalnızca kompozisyon + ekranlardır.
 import PackageDescription
 
@@ -15,6 +16,7 @@ let package = Package(
         .library(name: "FokusDomain", targets: ["FokusDomain"]),
         .library(name: "FokusData", targets: ["FokusData"]),
         .library(name: "FokusDesign", targets: ["FokusDesign"]),
+        .library(name: "FokusAudio", targets: ["FokusAudio"]),
     ],
     targets: [
         .target(name: "FokusDomain"),
@@ -29,6 +31,7 @@ let package = Package(
             exclude: ["README.md"],
             resources: [.process("Resources")]
         ),
+        .target(name: "FokusAudio"),
         .testTarget(name: "FokusDomainTests", dependencies: ["FokusDomain"]),
         .testTarget(
             name: "FokusDataTests",
@@ -40,6 +43,7 @@ let package = Package(
             dependencies: ["FokusDesign"],
             resources: [.copy("Fixtures")]
         ),
+        .testTarget(name: "FokusAudioTests", dependencies: ["FokusAudio"]),
     ],
     swiftLanguageModes: [.v6]
 )

@@ -6,6 +6,7 @@ import SwiftUI
 @main
 struct FokusApp: App {
     private let environment: AppEnvironment
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         FokusFonts.registerAll()
@@ -20,6 +21,16 @@ struct FokusApp: App {
                 .environment(\.authService, environment.authService)
                 .environment(\.syncService, environment.syncService)
                 .environment(\.notificationService, environment.notificationService)
+                .environment(\.focusSound, environment.focusSound)
+                .environment(\.musicRegistry, environment.musicRegistry)
+                .onOpenURL { environment.musicRegistry.handleOpenURL($0) }
+                .onChange(of: scenePhase) { _, phase in
+                    switch phase {
+                    case .active: environment.musicRegistry.sceneDidBecomeActive()
+                    case .inactive, .background: environment.musicRegistry.sceneWillResignActive()
+                    @unknown default: break
+                    }
+                }
         }
         .modelContainer(environment.container)
     }

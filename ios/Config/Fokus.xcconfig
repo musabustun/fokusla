@@ -17,3 +17,8 @@ IPHONEOS_DEPLOYMENT_TARGET = 18.0
 TARGETED_DEVICE_FAMILY = 1,2
 SWIFT_VERSION = 6.0
 SWIFT_STRICT_CONCURRENCY = complete
+
+// Spotify App Remote (isteğe bağlı entegrasyon). BOŞ varsayılan: entegrasyon gizlenir, yerine "Spotify'da aç"
+// bağlantısı gösterilir. Client ID gizli değildir ama yine de kodda değil burada durur. Kurulum: ios/README.md.
+// Redirect URI (fokus://spotify-callback) kodda sabittir: xcconfig'te `//` yorum başlatır.
+SPOTIFY_CLIENT_ID =

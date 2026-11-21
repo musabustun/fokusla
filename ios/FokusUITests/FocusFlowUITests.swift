@@ -1,9 +1,9 @@
 import XCTest
 
-/// Odak modülü duman testleri: başlat → mola → devam → bitir, uzun mola uyarısı, geçmiş/istatistik.
+/// Odak testlerinin ortak tabanı (başlatma, onboarding atlama, yardımcılar). Tam ekran testleri de kullanır.
 @MainActor
-final class FocusFlowUITests: XCTestCase {
-    private var app: XCUIApplication!
+class FocusUITestCase: XCTestCase {
+    var app: XCUIApplication!
 
     override func setUpWithError() throws {
         continueAfterFailure = false
@@ -11,21 +11,26 @@ final class FocusFlowUITests: XCTestCase {
 
     // MARK: Yardımcılar
 
-    private func launch(seed: String? = nil, theme: String? = nil) {
+    /// - Parameter immersivePage: tam ekranın açılacağı sayfa (`stopwatch|ring|night|summary|sound`).
+    /// - Parameter extraArguments: ek başlatma argümanları.
+    func launch(
+        seed: String? = nil, theme: String? = nil, immersivePage: String? = nil, extraArguments: [String] = []
+    ) {
         app = XCUIApplication()
         var arguments = ["-FokusUITestMode"]
         if let seed { arguments += ["-FokusUITestFocusSeed", seed] }
         if let theme { arguments += ["-fokus.theme", theme] }
-        app.launchArguments = arguments
+        if let immersivePage { arguments += ["-fokus.focus.immersivePage", immersivePage] }
+        app.launchArguments = arguments + extraArguments
         app.launch()
         skipOnboardingAndOpenFocus()
     }
 
-    private func element(_ identifier: String) -> XCUIElement {
+    func element(_ identifier: String) -> XCUIElement {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
-    private func skipOnboardingAndOpenFocus() {
+    func skipOnboardingAndOpenFocus() {
         XCTAssertTrue(element("onboarding.start").waitForExistence(timeout: 10))
         element("onboarding.start").tap()
         XCTAssertTrue(element("onboarding.field.SAY").waitForExistence(timeout: 5))
@@ -44,27 +49,68 @@ final class FocusFlowUITests: XCTestCase {
         } else {
             app.tabBars.buttons["Odak"].tap()
         }
-        XCTAssertTrue(element("screen.focus").waitForExistence(timeout: 5))
+        // Açık oturumlu tohumda (running/longbreak) tam ekran kapağı hemen açılır; ikisinden biri yeter.
+        let deadline = Date().addingTimeInterval(10)
+        while Date() < deadline, !element("screen.focus").exists, !element("immersive.root").exists {
+            Thread.sleep(forTimeInterval: 0.2)
+        }
+        XCTAssertTrue(element("screen.focus").exists || element("immersive.root").exists, "Odak ekranı açılmadı")
     }
 
-    private func attachScreenshot(_ name: String) {
+    func attachScreenshot(_ name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
     }
 
-    private func tap(_ identifier: String, file: StaticString = #filePath, line: UInt = #line) {
+    func tap(_ identifier: String, file: StaticString = #filePath, line: UInt = #line) {
         let button = element(identifier)
         XCTAssertTrue(button.waitForExistence(timeout: 5), "\(identifier) yok", file: file, line: line)
         button.tap()
     }
 
-    private func waitFor(_ identifier: String, file: StaticString = #filePath, line: UInt = #line) {
+    func waitFor(_ identifier: String, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(element(identifier).waitForExistence(timeout: 5), "\(identifier) yok", file: file, line: line)
     }
 
-    private var phase: String { element("focus.phase").label }
+    var phase: String { element("focus.phase").label }
+
+    // MARK: Tam ekran yardımcıları
+
+    /// Tam ekranda kontrolleri gösterir (dokununca belirir, ~4 sn sonra kaybolur).
+    func revealImmersiveControls(expecting identifier: String = "immersive.minimize") {
+        let root = element("immersive.root")
+        XCTAssertTrue(root.waitForExistence(timeout: 8), "immersive.root yok")
+        if element(identifier).exists { return }
+        root.tap()
+        XCTAssertTrue(element(identifier).waitForExistence(timeout: 5), "\(identifier) görünmedi")
+    }
+
+    func tapImmersive(_ identifier: String) {
+        revealImmersiveControls(expecting: identifier)
+        element(identifier).tap()
+    }
+
+    /// Küçült → normal Odak ekranı.
+    func minimizeImmersive() {
+        tapImmersive("immersive.minimize")
+        XCTAssertTrue(element("screen.focus").waitForExistence(timeout: 8), "Normal Odak ekranına dönülmedi")
+        XCTAssertTrue(waitForDisappearance(of: element("immersive.root")), "Tam ekran kapanmadı")
+    }
+
+    func waitForDisappearance(of element: XCUIElement, timeout: TimeInterval = 8) -> Bool {
+        let gone = NSPredicate(format: "exists == false")
+        let result = XCTWaiter().wait(for: [XCTNSPredicateExpectation(predicate: gone, object: element)], timeout: timeout)
+        return result == .completed
+    }
+}
+
+/// Odak modülü duman testleri: başlat → mola → devam → bitir, uzun mola uyarısı, geçmiş/istatistik.
+/// Başlatınca tam ekran açılır; normal ekran davranışı önce "Küçült" ile sınanır (tam ekran akışları
+/// `ImmersiveFocusUITests`'te).
+@MainActor
+final class FocusFlowUITests: FocusUITestCase {
 
     // MARK: Testler
 
@@ -75,8 +121,12 @@ final class FocusFlowUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Henüz tamamlanmış oturum yok"].exists)
 
         tap("focus.start")
+        // Yeni oturum her zaman tam ekran açar; normal ekran davranışı için küçült.
+        waitFor("immersive.root")
+        minimizeImmersive()
         waitFor("focus.pause")
         XCTAssertFalse(element("focus.start").exists)
+        waitFor("focus.immersive.open")
         XCTAssertEqual(phase.lowercased(), "odak")
         // Kronometre akar: iki saniye sonra 00:00 olmamalı.
         let ticked = NSPredicate(format: "value != %@", "00:00")
@@ -106,6 +156,10 @@ final class FocusFlowUITests: XCTestCase {
 
     func testLongBreakAlertOffersResumeAndFinish() {
         launch(seed: "longbreak")
+        // Açık oturumlu açılış tam ekran açar (uzun mola uyarısı orada da görünür); normal ekrana küçült.
+        waitFor("immersive.root")
+        waitFor("immersive.longBreak")
+        minimizeImmersive()
         waitFor("focus.longBreak")
         XCTAssertTrue(app.staticTexts["Molan uzadı"].exists)
         XCTAssertEqual(phase.lowercased(), "mola")
@@ -135,6 +189,10 @@ final class FocusFlowUITests: XCTestCase {
             waitFor("focus.start")
             attachScreenshot("focus-idle-\(theme)")
             tap("focus.start")
+            waitFor("immersive.root")
+            Thread.sleep(forTimeInterval: 1.5)
+            attachScreenshot("focus-immersive-\(theme)")
+            minimizeImmersive()
             waitFor("focus.pause")
             attachScreenshot("focus-running-\(theme)")
             app.terminate()

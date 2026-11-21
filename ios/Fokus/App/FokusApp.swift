@@ -7,15 +7,20 @@ import SwiftUI
 struct FokusApp: App {
     private let environment: AppEnvironment
     @Environment(\.scenePhase) private var scenePhase
+    /// iPhone yön kilidi (tam ekran odakta yatay serbest): bkz. `ImmersiveOrientation`.
+    @UIApplicationDelegateAdaptor(FokusAppDelegate.self) private var appDelegate
 
     init() {
         FokusFonts.registerAll()
         environment = AppEnvironment.make()
+        ImmersiveUITestSupport.resetStoredPageIfNeeded()
     }
 
     var body: some Scene {
         WindowGroup {
             AppRootView()
+                // Tema/ortam değiştiricilerinin İÇİNDE: kapak onların ortamını (palet, ses, model) devralır.
+                .immersiveFocusHost()
                 .fokusTheme()
                 .background(.fkBackground)
                 .environment(\.authService, environment.authService)

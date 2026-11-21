@@ -79,6 +79,9 @@ public protocol MusicProvider: AnyObject, Observable {
     var availability: MusicProviderAvailability { get }
     var connectionState: MusicConnectionState { get }
     var nowPlaying: MusicTrack? { get }
+    /// Bağlıyken reddedilen son komutun hatası (ör. Premium gerektiren atlama); bağlantıyı düşürmez.
+    /// Sonraki başarılı komut ya da çalma durumu güncellemesiyle temizlenir. Varsayılan: `nil`.
+    var lastCommandError: MusicProviderError? { get }
     /// Müzik uygulamasını doğrudan açan bağlantı (ör. `spotify:`); uygulama yüklü değilse açılmaz.
     var appURL: URL { get }
     /// Uygulama yüklü değilken açılacak web bağlantısı (ör. `https://open.spotify.com`).
@@ -96,6 +99,10 @@ public protocol MusicProvider: AnyObject, Observable {
     /// Uygulama öne geldi/arka plana gitti (App Remote gibi yalnızca ön planda yaşayan bağlantılar için).
     func sceneDidBecomeActive()
     func sceneWillResignActive()
+}
+
+extension MusicProvider {
+    public var lastCommandError: MusicProviderError? { nil }
 }
 
 /// Arayüzde bir sağlayıcının nasıl gösterileceği (saf; birim testli).

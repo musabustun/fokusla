@@ -52,7 +52,7 @@ struct AppEnvironment {
             // UI testleri sistem izin iletişim kutusunu görmesin diye sahte servis (izin verir).
             notificationService: isUITest ? MockNotificationService() : SystemNotificationService(),
             focusSound: FocusSoundPlayer(),
-            musicRegistry: MusicProviderRegistry(providers: [SpotifyMusicProvider.make()])
+            musicRegistry: MusicProviderRegistry(providers: FocusMusicProviders.make())
         )
     }
 

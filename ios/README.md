@@ -105,6 +105,16 @@ aynı desenle (saf `enum`, `now`/`calendar` parametre, snapshot girdiler, web te
 
 Gereken snapshot tipleri `FokusDomain/Snapshots.swift`'e eklenir; `@Model` tarafında `.snapshot`.
 
+## Odak — Live Activity / kilit ekranı kronometresi (plan, uygulanmadı)
+
+Oturum açıkken kilit ekranı ve Dynamic Island'da kronometre göstermek için (yer tutucu; kod yok):
+
+1. **Hedef:** `FokusWidgets` adında yeni bir Widget Extension (`project.yml`'e `app-extension` hedefi); `NSSupportsLiveActivities = YES` (`Info.plist`). Paylaşılan ActivityAttributes tipi FokusKit'e (örn. `FokusDomain/FocusActivityAttributes.swift`, yalnızca değer tipleri) eklenir; böylece uygulama ve eklenti aynı tipi kullanır.
+2. **İçerik:** `ActivityAttributes` sabit kısmı: ders etiketi. `ContentState`: `phase` (`focus`/`break`), `phaseStartedAt: Date`, `focusMsBeforePhase: Double` (önceki odak toplamı). Süre sayacı **sistem tarafından** çizilir: `Text(timerInterval: phaseStartedAt...Date.distantFuture, countsDown: false)`; uygulama her saniye güncelleme göndermez.
+3. **Yaşam döngüsü:** `FocusRepository.start/pause/resume` sonrası `Activity.request/update`, `finish` sonrası `end` (kayıt sonucu `FocusScreen` değil, ince bir `FocusActivityController` çağırır; ekran kapalıyken de çalışsın diye `AppEnvironment`'ta tutulur). Uygulama açılışında açık oturum varsa etkinlik yeniden bağlanır (`Activity.activities`).
+4. **Eylemler:** iOS 17+ `LiveActivityIntent` ile kilit ekranından "Mola ver / Devam et / Bitir"; intent aynı `FocusRepository` üzerinden depoya yazar (App Group + paylaşılan SwiftData deposu gerekir: `ModelConfiguration(groupContainer:)`, CloudKit ile uyumlu olduğu doğrulanmalı).
+5. **Tuzaklar:** Push ile güncelleme (APNs) YOK — yalnızca yerel güncelleme (sunucumuz yok); Live Activity 8 saat sonra sistem tarafından sonlandırılır → açılışta yeniden isteme; imzasız simülatör derlemesi için `ActivityKit` izinleri ve App Group yetkisi Apple Developer hesabında kayıt gerektirir (kullanıcı onayıyla).
+
 ## Cihazda çalıştırma (Apple tarafı)
 
 Simülatör derlemesi imzasızdır (`CODE_SIGNING_ALLOWED=NO`); CloudKit ve Apple ile Giriş orada

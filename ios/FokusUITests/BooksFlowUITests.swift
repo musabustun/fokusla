@@ -65,6 +65,18 @@ final class BooksFlowUITests: XCTestCase {
         field.typeText(text)
     }
 
+    /// Kaydet'e dokunur; iPad'de klavye tuş önizlemesi ilk dokunuşu yutabildiği için sayfa kapanmadıysa
+    /// bir kez daha dener. `sheetIdentifier` kapanması beklenen sayfadır.
+    private func tapSave(_ identifier: String, closing sheetIdentifier: String, file: StaticString = #filePath, line: UInt = #line) {
+        for attempt in 1...3 {
+            tap(identifier, file: file, line: line)
+            let sheet = element(sheetIdentifier)
+            let gone = NSPredicate(format: "exists == false")
+            if XCTWaiter().wait(for: [expectation(for: gone, evaluatedWith: sheet)], timeout: 3) == .completed { return }
+            if attempt == 3 { XCTFail("\(sheetIdentifier) kapanmadı", file: file, line: line) }
+        }
+    }
+
     private func attachScreenshot(_ name: String) {
         // Sayfa/animasyon otursun (özellikle yatay ve sheet geçişleri).
         Thread.sleep(forTimeInterval: 1.0)
@@ -114,7 +126,7 @@ final class BooksFlowUITests: XCTestCase {
         type("UI Test Kitabı", into: "book.form.title")
         type("100", into: "book.form.total")
         attachScreenshot("form")
-        tap("book.form.save")
+        tapSave("book.form.save", closing: "book.form")
 
         // iPad'de yeni kitap otomatik seçilir; iPhone'da listeden açılır.
         if !element("book.detail.percent").waitForExistence(timeout: 3) {
@@ -125,7 +137,7 @@ final class BooksFlowUITests: XCTestCase {
         tap("book.detail.addProgress")
         type("40", into: "book.progress.reached")
         attachScreenshot("progress-sheet")
-        tap("book.progress.save")
+        tapSave("book.progress.save", closing: "book.progress")
 
         waitForLabel("book.detail.percent", equals: "%40")
         waitForLabel("book.detail.position", equals: "Test 40")
@@ -136,7 +148,7 @@ final class BooksFlowUITests: XCTestCase {
         XCTAssertTrue(reached.waitForExistence(timeout: 5))
         reached.tap()
         reached.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 4) + "150")
-        tap("book.progress.save")
+        tapSave("book.progress.save", closing: "book.progress")
         waitForLabel("book.detail.percent", equals: "%100")
     }
 
@@ -145,11 +157,20 @@ final class BooksFlowUITests: XCTestCase {
 
         tap("books.addFirst")
         tap("book.form.save")
-        XCTAssertTrue(element("book.form.error").waitForExistence(timeout: 3), "boş ad hatası")
+        waitForLabel("book.form.error", equals: "Kitap adı boş olamaz.")
+
         type("Hatalı Toplam", into: "book.form.title")
         type("0", into: "book.form.total")
-        tap("book.form.save")
-        XCTAssertTrue(element("book.form.error").exists, "geçersiz toplam hatası")
+        // iPad'de klavye tuş önizlemesi ilk dokunuşu yutabilir: hata metni değişene dek en çok 3 deneme.
+        let expected = "Toplam pozitif bir tam sayı olmalı."
+        for _ in 1...3 where element("book.form.error").label != expected {
+            tap("book.form.save")
+            _ = XCTWaiter().wait(
+                for: [expectation(for: NSPredicate(format: "label == %@", expected), evaluatedWith: element("book.form.error"))],
+                timeout: 2)
+        }
+        waitForLabel("book.form.error", equals: expected)
+
         tap("book.form.cancel")
         XCTAssertFalse(element("book.row").waitForExistence(timeout: 1), "iptal kitap eklememeli")
     }

@@ -44,6 +44,7 @@ Koyu öncelikli, 1px çizgili (kart yok), tek kehribar vurgulu, büyük mono rak
 | `LineSection(_:footer:content:)`                           | `ListSection`                | Eyebrow başlık + 1px çizgi; kart yok.                                 |
 | `LineRow(_:subtitle:value:accessory:)`, `showsChevron:`    | `ListRow`                    | ≥44pt. `Button`/`NavigationLink` içinde `.buttonStyle(.fokusRow)`.    |
 | `ProgressRing(progress:lineWidth:tone:label:)`              | `ProgressRing`               | 700ms akar; hareket azaltmada anında. Boyut `.frame` ile verilir.     |
+| `ProgressBar(value:label:tone:size:)`                      | `ProgressBar`                | Yatay çubuk: `.small` 2pt (liste), `.medium` 4pt. `label` varsa VoiceOver okur. 700ms akar. |
 | `Metric(label:value:unit:caption:size:tone:isNumeric:)`    | `Metric`                     | Eyebrow etiket + büyük mono rakam. `tone: .accent` ekranda tek.       |
 | `EmptyStateView(_:systemImage:message:action:)`            | `EmptyState`                 | `ContentUnavailableView` yerine marka diliyle.                        |
 

@@ -17,3 +17,6 @@ ios/Fokus.xcodeproj/
 ios/FokusKit/.build/
 ios/FokusKit/.swiftpm/
 ios/build/
+
+# iOS yerel yapılandırma (Spotify Client ID vb.; asla commit etme)
+ios/Config/Local.xcconfig

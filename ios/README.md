@@ -147,8 +147,11 @@ hesabında hiçbir şey otomatik oluşturulmaz; hepsini sen yaparsın):
 4. Uygulama **Development mode**'dayken yalnızca Dashboard'daki **User Management**'a eklediğin
    kullanıcılar (Spotify hesabının e-postasıyla; sınırlı sayıda) bağlanabilir. Herkese açmak Spotify'ın
    kendi "extended quota" incelemesine bağlıdır.
-5. Dashboard'daki **Client ID**'yi `ios/Config/Fokus.xcconfig` içindeki `SPOTIFY_CLIENT_ID =` satırına yaz
-   (Client Secret'a ihtiyaç yok ve ASLA koda/repoya konmaz). Ardından `xcodegen generate` ve yeniden derle.
+5. Dashboard'daki **Client ID**'yi git dışı `ios/Config/Local.xcconfig` dosyasına yaz
+   (`SPOTIFY_CLIENT_ID = <client id>`; `Fokus.xcconfig` bu dosyayı varsa `#include?` ile okur, `.gitignore`'dadır).
+   Public repodaki `Fokus.xcconfig`'te değer boş kalır. Client Secret'a ihtiyaç yok (App Remote, Spotify
+   uygulaması üzerinden yetkilendirir; token swap sunucumuz yok) ve ASLA koda/repoya/uygulamaya konmaz.
+   Ardından `xcodegen generate` ve yeniden derle.
 6. Cihazda Spotify uygulaması yüklü ve giriş yapılmış olmalı. İlk "Spotify'a bağlan"da Spotify açılıp izin
    ister, sonra Fokus'a döner. Çalmayı denetlemek çoğunlukla **Premium** gerektirir (Premium yoksa Spotify
    komutu reddeder; uygulama bunu Türkçe bir mesajla gösterir).

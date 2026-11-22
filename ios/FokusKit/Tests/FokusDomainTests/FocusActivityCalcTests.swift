@@ -61,24 +61,40 @@ struct FocusActivityCalcTests {
 
     // MARK: - Odak fazı
 
-    @Test func focusTimerStartIsNowMinusClosedAndOpenFocusExcludingBreaks() {
+    @Test func focusTimerStartIsOpenFocusSegmentStartNotSessionTotal() throws {
         let sessions = [session("s", start: local(2026, 11, 19, 12))]
         let segments = [
             segment("f1", session: "s", .focus, start: local(2026, 11, 19, 12), end: local(2026, 11, 19, 12, 10)),
             segment("b1", session: "s", .break, start: local(2026, 11, 19, 12, 10), end: local(2026, 11, 19, 12, 15)),
-            // Açık odak: 13:57 → 14:00 = 3 dk.
+            // Açık odak: 13:57 → 14:00 = 3 dk (son devamdan beri).
             segment("f2", session: "s", .focus, start: local(2026, 11, 19, 13, 57)),
         ]
-        let state = FocusActivityCalc.state(sessions: sessions, segments: segments, now: now)
-        #expect(state?.phase == .focus)
-        #expect(state?.timerStart == now.addingTimeInterval(-13 * minute))
+        let state = try #require(FocusActivityCalc.state(sessions: sessions, segments: segments, now: now))
+        #expect(state.phase == .focus)
+        #expect(state.timerStart == local(2026, 11, 19, 13, 57))
+        // Oturum toplamı (10 dk kapalı + 3 dk açık = 13 dk) ikincil sayaç için ayrıca taşınır.
+        #expect(state.sessionFocusStart == now.addingTimeInterval(-13 * minute))
     }
 
-    @Test func focusWithOnlyOpenSegment() {
+    @Test func focusWithOnlyOpenSegment() throws {
         let sessions = [session("s", start: local(2026, 11, 19, 13))]
         let segments = [segment("f", session: "s", .focus, start: local(2026, 11, 19, 13))]
-        let state = FocusActivityCalc.state(sessions: sessions, segments: segments, now: now)
-        #expect(state == FocusActivityCalc.State(phase: .focus, timerStart: local(2026, 11, 19, 13)))
+        let state = try #require(FocusActivityCalc.state(sessions: sessions, segments: segments, now: now))
+        #expect(state.phase == .focus)
+        #expect(state.timerStart == local(2026, 11, 19, 13))
+        #expect(state.sessionFocusStart == local(2026, 11, 19, 13))
+        #expect(state.hasResumedAfterBreak == false)
+    }
+
+    @Test func hasResumedAfterBreakIsTrueWhenTotalDiffersFromCurrent() throws {
+        let sessions = [session("s", start: local(2026, 11, 19, 12))]
+        let segments = [
+            segment("f1", session: "s", .focus, start: local(2026, 11, 19, 12), end: local(2026, 11, 19, 13)),
+            segment("b1", session: "s", .break, start: local(2026, 11, 19, 13), end: local(2026, 11, 19, 13, 30)),
+            segment("f2", session: "s", .focus, start: local(2026, 11, 19, 13, 30)),
+        ]
+        let state = try #require(FocusActivityCalc.state(sessions: sessions, segments: segments, now: now))
+        #expect(state.hasResumedAfterBreak)
     }
 
     @Test func focusIgnoresDeletedSegmentsAndOtherSessions() {
@@ -105,27 +121,32 @@ struct FocusActivityCalcTests {
 
     // MARK: - Mola fazı
 
-    @Test func breakTimerStartIsOpenBreakStart() {
+    @Test func breakTimerStartIsOpenBreakStartAndSessionTotalIsFrozen() throws {
         let sessions = [session("s", start: local(2026, 11, 19, 12))]
         let segments = [
             segment("f", session: "s", .focus, start: local(2026, 11, 19, 12), end: local(2026, 11, 19, 13, 30)),
             segment("b", session: "s", .break, start: local(2026, 11, 19, 13, 30)),
         ]
-        let state = FocusActivityCalc.state(sessions: sessions, segments: segments, now: now)
-        #expect(state == FocusActivityCalc.State(phase: .break, timerStart: local(2026, 11, 19, 13, 30)))
+        let state = try #require(FocusActivityCalc.state(sessions: sessions, segments: segments, now: now))
+        #expect(state.phase == .break)
+        #expect(state.timerStart == local(2026, 11, 19, 13, 30))
+        // Odak toplamı 90 dk ve molada DONAR: sayaç mola başında durur (`pauseTime = timerStart`).
+        #expect(state.sessionFocusStart == local(2026, 11, 19, 13, 30).addingTimeInterval(-90 * minute))
     }
 
-    @Test func openSessionWithoutOpenSegmentIsTreatedAsBreakStartingNow() {
+    @Test func openSessionWithoutOpenSegmentIsTreatedAsBreakStartingNow() throws {
         let sessions = [session("s", start: local(2026, 11, 19, 12))]
         let segments = [segment("f", session: "s", .focus, start: local(2026, 11, 19, 12), end: local(2026, 11, 19, 13))]
-        let state = FocusActivityCalc.state(sessions: sessions, segments: segments, now: now)
-        #expect(state == FocusActivityCalc.State(phase: .break, timerStart: now))
+        let state = try #require(FocusActivityCalc.state(sessions: sessions, segments: segments, now: now))
+        #expect(state.phase == .break)
+        #expect(state.timerStart == now)
     }
 
-    @Test func openSessionWithNoSegmentsAtAllIsBreakStartingNow() {
+    @Test func openSessionWithNoSegmentsAtAllIsBreakStartingNow() throws {
         let sessions = [session("s", start: local(2026, 11, 19, 12))]
-        let state = FocusActivityCalc.state(sessions: sessions, segments: [], now: now)
-        #expect(state == FocusActivityCalc.State(phase: .break, timerStart: now))
+        let state = try #require(FocusActivityCalc.state(sessions: sessions, segments: [], now: now))
+        #expect(state.phase == .break)
+        #expect(state.timerStart == now)
     }
 
     // MARK: - Birden fazla açık oturum
@@ -140,7 +161,8 @@ struct FocusActivityCalcTests {
             segment("newBreak", session: "new", .break, start: local(2026, 11, 19, 13, 40)),
         ]
         let state = FocusActivityCalc.state(sessions: sessions, segments: segments, now: now)
-        #expect(state == FocusActivityCalc.State(phase: .break, timerStart: local(2026, 11, 19, 13, 40)))
+        #expect(state?.phase == .break)
+        #expect(state?.timerStart == local(2026, 11, 19, 13, 40))
     }
 
     @Test func latestStartedWinsRegardlessOfListOrder() {
@@ -167,6 +189,71 @@ struct FocusActivityCalcTests {
         let state = FocusActivityCalc.state(sessions: sessions, segments: segments, now: now)
         #expect(state?.phase == .focus)
         #expect(state?.timerStart == now.addingTimeInterval(-15 * minute))
+    }
+}
+
+struct FocusActivityGoalTests {
+    @Test func dayFocusAnchorCountsTodayAcrossSessionsAndCarriesGoal() throws {
+        let sessions = [
+            session("earlier", start: local(2026, 11, 19, 9), end: local(2026, 11, 19, 10)),
+            session("open", start: local(2026, 11, 19, 13)),
+        ]
+        let segments = [
+            segment("e", session: "earlier", .focus, start: local(2026, 11, 19, 9), end: local(2026, 11, 19, 10)),
+            segment("f", session: "open", .focus, start: local(2026, 11, 19, 13, 30)),
+        ]
+        let state = try #require(
+            FocusActivityCalc.state(
+                sessions: sessions, segments: segments, now: now, goalMinutes: 180, calendar: calendar))
+        // Bugün: 60 dk (kapalı) + 30 dk (açık) = 90 dk.
+        #expect(state.dayFocusStart == now.addingTimeInterval(-90 * minute))
+        #expect(state.goalMinutes == 180)
+    }
+
+    @Test func yesterdayFocusDoesNotCountTowardsToday() throws {
+        let sessions = [
+            session("yesterday", start: local(2026, 11, 18, 20), end: local(2026, 11, 18, 22)),
+            session("open", start: local(2026, 11, 19, 13)),
+        ]
+        let segments = [
+            segment("y", session: "yesterday", .focus, start: local(2026, 11, 18, 20), end: local(2026, 11, 18, 22)),
+            segment("f", session: "open", .focus, start: local(2026, 11, 19, 13, 50)),
+        ]
+        let state = try #require(
+            FocusActivityCalc.state(
+                sessions: sessions, segments: segments, now: now, goalMinutes: 120, calendar: calendar))
+        #expect(state.dayFocusStart == now.addingTimeInterval(-10 * minute))
+    }
+
+    @Test func breakFreezesDayAnchorAtBreakStart() throws {
+        let sessions = [session("s", start: local(2026, 11, 19, 12))]
+        let segments = [
+            segment("f", session: "s", .focus, start: local(2026, 11, 19, 12), end: local(2026, 11, 19, 13)),
+            segment("b", session: "s", .break, start: local(2026, 11, 19, 13)),
+        ]
+        let state = try #require(
+            FocusActivityCalc.state(
+                sessions: sessions, segments: segments, now: now, goalMinutes: 120, calendar: calendar))
+        #expect(state.dayFocusStart == local(2026, 11, 19, 13).addingTimeInterval(-60 * minute))
+    }
+
+    @Test(arguments: [nil, 0, -30] as [Int?])
+    func goalOffMeansNoGoalMinutes(goal: Int?) throws {
+        let sessions = [session("s", start: local(2026, 11, 19, 13))]
+        let segments = [segment("f", session: "s", .focus, start: local(2026, 11, 19, 13))]
+        let state = try #require(
+            FocusActivityCalc.state(
+                sessions: sessions, segments: segments, now: now, goalMinutes: goal, calendar: calendar))
+        #expect(state.goalMinutes == nil)
+    }
+
+    @Test func goalIsNormalizedToValidRange() throws {
+        let sessions = [session("s", start: local(2026, 11, 19, 13))]
+        let segments = [segment("f", session: "s", .focus, start: local(2026, 11, 19, 13))]
+        let state = try #require(
+            FocusActivityCalc.state(
+                sessions: sessions, segments: segments, now: now, goalMinutes: 20, calendar: calendar))
+        #expect(state.goalMinutes == DailyGoalCalc.minMinutes)
     }
 }
 
@@ -206,6 +293,34 @@ struct FocusActivityEquivalenceTests {
         #expect(lhs.isEquivalent(to: rhs) == false)
         #expect(lhs.isEquivalent(to: rhs, tolerance: 5))
         #expect(lhs.isEquivalent(to: rhs, tolerance: 4.9) == false)
+    }
+
+    @Test func differentGoalOrAnchorsAreNotEquivalent() {
+        let lhs = FocusActivityCalc.State(
+            phase: .focus, timerStart: Self.base, sessionFocusStart: Self.base, dayFocusStart: Self.base,
+            goalMinutes: 120)
+        var other = lhs
+        #expect(lhs.isEquivalent(to: other))
+        other.goalMinutes = 180
+        #expect(lhs.isEquivalent(to: other) == false)
+        other = lhs
+        other.sessionFocusStart = Self.base.addingTimeInterval(60)
+        #expect(lhs.isEquivalent(to: other) == false)
+        other = lhs
+        other.dayFocusStart = nil
+        #expect(lhs.isEquivalent(to: other) == false)
+        other = lhs
+        other.dayFocusStart = Self.base.addingTimeInterval(1)
+        #expect(lhs.isEquivalent(to: other))
+    }
+
+    @Test func oldStateWithoutNewFieldsStillDecodes() throws {
+        // Güncelleme öncesi başlatılmış bir Live Activity'nin kayıtlı durumu.
+        let json = #"{"phase":"focus","timerStart":790000000}"#.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(FocusActivityCalc.State.self, from: json)
+        #expect(decoded.phase == .focus)
+        #expect(decoded.sessionFocusStart == nil)
+        #expect(decoded.goalMinutes == nil)
     }
 
     @Test func stateRoundTripsThroughCodable() throws {

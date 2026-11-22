@@ -422,6 +422,74 @@ struct UTCTests {
         #expect(duration == testCase.expected)
     }
 
+    // MARK: currentSegmentElapsedMs
+
+    fileprivate struct CurrentElapsedCase: NamedCase {
+        let name: String
+        let segments: [SegmentSpec]
+        let now: String
+        let expected: Double
+    }
+
+    private static let currentElapsedCases: [CurrentElapsedCase] = [
+        CurrentElapsedCase(
+            name: "boş liste → 0", segments: [], now: "2026-11-19T10:00:00.000Z", expected: 0),
+        CurrentElapsedCase(
+            name: "açık segment yok (yalnızca kapalılar) → 0",
+            segments: [
+                SegmentSpec(
+                    kind: .focus, startedAt: "2026-11-19T09:00:00.000Z",
+                    endedAt: "2026-11-19T09:30:00.000Z")
+            ], now: "2026-11-19T10:00:00.000Z", expected: 0),
+        CurrentElapsedCase(
+            name: "açık odak: toplam değil, son devamdan beri (kapalı odak sayılmaz)",
+            segments: [
+                SegmentSpec(
+                    kind: .focus, startedAt: "2026-11-19T08:00:00.000Z",
+                    endedAt: "2026-11-19T09:00:00.000Z"),
+                SegmentSpec(
+                    kind: .break, startedAt: "2026-11-19T09:00:00.000Z",
+                    endedAt: "2026-11-19T09:40:00.000Z"),
+                SegmentSpec(kind: .focus, startedAt: "2026-11-19T09:40:00.000Z", endedAt: nil),
+            ], now: "2026-11-19T10:00:00.000Z", expected: 20 * min),
+        CurrentElapsedCase(
+            name: "açık mola: molanın başından beri",
+            segments: [
+                SegmentSpec(
+                    kind: .focus, startedAt: "2026-11-19T08:00:00.000Z",
+                    endedAt: "2026-11-19T09:50:00.000Z"),
+                SegmentSpec(kind: .break, startedAt: "2026-11-19T09:50:00.000Z", endedAt: nil),
+            ], now: "2026-11-19T10:00:00.000Z", expected: 10 * min),
+        CurrentElapsedCase(
+            name: "gece yarısını aşan açık segment bölünmez (23:30 → 00:10 = 40 dk)",
+            segments: [SegmentSpec(kind: .focus, startedAt: "2026-11-19T23:30:00.000Z", endedAt: nil)],
+            now: "2026-11-20T00:10:00.000Z", expected: 40 * min),
+        CurrentElapsedCase(
+            name: "silinmiş açık segment yok sayılır",
+            segments: [
+                SegmentSpec(
+                    kind: .focus, startedAt: "2026-11-19T09:00:00.000Z", endedAt: nil,
+                    deletedAt: deletedAt)
+            ], now: "2026-11-19T10:00:00.000Z", expected: 0),
+        CurrentElapsedCase(
+            name: "birden fazla açık segment (tutarsız veri): en son başlayan",
+            segments: [
+                SegmentSpec(kind: .focus, startedAt: "2026-11-19T08:00:00.000Z", endedAt: nil),
+                SegmentSpec(kind: .break, startedAt: "2026-11-19T09:30:00.000Z", endedAt: nil),
+            ], now: "2026-11-19T10:00:00.000Z", expected: 30 * min),
+        CurrentElapsedCase(
+            name: "saat kayması: now < startedAt → 0 (negatif olmaz)",
+            segments: [SegmentSpec(kind: .focus, startedAt: "2026-11-19T10:30:00.000Z", endedAt: nil)],
+            now: "2026-11-19T10:00:00.000Z", expected: 0),
+    ]
+
+    @Test("currentSegmentElapsedMs", arguments: currentElapsedCases)
+    fileprivate func currentSegmentElapsedMs(_ testCase: CurrentElapsedCase) {
+        let elapsed = FocusCalc.currentSegmentElapsedMs(
+            segments(testCase.segments), now: at(testCase.now))
+        #expect(elapsed == testCase.expected)
+    }
+
     // MARK: isLongBreak
 
     fileprivate struct LongBreakCase: NamedCase {

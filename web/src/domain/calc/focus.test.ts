@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { FocusSegment, FocusSegmentKind, FocusSession, ISODate } from '../types'
 import {
   computeSessionStats,
+  currentSegmentElapsedMs,
   dailyFocusTotalMs,
   dailyFocusTotals,
   findOpenSegment,
@@ -493,6 +494,91 @@ describe('UTC', () => {
       },
     ])('$name', ({ segments, kind, expected }) => {
       expect(openSegmentDurationMs(segments.map(seg), kind, at(now))).toBe(expected)
+    })
+  })
+
+  describe('currentSegmentElapsedMs', () => {
+    it.each<{ name: string; segments: SegmentSpec[]; now: string; expected: number }>([
+      { name: 'boş liste → 0', segments: [], now: '2026-11-19T10:00:00.000Z', expected: 0 },
+      {
+        name: 'açık segment yok (yalnızca kapalılar) → 0',
+        segments: [
+          {
+            kind: 'focus',
+            startedAt: '2026-11-19T09:00:00.000Z',
+            endedAt: '2026-11-19T09:30:00.000Z',
+          },
+        ],
+        now: '2026-11-19T10:00:00.000Z',
+        expected: 0,
+      },
+      {
+        name: 'açık odak: toplam değil, son devamdan beri (kapalı odak sayılmaz)',
+        segments: [
+          {
+            kind: 'focus',
+            startedAt: '2026-11-19T08:00:00.000Z',
+            endedAt: '2026-11-19T09:00:00.000Z',
+          },
+          {
+            kind: 'break',
+            startedAt: '2026-11-19T09:00:00.000Z',
+            endedAt: '2026-11-19T09:40:00.000Z',
+          },
+          { kind: 'focus', startedAt: '2026-11-19T09:40:00.000Z', endedAt: null },
+        ],
+        now: '2026-11-19T10:00:00.000Z',
+        expected: 20 * MIN,
+      },
+      {
+        name: 'açık mola: molanın başından beri',
+        segments: [
+          {
+            kind: 'focus',
+            startedAt: '2026-11-19T08:00:00.000Z',
+            endedAt: '2026-11-19T09:50:00.000Z',
+          },
+          { kind: 'break', startedAt: '2026-11-19T09:50:00.000Z', endedAt: null },
+        ],
+        now: '2026-11-19T10:00:00.000Z',
+        expected: 10 * MIN,
+      },
+      {
+        name: 'gece yarısını aşan açık segment bölünmez (23:30 → 00:10 = 40 dk)',
+        segments: [{ kind: 'focus', startedAt: '2026-11-19T23:30:00.000Z', endedAt: null }],
+        now: '2026-11-20T00:10:00.000Z',
+        expected: 40 * MIN,
+      },
+      {
+        name: 'silinmiş açık segment yok sayılır',
+        segments: [
+          {
+            kind: 'focus',
+            startedAt: '2026-11-19T09:00:00.000Z',
+            endedAt: null,
+            deletedAt: DELETED_AT,
+          },
+        ],
+        now: '2026-11-19T10:00:00.000Z',
+        expected: 0,
+      },
+      {
+        name: 'birden fazla açık segment (tutarsız veri): en son başlayan',
+        segments: [
+          { kind: 'focus', startedAt: '2026-11-19T08:00:00.000Z', endedAt: null },
+          { kind: 'break', startedAt: '2026-11-19T09:30:00.000Z', endedAt: null },
+        ],
+        now: '2026-11-19T10:00:00.000Z',
+        expected: 30 * MIN,
+      },
+      {
+        name: 'saat kayması: now < startedAt → 0 (negatif olmaz)',
+        segments: [{ kind: 'focus', startedAt: '2026-11-19T10:30:00.000Z', endedAt: null }],
+        now: '2026-11-19T10:00:00.000Z',
+        expected: 0,
+      },
+    ])('$name', ({ segments, now, expected }) => {
+      expect(currentSegmentElapsedMs(segments.map(seg), at(now))).toBe(expected)
     })
   })
 

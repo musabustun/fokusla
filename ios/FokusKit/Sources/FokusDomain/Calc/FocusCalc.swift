@@ -165,6 +165,14 @@ public enum FocusCalc {
         return segmentDurationMs(open, now: now)
     }
 
+    /// Açık segmentin (odak ya da mola) `now`'a kadarki süresi (ms); açık segment yoksa 0.
+    /// Ana sayaç "moladan geldiğimden beri" sorusunu cevaplar: odakta SON DEVAMDAN beri geçen süre
+    /// (oturum toplamı değil), molada molanın süresi. Gece yarısını aşan segment bölünmez.
+    public static func currentSegmentElapsedMs(_ segments: [FocusSegmentSnapshot], now: Date) -> Double {
+        guard let open = findOpenSegment(segments) else { return 0 }
+        return segmentDurationMs(open, now: now)
+    }
+
     /// Açık mola süresi `thresholdMs`'e ulaştı mı (≥: tam eşikte true). Açık mola yoksa false.
     public static func isLongBreak(
         _ segments: [FocusSegmentSnapshot], now: Date, thresholdMs: Double = longBreakThresholdMs

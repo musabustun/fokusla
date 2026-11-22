@@ -138,6 +138,16 @@ export function openSegmentDurationMs(
   return open?.kind === kind ? segmentDurationMs(open, now) : 0
 }
 
+/**
+ * Açık segmentin (odak ya da mola) `now`'a kadarki süresi; açık segment yoksa 0.
+ * Ana sayaç "moladan geldiğimden beri" sorusunu cevaplar: odakta SON DEVAMDAN beri geçen süre
+ * (oturum toplamı değil), molada molanın süresi. Gece yarısını aşan segment bölünmez.
+ */
+export function currentSegmentElapsedMs(segments: readonly FocusSegment[], now: Date): number {
+  const open = findOpenSegment(segments)
+  return open === undefined ? 0 : segmentDurationMs(open, now)
+}
+
 /** Açık mola süresi `thresholdMs`'e ulaştı mı (≥: tam eşikte true). Açık mola yoksa false. */
 export function isLongBreak(
   segments: readonly FocusSegment[],

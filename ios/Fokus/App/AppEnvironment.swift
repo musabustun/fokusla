@@ -43,6 +43,7 @@ struct AppEnvironment {
         FokusSystem.register(container)
         #if DEBUG
         DebugDemoData.seedIfRequested(container: container)
+        if !isUITest { DebugCloudKitSchemaInit.runIfRequested() }
         #endif
 
         do {

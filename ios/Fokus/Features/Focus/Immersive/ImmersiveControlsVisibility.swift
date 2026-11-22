@@ -3,7 +3,11 @@ import Foundation
 /// Alt kontrol katmanının görünürlük durumu (saf mantık): dokununca belirir, `autoHideDelay` sonra
 /// kaybolur. VoiceOver açıkken ve uzun mola uyarısı varken kaybolmaz ("sabitlenmiş").
 struct ImmersiveControlsVisibility: Equatable {
-    static let autoHideDelay: Duration = .seconds(4)
+    /// UI testlerinde (`-FokusUITestMode`) kontroller neredeyse hiç kaybolmaz: XCUITest uygulamanın boşta
+    /// olmasını beklerken (saniyelik zamanlayıcı) birkaç sn geçebilir ve 4 sn'lik gizleme dokunuştan önce davranırdı.
+    static var autoHideDelay: Duration {
+        ProcessInfo.processInfo.arguments.contains("-FokusUITestMode") ? .seconds(300) : .seconds(4)
+    }
 
     private(set) var isRevealed = false
     /// Her dokunuşta artar; zamanlayıcı görevi bu değere bağlıdır (yeniden başlar).

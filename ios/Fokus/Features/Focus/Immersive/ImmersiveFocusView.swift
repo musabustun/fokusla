@@ -32,6 +32,10 @@ struct ImmersiveFocusView: View {
 
     @AppStorage(ImmersivePage.storageKey) private var pageRaw = ImmersivePage.default.rawValue
     @State private var controls = ImmersiveControlsVisibility()
+    /// Yatay kaydırıcının konumu (`scrollPosition`); `pageRaw` ile iki yönlü eşlenir.
+    @State private var scrolledPage: ImmersivePage?
+    /// Başlangıç kaydırması oturduktan sonra gerçek kaydırma konumu sayfayı belirler.
+    @State private var tracksScroll = false
     /// Oturum biterken kapak kapanma animasyonunda 00:00'a düşmesin diye son açık anın görüntüsü.
     @State private var lastActive: ImmersiveSnapshot?
     @State private var errorMessage: String?
@@ -108,20 +112,56 @@ struct ImmersiveFocusView: View {
     }
 
     private func pager(_ context: ImmersivePageContext) -> some View {
-        TabView(selection: pageBinding) {
-            ForEach(ImmersivePage.allCases) { item in
-                pageView(item, context: context)
-                    .contentShape(Rectangle())
-                    // Her dokunuş kontrolleri gösterir/süreyi yeniler. Dokunuş sayfa içeriğinde
-                    // dinlenir (TabView dışında değil): sayfa kaydırıcısı kısa dokunuşları yutabiliyor.
-                    // Çocuk düğmeler/kaydırıcılar kendi dokunuşunu korur.
-                    .onTapGesture { controls.reveal() }
-                    .tag(item)
-                    .accessibilityHidden(item != page)
+        // `TabView(.page)` yerine sayfalı yatay `ScrollView`: UIKit sayfa kaydırıcısı kısa dokunuşları
+        // (XCUITest ve hızlı parmak dokunuşları) yutuyordu; ScrollView içeriğinde dokunuş güvenilir.
+        ScrollViewReader { proxy in
+            ScrollView(.horizontal) {
+                HStack(spacing: 0) {
+                    ForEach(ImmersivePage.allCases) { item in
+                        pageView(item, context: context)
+                            .containerRelativeFrame(.horizontal)
+                            .contentShape(Rectangle())
+                            // Her dokunuş kontrolleri gösterir/süreyi yeniler; çocuk düğmeler/kaydırıcılar
+                            // kendi dokunuşunu korur.
+                            .onTapGesture { controls.reveal() }
+                            .id(item)
+                            .accessibilityHidden(item != page)
+                    }
+                }
+                .scrollTargetLayout()
+            }
+            .scrollTargetBehavior(.paging)
+            .scrollPosition(id: $scrolledPage)
+            .scrollIndicators(.hidden)
+            .ignoresSafeArea()
+            // `scrollPosition` ilk sunumda saklı sayfayı uygulamaz; açılışta animasyonsuz oraya git.
+            .onAppear {
+                scrolledPage = page
+                proxy.scrollTo(page, anchor: .leading)
+            }
+            .task {
+                try? await Task.sleep(for: .milliseconds(400))
+                tracksScroll = true
+            }
+            // Kaydırma → saklanan sayfa (gösterge, erişilebilirlik, hatırlama). Sayfa, gerçek kaydırma
+            // konumundan türetilir (`scrollPosition` bağlaması hızlı kaydırmalarda güncellenmeyebiliyor).
+            .onScrollGeometryChange(for: Int.self) { geometry in
+                guard geometry.containerSize.width > 0 else { return 0 }
+                return Int((geometry.contentOffset.x / geometry.containerSize.width).rounded())
+            } action: { _, index in
+                // Açılıştaki ilk konum (0) saklı sayfayı ezmesin: başlangıç kaydırması oturana dek yok say.
+                guard tracksScroll else { return }
+                let pages = ImmersivePage.allCases
+                guard pages.indices.contains(index) else { return }
+                let target = pages[index]
+                if target.rawValue != pageRaw { pageRaw = target.rawValue }
+            }
+            // Dışarıdan değişim (gösterge ayarı vb.) → kaydırma konumu.
+            .onChange(of: pageRaw) { _, new in
+                guard let target = ImmersivePage(rawValue: new), scrolledPage != target else { return }
+                withAnimation(reduceMotion ? nil : FokusMotion.baseAnimation) { scrolledPage = target }
             }
         }
-        .tabViewStyle(.page(indexDisplayMode: .never))
-        .ignoresSafeArea()
     }
 
     @ViewBuilder
@@ -142,22 +182,29 @@ struct ImmersiveFocusView: View {
         return VStack(spacing: 0) {
             HStack {
                 Spacer()
-                ImmersiveMinimizeButton(action: onMinimize)
-                    .opacity(showsControls ? 1 : 0)
-                    .allowsHitTesting(showsControls)
-                    .accessibilityHidden(!showsControls)
+                // Gizliyken görünüm ağacında YOK (opaklık 0 değil): erişilebilirlik ağacında ve
+                // dokunma testinde de görünmez/dokunulamaz olur.
+                if showsControls {
+                    ImmersiveMinimizeButton(action: onMinimize)
+                        .transition(.opacity)
+                }
             }
             .padding(.top, max(insets.top, FokusSpacing.lg))
             Spacer(minLength: 0)
             VStack(spacing: FokusSpacing.md) {
                 if snapshot.isLongBreak { ImmersiveLongBreakBadge(isDimmed: isNight) }
-                ImmersiveControlsBar(
-                    phase: snapshot.phase, isLongBreak: snapshot.isLongBreak,
-                    actions: FocusTimerActions(start: {}, pause: pause, resume: resume, finish: finish)
-                )
-                .opacity(showsControls ? 1 : 0)
-                .allowsHitTesting(showsControls)
-                .accessibilityHidden(!showsControls)
+                if showsControls {
+                    ImmersiveControlsBar(
+                        phase: snapshot.phase, isLongBreak: snapshot.isLongBreak,
+                        // Her eylem kontrolleri yeniden açık tutar: kullanıcı sonucu (ör. "Devam et") görür.
+                        actions: FocusTimerActions(
+                            start: {},
+                            pause: { controls.reveal(); pause() },
+                            resume: { controls.reveal(); resume() },
+                            finish: finish)
+                    )
+                    .transition(.opacity)
+                }
                 if let errorMessage {
                     Text(errorMessage)
                         .fokusTextStyle(.subheadline)

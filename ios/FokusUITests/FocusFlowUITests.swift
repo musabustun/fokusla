@@ -20,7 +20,7 @@ class FocusUITestCase: XCTestCase {
         var arguments = ["-FokusUITestMode"]
         if let seed { arguments += ["-FokusUITestFocusSeed", seed] }
         if let theme { arguments += ["-fokus.theme", theme] }
-        if let immersivePage { arguments += ["-fokus.focus.immersivePage", immersivePage] }
+        if let immersivePage { arguments += ["-FokusUITestImmersivePage", immersivePage] }
         app.launchArguments = arguments + extraArguments
         app.launch()
         skipOnboardingAndOpenFocus()

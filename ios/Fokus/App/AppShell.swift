@@ -4,12 +4,18 @@ import SwiftUI
 /// Uyarlanır kabuk: iPhone (compact) → alt tab bar; iPad (regular) → kenar çubuğu.
 struct AppShell: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    /// Seçili bölüm kabukta tutulur (kabuğa değil): iPhone yan çevrilince boyut sınıfı değişip kabuk
+    /// yeniden kurulsa bile (ör. Odak tam ekranından yatayda çıkış) kullanıcı Bugün'e düşmez.
+    @State private var selection: AppSection = .today
 
     var body: some View {
         if horizontalSizeClass == .compact {
-            CompactShell()
+            CompactShell(selection: $selection)
         } else {
-            RegularShell()
+            RegularShell(
+                selection: Binding(
+                    get: { selection },
+                    set: { if let newValue = $0 { selection = newValue } }))
         }
     }
 }
@@ -24,7 +30,7 @@ private extension View {
 }
 
 private struct CompactShell: View {
-    @State private var selection: AppSection = .today
+    @Binding var selection: AppSection
 
     var body: some View {
         TabView(selection: $selection) {
@@ -44,7 +50,7 @@ private struct CompactShell: View {
 
 private struct RegularShell: View {
     @Environment(\.fokusPalette) private var palette
-    @State private var selection: AppSection? = .today
+    @Binding var selection: AppSection?
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {

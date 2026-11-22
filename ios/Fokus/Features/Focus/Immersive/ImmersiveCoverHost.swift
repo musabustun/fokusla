@@ -112,9 +112,16 @@ enum ImmersiveUITestSupport {
     static func resetStoredPageIfNeeded(
         arguments: [String] = ProcessInfo.processInfo.arguments, defaults: UserDefaults = .standard
     ) {
-        guard arguments.contains("-FokusUITestMode"),
-            !arguments.contains("-FokusUITestKeepImmersivePage")
-        else { return }
-        defaults.removeObject(forKey: ImmersivePage.storageKey)
+        guard arguments.contains("-FokusUITestMode") else { return }
+        if !arguments.contains("-FokusUITestKeepImmersivePage") {
+            defaults.removeObject(forKey: ImmersivePage.storageKey)
+        }
+        // Başlangıç sayfası `-FokusUITestImmersivePage <raw>` ile verilir. `-fokus.focus.immersivePage`
+        // KULLANILMAZ: UserDefaults argüman alanı uygulamanın yazdığı değeri ezer, sayfa hiç değişmezdi.
+        if let flag = arguments.firstIndex(of: "-FokusUITestImmersivePage"), flag + 1 < arguments.count,
+            ImmersivePage(rawValue: arguments[flag + 1]) != nil
+        {
+            defaults.set(arguments[flag + 1], forKey: ImmersivePage.storageKey)
+        }
     }
 }

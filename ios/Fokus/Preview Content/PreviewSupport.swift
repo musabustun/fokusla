@@ -24,4 +24,16 @@ enum PreviewSupport {
         }
         return container
     }
+
+    /// Sosyal önizlemeleri: sahte servis, bellek içi depo, gecikmesiz. `signedIn` ise kullanıcı adı alınmış gelir.
+    static func socialService(signedIn: Bool) -> MockSocialService {
+        let service = MockSocialService(
+            sessionProvider: { signedIn ? "onizleme-kullanici" : nil }, storage: InMemorySocialStorage(),
+            delayMs: 0, tickMs: 0, responseDelayMs: 0)
+        Task {
+            await service.refresh()
+            if signedIn { _ = try? await service.claimUsername("onizleme") }
+        }
+        return service
+    }
 }

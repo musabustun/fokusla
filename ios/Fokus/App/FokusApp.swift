@@ -25,6 +25,7 @@ struct FokusApp: App {
                 .background(.fkBackground)
                 .environment(\.authService, environment.authService)
                 .environment(\.syncService, environment.syncService)
+                .environment(\.socialService, environment.socialService)
                 .environment(\.notificationService, environment.notificationService)
                 .environment(\.focusSound, environment.focusSound)
                 .environment(\.musicRegistry, environment.musicRegistry)

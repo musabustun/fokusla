@@ -32,6 +32,7 @@ struct AppRootView: View {
         .background(.fkBackground)
         .task(id: profile?.appleUserId) { await validateAppleCredential() }
         .modifier(ReminderCoordinator())
+        .publishesSocialPresence()
     }
 
     /// Apple kimliği iptal edilmiş/bulunamıyorsa bağı kaldırır; veri silinmez.

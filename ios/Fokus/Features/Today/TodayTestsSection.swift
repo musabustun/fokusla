@@ -48,8 +48,8 @@ struct TodayTestsSection: View {
     private var summary: some View {
         let window = recent.window
         return VStack(alignment: .leading, spacing: FokusSpacing.md) {
-            HStack(alignment: .lastTextBaseline, spacing: FokusSpacing.lg) {
-                stat("Net", value: window.testCount == 0 ? "—" : AnalysisFormat.formatNet(window.net), large: true)
+            HStack(alignment: .top, spacing: FokusSpacing.lg) {
+                stat("Net", value: window.testCount == 0 ? "—" : AnalysisFormat.formatNet(window.net))
                 stat("Doğruluk", value: window.totalQuestions == 0 ? "—" : AnalysisFormat.formatPercent(window.accuracy))
                 stat("Soru", value: AnalysisFormat.formatCount(window.totalQuestions))
             }
@@ -73,11 +73,11 @@ struct TodayTestsSection: View {
             : range
     }
 
-    private func stat(_ label: String, value: String, large: Bool = false) -> some View {
+    private func stat(_ label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: FokusSpacing.sm) {
             Text(label).fokusTextStyle(.eyebrow).foregroundStyle(.fkSecondaryLabel)
             Text(value)
-                .fokusTextStyle(large ? .numeralLG : .numeral)
+                .fokusTextStyle(.numeralLG)
                 .foregroundStyle(.fkLabel)
                 .lineLimit(1)
                 .minimumScaleFactor(0.6)

@@ -41,8 +41,3 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
 
     static var tabBarSections: [AppSection] { allCases.filter(\.inTabBar) }
 }
-
-extension EnvironmentValues {
-    /// Kabuğun bölüm değiştirme eylemi (ör. Sosyal'den "Odak'a git"). Kabuk dışında hiçbir şey yapmaz.
-    @Entry var selectSection: (AppSection) -> Void = { _ in }
-}

@@ -47,10 +47,6 @@ private struct CompactShell: View {
                 }
             }
         }
-        // Tab bar'da olmayan bölümler (Sosyal, Kitaplar) yalnızca yığına itilir; yalnızca sekmeler seçilir.
-        .environment(\.selectSection) { section in
-            if section.inTabBar { selection = section }
-        }
     }
 }
 
@@ -86,6 +82,5 @@ private struct RegularShell: View {
             }
             .id(selection)
         }
-        .environment(\.selectSection) { selection = $0 }
     }
 }

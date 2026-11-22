@@ -8,7 +8,7 @@ struct SocialOwnStatusSection: View {
     let now: Date
     let isDiscoverable: Bool
 
-    @Environment(\.selectSection) private var selectSection
+    @Environment(AppNavigation.self) private var navigation: AppNavigation?
 
     var body: some View {
         let state = presence.state
@@ -27,7 +27,7 @@ struct SocialOwnStatusSection: View {
             }
             VStack(spacing: 0) {
                 Divider().overlay(.fkSeparator)
-                Button { selectSection(.focus) } label: {
+                Button { navigation?.open(.focus) } label: {
                     VStack(spacing: 0) {
                         HStack(spacing: FokusSpacing.md) {
                             PresenceDot(state: SocialCalc.effectivePresenceState(presence, now: now))

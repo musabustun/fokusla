@@ -118,7 +118,7 @@ private struct SocialRoomView: View {
     let own: SocialPresence
     let now: Date
 
-    @Environment(\.selectSection) private var selectSection
+    @Environment(AppNavigation.self) private var navigation: AppNavigation?
     @State private var isLeaving = false
     @State private var errorMessage: String?
 
@@ -171,7 +171,7 @@ private struct SocialRoomView: View {
                     ? "Henüz başlamadın. Kronometreni Odak ekranında başlat; durumun burada görünür."
                     : "Süren Odak ekranındaki kronometreden gelir.")
                     .fokusTextStyle(.footnote).foregroundStyle(.fkSecondaryLabel)
-                Button("Odak'a git") { selectSection(.focus) }
+                Button("Odak'a git") { navigation?.open(.focus) }
                     .buttonStyle(.fokusSecondary)
                     .accessibilityIdentifier("social.room.goFocus")
                 Button(isHost ? "Odayı kapat" : "Odadan çık", action: leave)

@@ -43,7 +43,8 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
     /// yalnızca DEBUG derlemelerinde (ve UI testlerinde) görünür; Release'te giriş noktaları gizlenir.
     var isAvailable: Bool {
         #if DEBUG
-        true
+        // Mağaza ekran görüntüleri (`-FokusDemoData`) Release görünümüyle aynı olsun: Sosyal gizli.
+        self != .social || !ProcessInfo.processInfo.arguments.contains("-FokusDemoData")
         #else
         self != .social
         #endif

@@ -170,8 +170,8 @@ Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`,
   DEVAMDAN (açık odak segmentinin başlangıcından; moladan dönüşte sıfırlanır), molada açık mola segmentinden beri
   geçen süredir (`FocusCalc.currentSegmentElapsedMs`; Odak ekranı ve tam ekran sayaç aynı hesabı kullanır). İkincil
   "Toplam odak" sayacı oturum toplamıdır ve molada `pauseTime` ile donar; günlük hedef açıksa kilit ekranında hedef
-  çubuğu (odakta sistem `ProgressView(timerInterval:)`, molada sabit) görünür. Sayaç aralıkları 12 saatle sınırlıdır
-  (`...distantFuture` metni "21:--" diye keser). Kilit ekranı kartı en fazla 160 pt yüksekliğindedir (içerik bütçesi
+  çubuğu (odakta sistem `ProgressView(timerInterval:)`, molada sabit) görünür. Sayaç aralıkları 12 saatle sınırlıdır.
+  Kilit ekranı kartı en fazla 160 pt yüksekliğindedir (içerik bütçesi
   `LockScreenFocusView` belgesinde); Dynamic Island genişletilmiş görünümünde kameranın iki yanı yalnızca kısa
   durum etiketi/toplam içindir, sayaç ve düğmeler `.bottom` bölgesindedir. `FocusSystemCoordinator` açık oturumu
   etkinlikle eşitler (uygulama öne gelince ve veri kaydedilince); Mola ver/Devam et ve Bitir `LiveActivityIntent`'tir

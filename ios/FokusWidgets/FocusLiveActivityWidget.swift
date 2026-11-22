@@ -82,9 +82,10 @@ extension FocusActivityCalc.Phase {
 }
 
 enum ActivityTimer {
-    /// Sayaç aralığının üst sınırı. `...distantFuture` aralığı sistemin sayaç genişliğini "gün" hanelerine
-    /// göre ayırmasına ve metnin "21:--" diye kesilmesine yol açar; 12 saat ("12:00:00") yeterli ve dardır
-    /// (Live Activity zaten en fazla 8–12 saat yaşar).
+    /// Sayaç aralığının üst sınırı: `...distantFuture` yerine sınırlı aralık, sistemin sayaç metnini en geniş
+    /// biçime ("gün" haneleri) göre ayırmasını önler; 12 saat ("12:00:00") yeterli ve dardır (Live Activity
+    /// zaten en fazla 8–12 saat yaşar). Not: ekran karartıldığında (Always-On benzeri) sistem saniyeleri
+    /// "13:--" diye gösterir; bu aralıkla ilgili değil, sistem davranışıdır.
     static let horizon: TimeInterval = 12 * 3600
 
     static func range(from start: Date) -> ClosedRange<Date> { start...start.addingTimeInterval(horizon) }

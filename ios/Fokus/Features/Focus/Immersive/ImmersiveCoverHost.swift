@@ -85,6 +85,12 @@ private struct ImmersiveCoverHost<Content: View>: View {
             .onChange(of: activeSessionId) { old, new in
                 // Oturum bitince (nereden olursa olsun) odak sesi susar.
                 if old != nil && new == nil { focusSound?.stop() }
+                // Odak filtresi bir ses seçtiyse yeni oturumda o ses çalar.
+                if old == nil, new != nil,
+                    let raw = FocusFilterStore.load().ambientSoundRaw, let kind = FocusSoundKind(rawValue: raw)
+                {
+                    focusSound?.play(kind)
+                }
             }
     }
 

@@ -32,6 +32,8 @@ struct ReminderCoordinator: ViewModifier {
         pending = Task {
             if delay > .zero { try? await Task.sleep(for: delay) }
             guard !Task.isCancelled else { return }
+            // iOS Odak filtresi hatırlatmaları susturuyorsa yeniden planlama yapma (bekleyenler silinmiştir).
+            guard !FocusFilterStore.load().silenceReminders else { return }
             await ReminderScheduler(service: service).reschedule(context: context)
         }
     }

@@ -23,12 +23,16 @@ struct SocialProfileSection: View {
                 }
                 .buttonStyle(.fokusRow)
                 .accessibilityIdentifier("social.profile.rename")
-                LineRow("Davet kodu") {
+                VStack(spacing: 0) {
                     HStack(spacing: FokusSpacing.xs) {
+                        Text("Davet kodu").fokusTextStyle(.body).foregroundStyle(.fkLabel).lineLimit(1)
+                        Spacer(minLength: FokusSpacing.sm)
                         Text(profile.inviteCode)
                             .fokusTextStyle(.numeralSM)
                             .tracking(2)
                             .foregroundStyle(.fkLabel)
+                            .lineLimit(1)
+                            .fixedSize()
                             .accessibilityLabel("Davet kodu \(profile.inviteCode.map(String.init).joined(separator: " "))")
                             .accessibilityIdentifier("social.profile.inviteCode")
                         SocialCopyButton(
@@ -41,6 +45,9 @@ struct SocialProfileSection: View {
                         .accessibilityLabel("Davet kodunu paylaş")
                         .accessibilityIdentifier("social.profile.shareCode")
                     }
+                    .frame(minHeight: fokusMinTapTarget)
+                    .padding(.vertical, FokusSpacing.xs)
+                    Divider().overlay(.fkSeparator)
                 }
                 LineRow("Sosyalde görün") {
                     Toggle("Sosyalde görün", isOn: discoverable)

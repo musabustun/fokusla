@@ -33,7 +33,7 @@ struct SocialOwnStatusSection: View {
                             PresenceDot(state: SocialCalc.effectivePresenceState(presence, now: now))
                             Text(line).fokusTextStyle(.body).foregroundStyle(.fkLabel)
                             Spacer(minLength: FokusSpacing.sm)
-                            Text("Odak'a git").font(.body).foregroundStyle(.fkSecondaryLabel)
+                            Text("Odak'a git").font(.body).foregroundStyle(.fkSecondaryLabel).lineLimit(1).fixedSize()
                             LineChevron()
                         }
                         .frame(minHeight: fokusMinTapTarget)

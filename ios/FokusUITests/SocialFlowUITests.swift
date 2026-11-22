@@ -221,5 +221,13 @@ final class SocialFlowUITests: XCTestCase {
         tap("social.room.join.mock-room-sabah")
         waitFor("social.room")
         attachScreenshot("social-room-dark")
+
+        // iPad: yatayda iki sütun düzeni.
+        if element("sidebar").exists {
+            XCUIDevice.shared.orientation = .landscapeLeft
+            waitFor("social.room")
+            attachScreenshot("social-room-landscape")
+            XCUIDevice.shared.orientation = .portrait
+        }
     }
 }

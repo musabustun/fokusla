@@ -53,6 +53,8 @@ struct SocialChipButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.subheadline.weight(.semibold))
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .foregroundStyle(kind == .destructive ? FokusColor.fkDanger : .fkLabel)
             .padding(.horizontal, FokusSpacing.md)
             .frame(minHeight: fokusMinTapTarget)

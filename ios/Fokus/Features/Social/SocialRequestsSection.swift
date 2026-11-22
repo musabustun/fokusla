@@ -36,7 +36,7 @@ struct SocialRequestsSection: View {
         return VStack(spacing: 0) {
             HStack(spacing: FokusSpacing.sm) {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(name).fokusTextStyle(.body).foregroundStyle(.fkLabel).lineLimit(1)
+                    Text(name).fokusTextStyle(.body).foregroundStyle(.fkLabel).lineLimit(1).minimumScaleFactor(0.8)
                     Text(isIncoming ? "Seni arkadaş olarak eklemek istiyor" : "Yanıt bekleniyor")
                         .fokusTextStyle(.subheadline).foregroundStyle(.fkSecondaryLabel)
                 }

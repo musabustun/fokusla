@@ -17,6 +17,8 @@ public final class UserProfile: SyncedEntity {
     public var appleUserId: String?
     public var targetExamYear: Int?
     public var onboardingCompletedAt: Date?
+    /// Günlük odak hedefi (dakika); `nil` = hedef kapalı. Geçerli değerler `DailyGoalCalc` ile normalize edilir.
+    public var dailyFocusGoalMinutes: Int?
 
     public init(
         id: UUID = UUID(),
@@ -24,7 +26,8 @@ public final class UserProfile: SyncedEntity {
         field: YksField = .say,
         appleUserId: String? = nil,
         targetExamYear: Int? = nil,
-        onboardingCompletedAt: Date? = nil
+        onboardingCompletedAt: Date? = nil,
+        dailyFocusGoalMinutes: Int? = nil
     ) {
         self.id = id
         self.displayName = displayName
@@ -32,6 +35,7 @@ public final class UserProfile: SyncedEntity {
         self.appleUserId = appleUserId
         self.targetExamYear = targetExamYear
         self.onboardingCompletedAt = onboardingCompletedAt
+        self.dailyFocusGoalMinutes = dailyFocusGoalMinutes
     }
 
     /// Alan; bilinmeyen raw value `.say` sayılır.

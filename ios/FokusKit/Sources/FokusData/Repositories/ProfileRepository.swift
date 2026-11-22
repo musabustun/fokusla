@@ -52,4 +52,32 @@ public struct ProfileRepository {
         store.touch(profile, now: now)
         try store.save()
     }
+
+    /// Görünen adı kaydeder; boşluk-only girdi "ad yok" (`nil`) demektir. En çok `displayNameMaxLength` karakter.
+    public func setDisplayName(_ input: String, now: Date = .now) throws {
+        guard let profile = try current() else { return }
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        profile.displayName = trimmed.isEmpty ? nil : String(trimmed.prefix(Self.displayNameMaxLength))
+        store.touch(profile, now: now)
+        try store.save()
+    }
+
+    /// YKS alanını değiştirir. Hiçbir veri silinmez; alan yalnızca ders görünürlüğünü belirler.
+    public func setField(_ field: YksField, now: Date = .now) throws {
+        guard let profile = try current(), profile.field != field else { return }
+        profile.field = field
+        store.touch(profile, now: now)
+        try store.save()
+    }
+
+    /// Günlük odak hedefini ayarlar (dakika; `nil`/geçersiz → kapalı). Değer `DailyGoalCalc` ile normalize edilir.
+    public func setDailyFocusGoal(minutes: Int?, now: Date = .now) throws {
+        guard let profile = try current() else { return }
+        profile.dailyFocusGoalMinutes = DailyGoalCalc.normalized(minutes)
+        store.touch(profile, now: now)
+        try store.save()
+    }
+
+    /// Görünen ad azami uzunluğu (web `DISPLAY_NAME_MAX_LENGTH` ile aynı).
+    public static let displayNameMaxLength = 40
 }

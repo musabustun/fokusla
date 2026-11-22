@@ -81,7 +81,9 @@ extension FokusSystem {
                 tasks: tasks.map(\.snapshot), completions: completions.map(\.snapshot),
                 subjectNames: Dictionary(subjects.map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first }),
                 now: now, calendar: calendar),
-            activity: FocusActivityCalc.state(sessions: sessionSnapshots, segments: segmentSnapshots, now: now),
+            activity: FocusActivityCalc.state(
+                sessions: sessionSnapshots, segments: segmentSnapshots, now: now,
+                goalMinutes: profile?.dailyFocusGoalMinutes, calendar: calendar),
             activeSessionId: activeSession?.id,
             activeSubjectLabel: subjectLabel,
             goalMinutes: profile?.dailyFocusGoalMinutes)

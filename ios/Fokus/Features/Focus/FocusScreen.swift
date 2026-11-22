@@ -82,6 +82,7 @@ struct FocusScreen: View {
             let panel = FocusTimerPanel(
                 phase: currentPhase,
                 sessionFocusMs: FocusCalc.computeSessionStats(activeSegments, now: now).focusMs,
+                currentFocusMs: FocusCalc.openSegmentDurationMs(activeSegments, kind: .focus, now: now),
                 breakMs: FocusCalc.openSegmentDurationMs(activeSegments, kind: .break, now: now),
                 todayTotalMs: todayTotal,
                 sessionLabel: sessionLabel,

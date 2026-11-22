@@ -6,7 +6,9 @@ import SwiftData
 /// UI testleri için örnek odak verisi (yalnızca DEBUG + `-FokusUITestMode`).
 /// `-FokusUITestFocusSeed history` → son günlere yayılmış bitmiş oturumlar;
 /// `-FokusUITestFocusSeed longbreak` → geçmiş + 45 dakikadır süren açık mola;
-/// `-FokusUITestFocusSeed running` → geçmiş + 20 dakika önce başlamış açık odak oturumu.
+/// `-FokusUITestFocusSeed running` → geçmiş + 20 dakika önce başlamış açık odak oturumu;
+/// `-FokusUITestFocusSeed resumed` → `running` + 3 sa günlük hedef; oturum: 30 dk odak, 8 dk mola, sonra 12 dk
+/// kesintisiz odak (moladan dönüş: ana sayaç 12 dk, oturum toplamı 42 dk).
 enum FocusUITestSeed {
     static let argumentKey = "FokusUITestFocusSeed"
 
@@ -58,6 +60,12 @@ enum FocusUITestSeed {
         }
         if mode == "running" {
             add(start: now.addingTimeInterval(-20 * minute), parts: [(.focus, 20 * minute)], ended: false)
+        }
+        if mode == "resumed" {
+            add(
+                start: now.addingTimeInterval(-50 * minute),
+                parts: [(.focus, 30 * minute), (.break, 8 * minute), (.focus, 12 * minute)], ended: false)
+            (try? ProfileRepository(context: context).current())?.dailyFocusGoalMinutes = 180
         }
         try? sessions.save()
         #endif

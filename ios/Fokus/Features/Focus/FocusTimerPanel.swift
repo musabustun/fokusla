@@ -31,6 +31,8 @@ struct FocusTimerPanel<PickerContent: View>: View {
     let phase: FocusTimerPhase
     /// Bu oturumun toplam odak süresi (ms).
     let sessionFocusMs: Double
+    /// Açık odak segmentinin süresi (ms): son devamdan (moladan dönüşten) beri; odakta ana sayaç.
+    let currentFocusMs: Double
     /// Açık molanın süresi (ms); molada değilse 0.
     let breakMs: Double
     let todayTotalMs: Double
@@ -64,7 +66,10 @@ struct FocusTimerPanel<PickerContent: View>: View {
 
     // MARK: Halka + saat
 
-    private var shownMs: Double { phase == .break ? breakMs : phase == .focus ? sessionFocusMs : 0 }
+    /// Moladan sonra devam edildi mi? Ana sayaç oturum toplamından farklıdır; toplam ikincil satırda görünür.
+    private var hasResumed: Bool { phase == .focus && sessionFocusMs - currentFocusMs >= 1000 }
+
+    private var shownMs: Double { phase == .break ? breakMs : phase == .focus ? currentFocusMs : 0 }
 
     /// Saatlik tur: geçen sürenin saat içindeki payı (0–1); yay her saniye hafifçe ilerler.
     static func hourLap(_ ms: Double) -> Double { ImmersiveSnapshot.hourLap(ms) }
@@ -88,7 +93,7 @@ struct FocusTimerPanel<PickerContent: View>: View {
             .frame(maxWidth: ringMaxWidth)
             // Halkanın kendi erişilebilirlik öğesi (yüzde) yerine saat okunur.
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(phase == .break ? "Mola süresi" : "Oturum süresi")
+            .accessibilityLabel(phase == .break ? "Mola süresi" : hasResumed ? "Son devamdan beri" : "Oturum süresi")
             .accessibilityValue(FocusFormat.clock(shownMs))
             .accessibilityAddTraits(phase.isRunning ? .updatesFrequently : [])
             .accessibilityIdentifier("focus.clock")
@@ -143,7 +148,7 @@ struct FocusTimerPanel<PickerContent: View>: View {
         VStack(spacing: 0) {
             Divider().overlay(.fkSeparator)
             HStack(alignment: .top, spacing: FokusSpacing.xxl) {
-                if phase == .break {
+                if phase == .break || hasResumed {
                     total("Bu oturumda odak", FocusFormat.durationText(sessionFocusMs), id: "focus.sessionTotal")
                 }
                 total("Bugün toplam", FocusFormat.durationText(todayTotalMs), id: "focus.todayTotal")
@@ -252,7 +257,7 @@ struct FocusLongBreakAlert: View {
 @MainActor
 private func panelPreview(_ phase: FocusTimerPhase, longBreak: Bool = false) -> some View {
     FocusTimerPanel(
-        phase: phase, sessionFocusMs: 3_905_000, breakMs: 2_000_000, todayTotalMs: 9_000_000,
+        phase: phase, sessionFocusMs: 3_905_000, currentFocusMs: 1_250_000, breakMs: 2_000_000, todayTotalMs: 9_000_000,
         sessionLabel: "TYT · Matematik · Temel kavramlar", isLongBreak: longBreak, errorMessage: nil
     ) { Text("Ders seçici") }
     .padding(FokusSpacing.screenHorizontal)

@@ -6,17 +6,18 @@ struct AppShell: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     /// Seçili bölüm kabukta tutulur (kabuğa değil): iPhone yan çevrilince boyut sınıfı değişip kabuk
     /// yeniden kurulsa bile (ör. Odak tam ekranından yatayda çıkış) kullanıcı Bugün'e düşmez.
-    @State private var selection: AppSection = .today
+    /// Ekranlar (Bugün'ün "Odak başlat" düğmesi) bölüm değiştirmek için `AppNavigation`'ı ortamdan okur.
+    @State private var navigation = AppNavigation()
 
     var body: some View {
-        if horizontalSizeClass == .compact {
-            CompactShell(selection: $selection)
-        } else {
-            RegularShell(
-                selection: Binding(
-                    get: { selection },
-                    set: { if let newValue = $0 { selection = newValue } }))
+        Group {
+            if horizontalSizeClass == .compact {
+                CompactShell()
+            } else {
+                RegularShell()
+            }
         }
+        .environment(navigation)
     }
 }
 
@@ -30,10 +31,11 @@ private extension View {
 }
 
 private struct CompactShell: View {
-    @Binding var selection: AppSection
+    @Environment(AppNavigation.self) private var navigation
 
     var body: some View {
-        TabView(selection: $selection) {
+        @Bindable var navigation = navigation
+        TabView(selection: $navigation.selection) {
             ForEach(AppSection.tabBarSections) { section in
                 Tab(section.title, systemImage: section.systemImage, value: section) {
                     NavigationStack {
@@ -50,12 +52,20 @@ private struct CompactShell: View {
 
 private struct RegularShell: View {
     @Environment(\.fokusPalette) private var palette
-    @Binding var selection: AppSection?
+    @Environment(AppNavigation.self) private var navigation
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
+    /// Kenar çubuğu seçimi (isteğe bağlı) ↔ paylaşılan gezinme durumu.
+    private var selectionBinding: Binding<AppSection?> {
+        Binding(
+            get: { navigation.selection },
+            set: { if let section = $0 { navigation.selection = section } })
+    }
+
     var body: some View {
+        let selection = navigation.selection
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            List(AppSection.allCases, selection: $selection) { section in
+            List(AppSection.allCases, selection: selectionBinding) { section in
                 // Seçili satır: vurgu dolgusu üzerinde `accentContrast` metin (AA); diğerleri `label`.
                 Label(section.title, systemImage: section.systemImage)
                     .foregroundStyle(selection == section ? FokusColor(.accentContrast) : FokusColor(.label))
@@ -67,7 +77,7 @@ private struct RegularShell: View {
             .navigationTitle("Fokus")
         } detail: {
             NavigationStack {
-                (selection ?? .today).screen
+                selection.screen
                     .toolbarVisibility(.hidden, for: .navigationBar)
             }
             .id(selection)

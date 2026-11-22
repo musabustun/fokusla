@@ -18,6 +18,9 @@ settings:
 packages:
   FokusKit:
     path: FokusKit
+  SpotifyiOS:
+    url: https://github.com/spotify/ios-sdk
+    from: 5.0.1
 targets:
   Fokus:
     type: application
@@ -26,7 +29,9 @@ targets:
       - path: Fokus
     dependencies:
       - package: FokusKit
-        products: [FokusDomain, FokusData, FokusDesign]
+        products: [FokusDomain, FokusData, FokusDesign, FokusAudio]
+      - package: SpotifyiOS
+        product: SpotifyiOS
     settings:
       base:
         INFOPLIST_FILE: Fokus/Info.plist
@@ -61,4 +66,5 @@ schemes:
         - package: FokusKit/FokusDomainTests
         - package: FokusKit/FokusDataTests
         - package: FokusKit/FokusDesignTests
+        - package: FokusKit/FokusAudioTests
         - name: FokusUITests

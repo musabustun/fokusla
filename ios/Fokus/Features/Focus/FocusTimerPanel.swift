@@ -37,6 +37,8 @@ struct FocusTimerPanel<PickerContent: View>: View {
     let sessionLabel: String?
     let isLongBreak: Bool
     let errorMessage: String?
+    /// Doluysa ve oturum açıksa kadranın köşesinde "Tam ekran" düğmesi çıkar.
+    var onOpenImmersive: (() -> Void)?
     @ViewBuilder let picker: () -> PickerContent
 
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -65,11 +67,7 @@ struct FocusTimerPanel<PickerContent: View>: View {
     private var shownMs: Double { phase == .break ? breakMs : phase == .focus ? sessionFocusMs : 0 }
 
     /// Saatlik tur: geçen sürenin saat içindeki payı (0–1); yay her saniye hafifçe ilerler.
-    static func hourLap(_ ms: Double) -> Double {
-        guard ms.isFinite, ms > 0 else { return 0 }
-        let hourMs = 3_600_000.0
-        return ms.truncatingRemainder(dividingBy: hourMs) / hourMs
-    }
+    static func hourLap(_ ms: Double) -> Double { ImmersiveSnapshot.hourLap(ms) }
 
     private var dial: some View {
         VStack(spacing: FokusSpacing.md) {
@@ -100,6 +98,21 @@ struct FocusTimerPanel<PickerContent: View>: View {
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .frame(minHeight: 20)
+        }
+        .overlay(alignment: .topTrailing) {
+            if phase.isRunning, let onOpenImmersive {
+                Button(action: onOpenImmersive) {
+                    Image(systemName: "arrow.up.left.and.arrow.down.right")
+                        .font(.headline)
+                        .foregroundStyle(.fkLabel)
+                        .frame(width: fokusMinTapTarget, height: fokusMinTapTarget)
+                        .overlay(Circle().strokeBorder(.fkSeparatorStrong, lineWidth: 1))
+                        .contentShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Tam ekran")
+                .accessibilityIdentifier("focus.immersive.open")
+            }
         }
     }
 
@@ -161,6 +174,8 @@ struct FocusActionButtons: View {
     /// `true`: düğmeler alt alta (geniş sütun); `false`: yan yana (iPhone'da alta sabit çubuk).
     let isStacked: Bool
     let actions: FocusTimerActions
+    /// Erişilebilirlik kimliği öneki: normal ekranda `focus.*`, tam ekranda `immersive.*`.
+    var idPrefix = "focus"
 
     var body: some View {
         let layout = isStacked ? AnyLayout(VStackLayout(spacing: FokusSpacing.md)) : AnyLayout(HStackLayout(spacing: FokusSpacing.md))
@@ -169,19 +184,19 @@ struct FocusActionButtons: View {
             case .idle:
                 Button(action: actions.start) { Label("Odak başlat", systemImage: "play.fill") }
                     .buttonStyle(.fokusPrimary)
-                    .accessibilityIdentifier("focus.start")
+                    .accessibilityIdentifier("\(idPrefix).start")
             case .focus:
                 Button(action: actions.pause) {
                     Label("Mola ver", systemImage: "pause.fill").lineLimit(1).minimumScaleFactor(0.8)
                 }
                     .buttonStyle(.fokusSecondary)
-                    .accessibilityIdentifier("focus.pause")
+                    .accessibilityIdentifier("\(idPrefix).pause")
             case .break:
                 Button(action: actions.resume) {
                     Label("Devam et", systemImage: "play.fill").lineLimit(1).minimumScaleFactor(0.8)
                 }
                     .buttonStyle(.fokusPrimary)
-                    .accessibilityIdentifier("focus.resume")
+                    .accessibilityIdentifier("\(idPrefix).resume")
             }
             if phase != .idle {
                 Button(action: actions.finish) {
@@ -190,7 +205,7 @@ struct FocusActionButtons: View {
                         .minimumScaleFactor(0.8)
                 }
                 .buttonStyle(.fokusSecondary)
-                .accessibilityIdentifier("focus.finish")
+                .accessibilityIdentifier("\(idPrefix).finish")
             }
         }
     }

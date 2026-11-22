@@ -13,6 +13,7 @@ private let logger = Logger(subsystem: "com.musabustun.fokus", category: "focus"
 struct FocusScreen: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    @Environment(\.immersiveCoordinator) private var immersive
 
     @Query(filter: #Predicate<FocusSession> { $0.deletedAt == nil }, sort: \FocusSession.startedAt, order: .reverse)
     private var sessions: [FocusSession]
@@ -85,7 +86,8 @@ struct FocusScreen: View {
                 todayTotalMs: todayTotal,
                 sessionLabel: sessionLabel,
                 isLongBreak: currentPhase == .break && FocusCalc.isLongBreak(activeSegments, now: now),
-                errorMessage: errorMessage
+                errorMessage: errorMessage,
+                onOpenImmersive: immersive.map { coordinator in { coordinator.reopen() } }
             ) {
                 FocusSubjectPicker(
                     subjects: FocusSubjects.subjects(subjects, field: field),
@@ -116,6 +118,10 @@ struct FocusScreen: View {
                 .presentationBackground(.fkBackground)
         }
         .task { FocusUITestSeed.applyIfRequested(context: modelContext) }
+        .onChange(of: activeSession?.id) { _, newId in
+            // Oturum nereden biterse bitsin (tam ekran dahil) ders seçimi sıfırlanır.
+            if newId == nil { selection = .none }
+        }
     }
 
     /// En az bu genişlikte (pt) kronometre ile istatistikler yan yana durur; daha darda (iPad dikey,

@@ -51,11 +51,14 @@ ios/
     ├── Sources/FokusDomain  Saf tipler + hesaplar (Foundation + CryptoKit; framework yok)
     ├── Sources/FokusData    SwiftData @Model'ler, şema, store, repository'ler, katalog, Auth/Sync servisleri
     ├── Sources/FokusDesign  Tokenlar, paletler, fontlar, ortak bileşenler (rehber: FokusDesign/README.md)
+    ├── Sources/FokusAudio   Cihazda üretilen odak sesleri (AVAudioEngine) + `MusicProvider` sözleşmesi (bkz. "Odak sesleri ve müzik")
     └── Tests/…              Swift Testing birim testleri
 ```
 
 Bağımlılık yönü (web ile aynı): `FokusDomain` ← `FokusData`, `FokusDomain` ← `FokusDesign`,
 uygulama hepsine bağlı. Domain hiçbir şeye bağlı değildir; Design veri bilmez; Data UI bilmez.
+`FokusAudio` hiçbir FokusKit hedefine bağlı değildir (yalnızca Foundation/AVFoundation/Observation);
+uygulama hedefi dışında kimse ona bağlanmaz.
 
 ## Veri
 
@@ -104,6 +107,54 @@ aynı desenle (saf `enum`, `now`/`calendar` parametre, snapshot girdiler, web te
 | `domain/calc/social.ts` | `FokusDomain/Calc/SocialCalc.swift` | social      |
 
 Gereken snapshot tipleri `FokusDomain/Snapshots.swift`'e eklenir; `@Model` tarafında `.snapshot`.
+
+## Odak: tam ekran, sesler ve müzik
+
+**Tam ekran (StandBy benzeri)** — `Fokus/Features/Focus/Immersive/`. Odak başlayınca (ya da açık
+oturumla uygulama açılınca) `fullScreenCover` açılır: ekran sönmez, durum çubuğu ve ev göstergesi
+gizlidir, dikey + yatay çalışır. Yatay kaydırmalı sayfalar: kronometre + saat, ilerleme halkası, "gece"
+(saf siyah, yalnızca süre), bugünün özeti, ses ve müzik. Son sayfa `@AppStorage("fokus.focus.immersivePage")`
+ile hatırlanır. Dokununca beliren kontrol katmanından mola / devam / bitir / küçült. iPhone yön kilidi
+(`FokusApp`'teki delegate) yalnızca tam ekranda yatayı açar; iPad her yönde çalışır.
+
+**Sesler (cihazda üretilir, dosya yok)** — `FokusKit/Sources/FokusAudio/Sound/`. Beyaz / pembe /
+kahverengi gürültü, yağmur (filtrelenmiş gürültü + rastgele damla darbeleri) ve yumuşak pentatonik
+melodi `AVAudioEngine` + `AVAudioSourceNode` ile gerçek zamanlı sentezlenir; indirme, ağ ve telif yoktur.
+Saf DSP parçaları (PRNG, biquad katsayıları, gürültü üreteçleri, damla zamanlayıcı, nota eşleme, fade
+eğrisi) birim testlidir ve her ses çevrimdışı (manual rendering) render edilip sessiz olmadığı doğrulanır.
+`AVAudioSession` `.playback`; arka planda ve kilitliyken çalmaya `UIBackgroundModes: audio` ile devam
+eder. "Diğer seslerle karıştır" açıkken (`.mixWithOthers`, varsayılan) Spotify gibi uygulamalarla birlikte
+çalar. Arama / Siri kesintisi sesi duraklatır ve kesinti bitince sürdürür; kulaklık çıkarılınca duraklatır
+(otomatik sürdürmez). Uyku zamanlayıcısı sesi son saniyelerde yumuşakça kısıp durdurur. Arayüz sözleşmesi
+`FocusSoundControlling`; gerçek uygulama `FocusSoundPlayer`.
+
+**Müzik sağlayıcıları (isteğe bağlı)** — `MusicProvider` protokolü `FokusAudio/Music/`'tadır; sağlayıcılar
+`MusicProviderRegistry`'ye kaydedilir (kök `FokusApp`, `onOpenURL` ve sahne yaşam döngüsünü iletir).
+Spotify uygulaması `Fokus/Features/Focus/Music/` altındadır (SDK uygulama hedefinin bağımlılığıdır;
+FokusKit SDK'sızdır). Apple Music için yalnızca uzantı noktası vardır (`MusicProviderID.appleMusic`),
+uygulanmadı: yeni sağlayıcı = `MusicProviderID` + `MusicProvider` uygulaması + `FocusMusicProviders`'a kayıt.
+
+### Spotify'ı etkinleştirme (kullanıcının yapacakları)
+
+Spotify entegrasyonu **kapalı gelir**: `SPOTIFY_CLIENT_ID` boşken (ya da Spotify yüklü değilken) ses
+sayfasında yalnızca "Spotify'da aç" bağlantısı görünür. Etkinleştirmek için (Spotify Developer
+hesabında hiçbir şey otomatik oluşturulmaz; hepsini sen yaparsın):
+
+1. [developer.spotify.com/dashboard](https://developer.spotify.com/dashboard) → **Create app**. Ad/açıklama
+   serbest. **Which API/SDKs are you planning to use?** altında **iOS** seç.
+2. Uygulama ayarlarında **Redirect URIs** → `fokus://spotify-callback` ekle (birebir; kodda sabittir).
+3. **Bundle IDs** → `com.musabustun.fokus` ekle.
+4. Uygulama **Development mode**'dayken yalnızca Dashboard'daki **User Management**'a eklediğin
+   kullanıcılar (Spotify hesabının e-postasıyla; sınırlı sayıda) bağlanabilir. Herkese açmak Spotify'ın
+   kendi "extended quota" incelemesine bağlıdır.
+5. Dashboard'daki **Client ID**'yi `ios/Config/Fokus.xcconfig` içindeki `SPOTIFY_CLIENT_ID =` satırına yaz
+   (Client Secret'a ihtiyaç yok ve ASLA koda/repoya konmaz). Ardından `xcodegen generate` ve yeniden derle.
+6. Cihazda Spotify uygulaması yüklü ve giriş yapılmış olmalı. İlk "Spotify'a bağlan"da Spotify açılıp izin
+   ister, sonra Fokus'a döner. Çalmayı denetlemek çoğunlukla **Premium** gerektirir (Premium yoksa Spotify
+   komutu reddeder; uygulama bunu Türkçe bir mesajla gösterir).
+
+Simülatörde Spotify uygulaması yoktur; bağlantı akışı yalnızca gerçek cihazda uçtan uca denenebilir
+(arayüz/kontroller `-FokusUITestSpotify connected` sahte sağlayıcısıyla UI testlerinde doğrulanır).
 
 ## Odak — Live Activity / kilit ekranı kronometresi (plan, uygulanmadı)
 

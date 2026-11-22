@@ -1,3 +1,4 @@
+import FokusAudio
 import FokusData
 import FokusDesign
 import Foundation
@@ -17,6 +18,9 @@ struct AppEnvironment {
     let authService: any AuthService
     let syncService: any SyncService
     let notificationService: any NotificationService
+    /// Cihazda üretilen odak sesleri ve harici müzik sağlayıcıları (Odak tam ekranı kullanır).
+    let focusSound: FocusSoundPlayer
+    let musicRegistry: MusicProviderRegistry
 
     /// Container'ı kurar: CloudKit → yerel → bellek içi sırasıyla düşer; açılışta asla çökmez.
     static func make(
@@ -46,7 +50,9 @@ struct AppEnvironment {
             authService: AppleAuthService(),
             syncService: CloudKitSyncService(isActive: usedCloudKit, defaults: defaults),
             // UI testleri sistem izin iletişim kutusunu görmesin diye sahte servis (izin verir).
-            notificationService: isUITest ? MockNotificationService() : SystemNotificationService()
+            notificationService: isUITest ? MockNotificationService() : SystemNotificationService(),
+            focusSound: FocusSoundPlayer(),
+            musicRegistry: MusicProviderRegistry(providers: FocusMusicProviders.make())
         )
     }
 
@@ -88,4 +94,6 @@ extension EnvironmentValues {
     @Entry var authService: (any AuthService)? = nil
     @Entry var syncService: (any SyncService)? = nil
     @Entry var notificationService: (any NotificationService)? = nil
+    @Entry var focusSound: (any FocusSoundControlling)? = nil
+    @Entry var musicRegistry: MusicProviderRegistry? = nil
 }

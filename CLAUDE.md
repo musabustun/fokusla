@@ -160,10 +160,11 @@ PR öncesi `xcodegen generate` + `build` + iki `test` yeşil. Paralel oturumlar 
 | `FokusKit/Sources/FokusDomain` | Enum'lar, `RecurrenceRule`, `Identifiers` (UUID v5, `isoDate`), snapshot değer tipleri, `Calc/` saf hesaplar                | Foundation, CryptoKit                                    | SwiftUI, SwiftData, UIKit, diğer FokusKit hedefleri |
 | `FokusKit/Sources/FokusData`   | `@Model`'ler, `FokusSchemaV1`, `FokusStore`, `EntityStore`/repository'ler, `CurriculumSeeder`, `AuthService`, `SyncService` | FokusDomain, SwiftData, CoreData, AuthenticationServices | FokusDesign, SwiftUI görünümleri                    |
 | `FokusKit/Sources/FokusDesign` | Renk tokenları (Asset Catalog, palet × açık/koyu), tipografi, boşluk/radius/hareket, ortak bileşenler, gömülü fontlar       | FokusDomain, SwiftUI                                     | FokusData, SwiftData                                |
+| `FokusKit/Sources/FokusAudio`  | `FocusSoundControlling`/`FocusSoundPlayer` (AVAudioEngine ile cihazda üretilen sesler), saf DSP, `MusicProvider` sözleşmesi + `MusicProviderRegistry` | Foundation, AVFoundation, Observation | Diğer FokusKit hedefleri, SwiftUI, SwiftData, harici SDK'lar (Spotify SDK uygulama hedefindedir) |
 | `Fokus/App`                    | `FokusApp`, container kurulumu, kök kapı, kabuk (iPhone `TabView`, iPad `NavigationSplitView`), ortam servisleri            | Hepsi                                                    | —                                                   |
-| `Fokus/Features/<Modül>`       | Modül ekranları (web modül sahipliği tablosu aynen geçerli)                                                                 | FokusKit'in üç hedefi                                    | Başka `Features/<Modül>` tipleri                    |
+| `Fokus/Features/<Modül>`       | Modül ekranları (web modül sahipliği tablosu aynen geçerli)                                                                 | FokusKit'in dört hedefi (+ Spotify SDK yalnızca `Features/Focus/Music`)                                    | Başka `Features/<Modül>` tipleri                    |
 
-Modüller arası paylaşılacak her şey FokusKit'e taşınır (UI → FokusDesign, veri → FokusData, hesap → FokusDomain); feature'lar birbirinin tipine dokunmaz. FokusKit'in public API'si yalnızca eklenerek genişler.
+Modüller arası paylaşılacak her şey FokusKit'e taşınır (UI → FokusDesign, veri → FokusData, hesap → FokusDomain, ses/müzik sözleşmeleri → FokusAudio); feature'lar birbirinin tipine dokunmaz. FokusKit'in public API'si yalnızca eklenerek genişler.
 
 ### Model kuralları (SwiftData + CloudKit)
 

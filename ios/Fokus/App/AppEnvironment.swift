@@ -21,6 +21,7 @@ struct AppEnvironment {
     /// Cihazda üretilen odak sesleri ve harici müzik sağlayıcıları (Odak tam ekranı kullanır).
     let focusSound: FocusSoundPlayer
     let musicRegistry: MusicProviderRegistry
+    let socialService: any SocialService
 
     /// Container'ı kurar: CloudKit → yerel → bellek içi sırasıyla düşer; açılışta asla çökmez.
     static func make(
@@ -52,8 +53,26 @@ struct AppEnvironment {
             // UI testleri sistem izin iletişim kutusunu görmesin diye sahte servis (izin verir).
             notificationService: isUITest ? MockNotificationService() : SystemNotificationService(),
             focusSound: FocusSoundPlayer(),
-            musicRegistry: MusicProviderRegistry(providers: FocusMusicProviders.make())
+            musicRegistry: MusicProviderRegistry(providers: FocusMusicProviders.make()),
+            socialService: makeSocialService(container: container, isUITest: isUITest, defaults: defaults)
         )
+    }
+
+    /// Sosyal şimdilik sahte (`MockSocialService`): ağ yok; gerçek eşleşme CloudKit ile gelecek
+    /// (docs/social-cloudkit.md). Oturum, profildeki Apple kimliğinden ya da cihazdaki önizleme oturumundan gelir.
+    /// UI testlerinde bellek içi depo, gecikmesiz çağrılar ve zamanlayıcısız (deterministik) simülasyon.
+    private static func makeSocialService(
+        container: ModelContainer, isUITest: Bool, defaults: UserDefaults
+    ) -> any SocialService {
+        let sessionProvider: @MainActor () async -> String? = {
+            (try? ProfileRepository(context: container.mainContext).current())?.appleUserId
+        }
+        if isUITest {
+            return MockSocialService(
+                sessionProvider: sessionProvider, storage: InMemorySocialStorage(),
+                delayMs: 0, tickMs: 0, responseDelayMs: 600)
+        }
+        return MockSocialService(sessionProvider: sessionProvider, storage: UserDefaultsSocialStorage(defaults: defaults))
     }
 
     private static func buildContainer() -> (ModelContainer, Bool) {
@@ -96,4 +115,5 @@ extension EnvironmentValues {
     @Entry var notificationService: (any NotificationService)? = nil
     @Entry var focusSound: (any FocusSoundControlling)? = nil
     @Entry var musicRegistry: MusicProviderRegistry? = nil
+    @Entry var socialService: (any SocialService)? = nil
 }

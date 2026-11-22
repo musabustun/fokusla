@@ -40,6 +40,11 @@ struct AppEnvironment {
             ? (makeContainerOrFallback(for: .inMemory), false)
             : buildContainer()
 
+        FokusSystem.register(container)
+        #if DEBUG
+        DebugDemoData.seedIfRequested(container: container)
+        #endif
+
         do {
             try CurriculumSeeder.ensureSeeded(context: container.mainContext)
         } catch {
@@ -77,6 +82,9 @@ struct AppEnvironment {
 
     private static func buildContainer() -> (ModelContainer, Bool) {
         let identifier = Bundle.main.object(forInfoDictionaryKey: "FokusICloudContainer") as? String
+        // App Group varsa depo orada durur (widget/intent'ler paylaşır); eski konumdaki veri taşınır.
+        // Yoksa (imzasız simülatör derlemesi) varsayılan konum: davranış eskisi gibi.
+        let storeURL = FokusAppGroup.resolveStoreURL()
         let preferred = FokusStore.preferredMode(
             containerIdentifier: identifier,
             syncEnabled: SyncPreferences.isEnabled(),
@@ -84,18 +92,20 @@ struct AppEnvironment {
         )
         if case .cloudKit = preferred {
             do {
-                return (try FokusStore.makeContainer(mode: preferred), true)
+                return (try FokusStore.makeContainer(mode: preferred, storeURL: storeURL), true)
             } catch {
                 logger.error("CloudKit deposu kurulamadı: \(error.localizedDescription, privacy: .public)")
             }
         }
-        return (makeContainerOrFallback(for: .local), false)
+        return (makeContainerOrFallback(for: .local, storeURL: storeURL), false)
     }
 
     /// İstenen modu dener; olmazsa bellek içine düşer.
-    private static func makeContainerOrFallback(for mode: FokusStore.Mode) -> ModelContainer {
+    private static func makeContainerOrFallback(
+        for mode: FokusStore.Mode, storeURL: URL? = nil
+    ) -> ModelContainer {
         do {
-            return try FokusStore.makeContainer(mode: mode)
+            return try FokusStore.makeContainer(mode: mode, storeURL: storeURL)
         } catch {
             logger.error("Depo kurulamadı: \(error.localizedDescription, privacy: .public)")
         }

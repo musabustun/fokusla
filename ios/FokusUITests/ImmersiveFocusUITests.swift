@@ -206,8 +206,15 @@ final class ImmersiveFocusUITests: FocusUITestCase {
         let root = element("immersive.root")
         let start = root.coordinate(withNormalizedOffset: CGVector(dx: direction == .left ? 0.85 : 0.15, dy: 0.4))
         let end = root.coordinate(withNormalizedOffset: CGVector(dx: direction == .left ? 0.15 : 0.85, dy: 0.4))
+        let before = pageIndicator.value as? String
         start.press(forDuration: 0.05, thenDragTo: end)
-        Thread.sleep(forTimeInterval: 0.5)
+        // Sabit bekleme yerine sayfa göstergesinin değişmesini bekle: yük altındaki simülatörde
+        // (iPhone Air) kaydırma animasyonu 0,5 sn'den uzun sürebilir. Sayfa değişmezse (uçta sekme)
+        // süre dolar ve çağıran kendi doğrulamasını yapar; doğrulamalar gevşetilmedi.
+        let changed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value != %@", before ?? ""), object: pageIndicator)
+        _ = XCTWaiter().wait(for: [changed], timeout: 4)
+        Thread.sleep(forTimeInterval: 0.3)
     }
 
     private func goToPage(_ page: String) {

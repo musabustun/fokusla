@@ -156,15 +156,44 @@ hesabında hiçbir şey otomatik oluşturulmaz; hepsini sen yaparsın):
 Simülatörde Spotify uygulaması yoktur; bağlantı akışı yalnızca gerçek cihazda uçtan uca denenebilir
 (arayüz/kontroller `-FokusUITestSpotify connected` sahte sağlayıcısıyla UI testlerinde doğrulanır).
 
-## Odak — Live Activity / kilit ekranı kronometresi (plan, uygulanmadı)
+## Sistem entegrasyonları: Live Activity, widget'lar, Siri/Kestirmeler, Odak filtresi
 
-Oturum açıkken kilit ekranı ve Dynamic Island'da kronometre göstermek için (yer tutucu; kod yok):
+Kod yerleşimi: `ios/Shared/` (uygulama VE widget hedefine derlenir: `FocusLiveActivity` = `ActivityAttributes` +
+eşitleme, `FokusIntents`, `FocusActions`, `FokusSystemStore`), `ios/FokusWidgets/` (uzantı: widget'lar +
+Live Activity arayüzü), `ios/Fokus/App/` (`FocusSystemCoordinator`, `FokusShortcuts`, `FocusFilter`).
+Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`, `SystemDialogs`.
 
-1. **Hedef:** `FokusWidgets` adında yeni bir Widget Extension (`project.yml`'e `app-extension` hedefi); `NSSupportsLiveActivities = YES` (`Info.plist`). Paylaşılan ActivityAttributes tipi FokusKit'e (örn. `FokusDomain/FocusActivityAttributes.swift`, yalnızca değer tipleri) eklenir; böylece uygulama ve eklenti aynı tipi kullanır.
-2. **İçerik:** `ActivityAttributes` sabit kısmı: ders etiketi. `ContentState`: `phase` (`focus`/`break`), `phaseStartedAt: Date`, `focusMsBeforePhase: Double` (önceki odak toplamı). Süre sayacı **sistem tarafından** çizilir: `Text(timerInterval: phaseStartedAt...Date.distantFuture, countsDown: false)`; uygulama her saniye güncelleme göndermez.
-3. **Yaşam döngüsü:** `FocusRepository.start/pause/resume` sonrası `Activity.request/update`, `finish` sonrası `end` (kayıt sonucu `FocusScreen` değil, ince bir `FocusActivityController` çağırır; ekran kapalıyken de çalışsın diye `AppEnvironment`'ta tutulur). Uygulama açılışında açık oturum varsa etkinlik yeniden bağlanır (`Activity.activities`).
-4. **Eylemler:** iOS 17+ `LiveActivityIntent` ile kilit ekranından "Mola ver / Devam et / Bitir"; intent aynı `FocusRepository` üzerinden depoya yazar (App Group + paylaşılan SwiftData deposu gerekir: `ModelConfiguration(groupContainer:)`, CloudKit ile uyumlu olduğu doğrulanmalı).
-5. **Tuzaklar:** Push ile güncelleme (APNs) YOK — yalnızca yerel güncelleme (sunucumuz yok); Live Activity 8 saat sonra sistem tarafından sonlandırılır → açılışta yeniden isteme; imzasız simülatör derlemesi için `ActivityKit` izinleri ve App Group yetkisi Apple Developer hesabında kayıt gerektirir (kullanıcı onayıyla).
+- **Live Activity / Dynamic Island:** süre saklanmaz; `Text(timerInterval:)` ile sistem sayar. Odakta sayaç oturumun
+  toplam odak süresini (mola hariç), molada açık mola segmentini gösterir; mola/devam yeni segment açtığı için
+  etkinlik her geçişte güncellenir. `FocusSystemCoordinator` açık oturumu etkinlikle eşitler (uygulama öne gelince
+  ve veri kaydedilince); Mola ver/Devam et ve Bitir `LiveActivityIntent`'tir (uygulama sürecinde çalışır).
+  Push güncellemesi YOK; sistem 8 saat sonra etkinliği sonlandırır, uygulama açılınca yeniden başlatılır.
+- **Widget'lar:** Bugünkü odak + hedef halkası (small/medium, kilit ekranı circular/rectangular/inline) ve bugünkü
+  görevler (medium/large, daire düğmesi `ToggleTaskIntent` ile görevi widget'tan tamamlar). Veri App Group'taki
+  SwiftData deposundan okunur; uygulama veri değişince `WidgetCenter.reloadAllTimelines()` çağırır. Odak sürerken
+  sayaç sistemce sayılır, halka 5 dk aralıklı girdilerle ilerler. Palet: widget uzantısı varsayılan paleti kullanır.
+- **App Group deposu:** `group.com.musabustun.fokus`. Depo (`Fokus.store` + `-wal` + `-shm`) ilk açılışta eski
+  konumdan App Group kapsayıcısına TAŞINIR (`FokusAppGroup.migrateLegacyStoreIfNeeded`: önce kopyalar, başarılıysa
+  eskiyi siler; hedef varsa ezmez; hata olursa eski depoyu olduğu gibi bırakır). CloudKit yapılandırması aynı kalır.
+  Uzantı depoyu CloudKit'siz açar ve ASLA boş depo oluşturmaz (dosya yoksa "Fokus'u bir kez aç" gösterir).
+  Yetki yoksa (imzasız simülatör derlemesi) varsayılan konum kullanılır: davranış eskisi gibi.
+- **Siri ve Kestirmeler:** "Odak başlat" (ders opsiyonel, `SubjectEntity`), "Odağı bitir", "Bugün ne kadar çalıştım?",
+  "Görev ekle"; Türkçe ifadeler `FokusShortcuts`'ta. "Odak başlat" uygulamayı açar (Live Activity yalnızca ön plandan başlar).
+- **Odak filtresi** (`FokusFocusFilter`, Ayarlar → Odak → Odak filtreleri → Fokus): "Hatırlatmaları sustur" ve
+  "Odak sesi". Sade: ayarlar App Group `UserDefaults`'ında tutulur; hatırlatmalar susturulur, yeni oturumda seçili
+  ses çalar. Tam ekran odak zaten oturumla birlikte otomatik açılır.
+
+### Hesapta yapılacaklar (kullanıcı onayıyla; bu PR hesapta HİÇBİR ŞEY kaydetmez)
+
+1. **App Group** `group.com.musabustun.fokus` oluştur.
+2. **App ID** `com.musabustun.fokus` → App Groups yeteneği ekle ve bu gruba bağla.
+3. **Yeni App ID** `com.musabustun.fokus.widgets` (widget uzantısı) → App Groups yeteneği, aynı grup.
+4. Xcode otomatik imzalamayla iki hedef için profil üretilir (ya da bir kez `-allowProvisioningUpdates`).
+5. Live Activity için ek yetenek gerekmez (`NSSupportsLiveActivities` Info.plist'te); Siri/Kestirmeler ve Odak filtresi
+   için de ek kayıt gerekmez.
+6. Cihazda doğrula: depo taşıması (mevcut veri yerinde mi), widget'ın veriyi görmesi, widget'tan görev işaretleme
+   (uzantı CloudKit'siz açtığı depoya yazar; uygulama öne gelince değişiklik CloudKit'e akar — gerçek cihazda
+   doğrulanmalı), Live Activity düğmeleri, Odak filtresi.
 
 ## Cihazda çalıştırma (Apple tarafı)
 

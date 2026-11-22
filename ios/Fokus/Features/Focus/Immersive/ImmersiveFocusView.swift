@@ -7,6 +7,12 @@ import SwiftUI
 
 private let logger = Logger(subsystem: "com.musabustun.fokus", category: "focus.immersive")
 
+/// Yatay sayfa kaydırıcısının bir andaki ölçümü: kapsayıcı genişliği ve ofsetten türetilen sayfa sırası.
+private struct ScrollSample: Equatable {
+    var width: CGFloat
+    var index: Int
+}
+
 /// Odak oturumu açıkken gösterilen StandBy benzeri tam ekran görünüm: yatay kaydırmalı beş sayfa
 /// (kronometre, halka, gece, özet, ses), dokununca beliren Mola ver / Devam et / Bitir kontrolleri.
 /// Kendi `@Query`'leriyle kurulur (yaşayan veri saniyelik `TimelineView` ile yenilenir) ve yazma
@@ -36,10 +42,14 @@ struct ImmersiveFocusView: View {
     @State private var scrolledPage: ImmersivePage?
     /// Başlangıç kaydırması oturduktan sonra gerçek kaydırma konumu sayfayı belirler.
     @State private var tracksScroll = false
+    /// Boyut değişiminden sonra kaydırıcıyı mevcut sayfaya oturtan görev (yenisi eskisini iptal eder).
+    @State private var reanchorTask: Task<Void, Never>?
     /// Oturum biterken kapak kapanma animasyonunda 00:00'a düşmesin diye son açık anın görüntüsü.
     @State private var lastActive: ImmersiveSnapshot?
     @State private var errorMessage: String?
 
+    /// Boyut değişiminden sonra düzenin (sayfa genişlikleri) oturması için bekleme.
+    private static let layoutSettleDelay: Duration = .milliseconds(350)
     private static let saveError = "İşlem kaydedilemedi. Lütfen tekrar dene."
 
     private var page: ImmersivePage { ImmersivePage(rawValue: pageRaw) ?? .default }
@@ -145,15 +155,35 @@ struct ImmersiveFocusView: View {
             }
             // Kaydırma → saklanan sayfa (gösterge, erişilebilirlik, hatırlama). Sayfa, gerçek kaydırma
             // konumundan türetilir (`scrollPosition` bağlaması hızlı kaydırmalarda güncellenmeyebiliyor).
-            .onScrollGeometryChange(for: Int.self) { geometry in
-                guard geometry.containerSize.width > 0 else { return 0 }
-                return Int((geometry.contentOffset.x / geometry.containerSize.width).rounded())
-            } action: { _, index in
+            .onScrollGeometryChange(for: ScrollSample.self) { geometry in
+                ScrollSample(
+                    width: geometry.containerSize.width,
+                    index: geometry.containerSize.width > 0
+                        ? Int((geometry.contentOffset.x / geometry.containerSize.width).rounded()) : 0)
+            } action: { old, new in
+                // Genişlik değişti (açılışta düzen oturması, iPhone dönüşü, iPad yeniden boyutlama): ofset
+                // eski genişlikteki piksel değerinde kalır ve yanlış sayfa gibi okunurdu (ör. yatayda
+                // "Halka" → "Kronometre"). Sayfa DEĞİŞMEZ: izleme durur, kaydırıcı yeni genişlikte
+                // mevcut sayfaya oturtulur ve düzen sakinleşince izleme yeniden başlar.
+                if new.width != old.width {
+                    tracksScroll = false
+                    reanchorTask?.cancel()
+                    reanchorTask = Task { @MainActor in
+                        proxy.scrollTo(page, anchor: .leading)
+                        try? await Task.sleep(for: Self.layoutSettleDelay)
+                        guard !Task.isCancelled else { return }
+                        proxy.scrollTo(page, anchor: .leading)
+                        try? await Task.sleep(for: .milliseconds(100))
+                        guard !Task.isCancelled else { return }
+                        tracksScroll = true
+                    }
+                    return
+                }
                 // Açılıştaki ilk konum (0) saklı sayfayı ezmesin: başlangıç kaydırması oturana dek yok say.
                 guard tracksScroll else { return }
                 let pages = ImmersivePage.allCases
-                guard pages.indices.contains(index) else { return }
-                let target = pages[index]
+                guard pages.indices.contains(new.index) else { return }
+                let target = pages[new.index]
                 if target.rawValue != pageRaw { pageRaw = target.rawValue }
             }
             // Dışarıdan değişim (gösterge ayarı vb.) → kaydırma konumu.

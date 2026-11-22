@@ -27,17 +27,39 @@ targets:
     platform: iOS
     sources:
       - path: Fokus
+      - path: Shared
     dependencies:
       - package: FokusKit
         products: [FokusDomain, FokusData, FokusDesign, FokusAudio]
       - package: SpotifyiOS
         product: SpotifyiOS
+      - target: FokusWidgets
+        embed: true
     settings:
       base:
         INFOPLIST_FILE: Fokus/Info.plist
         CODE_SIGN_ENTITLEMENTS: Fokus/Fokus.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+  # Widget'lar, Live Activity ve App Intents uzantısı. Bundle ID: com.musabustun.fokus.widgets
+  # (yalnızca projede tanımlı; Apple Developer hesabında kaydedilmesi gerekir — bkz. ios/README.md).
+  FokusWidgets:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: FokusWidgets
+      - path: Shared
+    dependencies:
+      - package: FokusKit
+        products: [FokusDomain, FokusData, FokusDesign]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.musabustun.fokus.widgets
+        INFOPLIST_FILE: FokusWidgets/Info.plist
+        CODE_SIGN_ENTITLEMENTS: FokusWidgets/FokusWidgets.entitlements
+        SKIP_INSTALL: YES
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
   FokusUITests:

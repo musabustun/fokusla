@@ -22,3 +22,6 @@ SWIFT_STRICT_CONCURRENCY = complete
 // bağlantısı gösterilir. Client ID gizli değildir ama yine de kodda değil burada durur. Kurulum: ios/README.md.
 // Redirect URI (fokus://spotify-callback) kodda sabittir: xcconfig'te `//` yorum başlatır.
 SPOTIFY_CLIENT_ID =
+
+// Yerel, git dışı geçersiz kılmalar (ör. SPOTIFY_CLIENT_ID). Dosya yoksa yok sayılır. Bkz. ios/README.md.
+#include? "Local.xcconfig"

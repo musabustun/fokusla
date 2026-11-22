@@ -65,7 +65,7 @@ private struct RegularShell: View {
     var body: some View {
         let selection = navigation.selection
         NavigationSplitView(columnVisibility: $columnVisibility) {
-            List(AppSection.allCases, selection: selectionBinding) { section in
+            List(AppSection.availableSections, selection: selectionBinding) { section in
                 // Seçili satır: vurgu dolgusu üzerinde `accentContrast` metin (AA); diğerleri `label`.
                 Label(section.title, systemImage: section.systemImage)
                     .foregroundStyle(selection == section ? FokusColor(.accentContrast) : FokusColor(.label))

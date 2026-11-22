@@ -172,7 +172,7 @@ struct SettingsScreen: View {
     }
 
     private static var appVersion: String {
-        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0"
+        Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0.0"
     }
 
     // MARK: - Daha fazla (iPhone)
@@ -180,7 +180,7 @@ struct SettingsScreen: View {
     private var moreSection: some View {
         LineSection("Daha fazla") {
             moreLink(.books)
-            moreLink(.social)
+            if AppSection.social.isAvailable { moreLink(.social) }
         }
     }
 

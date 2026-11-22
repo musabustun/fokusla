@@ -135,7 +135,7 @@ struct TodayScreen: View {
     private var shortcuts: some View {
         LineSection("Diğer") {
             shortcut(.books)
-            shortcut(.social)
+            if AppSection.social.isAvailable { shortcut(.social) }
         }
     }
 

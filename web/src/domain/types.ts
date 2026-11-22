@@ -58,6 +58,12 @@ export interface UserProfile extends BaseEntity {
   targetExamYear: number | null
   /** Onboarding tamamlandığında set edilir; null ise onboarding gösterilir. */
   onboardingCompletedAt: ISODateTime | null
+  /**
+   * Günlük odak hedefi (dakika); null/yok = hedef kapalı. Yalnızca iOS Ayarlar'da düzenlenir;
+   * web'de henüz arayüzü yoktur, bu yüzden (diğer modüllerin kayıt oluşturma kodunu bozmamak
+   * için) opsiyonel bırakıldı. iOS: `dailyFocusGoalMinutes: Int?`.
+   */
+  dailyFocusGoalMinutes?: number | null
 }
 
 export interface Subject extends BaseEntity {

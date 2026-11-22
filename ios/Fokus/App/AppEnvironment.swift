@@ -16,6 +16,7 @@ struct AppEnvironment {
     let container: ModelContainer
     let authService: any AuthService
     let syncService: any SyncService
+    let notificationService: any NotificationService
 
     /// Container'ı kurar: CloudKit → yerel → bellek içi sırasıyla düşer; açılışta asla çökmez.
     static func make(
@@ -26,6 +27,8 @@ struct AppEnvironment {
         if isUITest {
             defaults.removeObject(forKey: FokusThemeKeys.appearance)
             defaults.removeObject(forKey: FokusThemeKeys.palette)
+            defaults.removeObject(forKey: SyncPreferences.enabledKey)
+            ReminderPreferences(defaults: defaults).reset()
         }
 
         let (container, usedCloudKit) = isUITest
@@ -41,7 +44,9 @@ struct AppEnvironment {
         return AppEnvironment(
             container: container,
             authService: AppleAuthService(),
-            syncService: CloudKitSyncService(isActive: usedCloudKit, defaults: defaults)
+            syncService: CloudKitSyncService(isActive: usedCloudKit, defaults: defaults),
+            // UI testleri sistem izin iletişim kutusunu görmesin diye sahte servis (izin verir).
+            notificationService: isUITest ? MockNotificationService() : SystemNotificationService()
         )
     }
 
@@ -82,4 +87,5 @@ extension EnvironmentValues {
     /// Servisler kökte (`FokusApp`) sağlanır; önizlemelerde `nil` olabilir.
     @Entry var authService: (any AuthService)? = nil
     @Entry var syncService: (any SyncService)? = nil
+    @Entry var notificationService: (any NotificationService)? = nil
 }

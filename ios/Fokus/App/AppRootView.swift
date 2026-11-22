@@ -31,6 +31,7 @@ struct AppRootView: View {
         .animation(reduceMotion ? nil : .easeInOut(duration: FokusMotion.enter), value: isOnboarded)
         .background(.fkBackground)
         .task(id: profile?.appleUserId) { await validateAppleCredential() }
+        .modifier(ReminderCoordinator())
     }
 
     /// Apple kimliği iptal edilmiş/bulunamıyorsa bağı kaldırır; veri silinmez.

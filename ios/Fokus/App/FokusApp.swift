@@ -19,6 +19,7 @@ struct FokusApp: App {
                 .background(.fkBackground)
                 .environment(\.authService, environment.authService)
                 .environment(\.syncService, environment.syncService)
+                .environment(\.notificationService, environment.notificationService)
         }
         .modelContainer(environment.container)
     }

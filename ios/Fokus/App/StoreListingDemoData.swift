@@ -27,7 +27,7 @@ enum StoreListingDemoData {
         do {
             let profiles = ProfileRepository(context: context)
             guard try profiles.current() == nil else { return }
-            try profiles.completeOnboarding(field: .say, appleUserId: nil, displayName: "Elif", now: now)
+            try profiles.completeOnboarding(field: .say, appleUserId: nil, displayName: "Beyza", now: now)
             try profiles.setDailyFocusGoal(minutes: 240, now: now)
             let subjects = try EntityStore<Subject>(context: context).all()
             let topics = try EntityStore<Topic>(context: context).all()

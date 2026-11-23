@@ -16,9 +16,13 @@ struct RoomInviteHost: ViewModifier {
                 // Spotify geri dönüşü vb. başka `fokus://` bağlantıları burada çözülemez ve yok sayılır.
                 if let parsed = try? RoomInvite(url: url) { invite = parsed }
             }
-            .sheet(item: $invite) { invite in
-                RoomJoinSheet(invite: invite)
-                    .presentationDetents([.medium, .large])
+            // Sayfa boş bir arka plana bağlanır: kökteki `.sheet` altındaki ekranların kendi sayfalarıyla
+            // (ör. Kitaplar'ın form sayfası) çakışmasın.
+            .background {
+                Color.clear.sheet(item: $invite) { invite in
+                    RoomJoinSheet(invite: invite)
+                        .presentationDetents([.large])
+                }
             }
     }
 }

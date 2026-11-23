@@ -224,6 +224,33 @@ Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`,
    (uzantı CloudKit'siz açtığı depoya yazar; uygulama öne gelince değişiklik CloudKit'e akar — gerçek cihazda
    doğrulanmalı), Live Activity düğmeleri, Odak filtresi.
 
+## Apple Watch uygulaması (1.1)
+
+Kapsam bilerek dar: yalnızca **Odak başlat / Odağı bitir** + sürerken büyük sayaç + sade komplikasyon.
+
+Kod: `ios/FokusWatch/` (uygulama: tek ekran, `WatchModel`, haptik), `ios/FokusWatchWidgets/`
+(sade komplikasyon: circular, rectangular, corner, inline), `ios/WatchLink/` (iPhone VE saat uygulamasına
+derlenir: `WCSession` taşıması + eşitleme koordinatörü), saf kurallar `FokusDomain/Calc/FocusLinkCalc.swift`
+(`FocusLinkCalcTests`). Mimari kararı ve gerekçesi: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) 4.12.
+
+```bash
+xcodegen generate
+xcodebuild build -project Fokus.xcodeproj -scheme FokusWatch -destination 'generic/platform=watchOS Simulator' CODE_SIGNING_ALLOWED=NO
+```
+
+`Fokus` şeması saat uygulamasını da (iOS uygulamasına gömülü `Watch/` klasörü) derler. watchOS simülatör runtime'ı
+kuruluysa: `-destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)'`.
+
+### Hesapta yapılacaklar (kullanıcı onayıyla; kod hesapta HİÇBİR ŞEY kaydetmez)
+
+1. **Yeni App ID** `com.musabustun.fokus.watchkitapp` (watchOS uygulaması) → iCloud (CloudKit; kapsayıcı
+   `iCloud.com.musabustun.fokus`, iPhone ile AYNI) + App Groups (`group.com.musabustun.fokus`).
+2. **Yeni App ID** `com.musabustun.fokus.watchkitapp.widgets` (komplikasyon uzantısı) → App Groups, aynı grup.
+3. App Store Connect'te saat uygulaması iOS kaydına bağlıdır (yeni kayıt gerekmez); Apple Watch ekran görüntüleri
+   (ör. 46 mm, 410×502) yüklenir.
+4. Cihazda doğrula (simülatörde WatchConnectivity/CloudKit çalışmaz): saatten odak başlat → telefonda görünür; telefonda
+   duraklat → saatte anında yansır; telefon kapalıyken saatte başlat/bitir; komplikasyonlar; mola/hedef bildirimleri.
+
 ## Cihazda çalıştırma (Apple tarafı)
 
 Simülatör derlemesi imzasızdır (`CODE_SIGNING_ALLOWED=NO`); CloudKit ve Apple ile Giriş orada

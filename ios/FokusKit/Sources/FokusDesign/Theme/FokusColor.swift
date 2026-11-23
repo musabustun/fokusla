@@ -28,7 +28,14 @@ public struct FokusColor: ShapeStyle, Sendable {
 
     /// Belirli palet için `Color` (Any/Dark görünümünü sistem çözer).
     public static func color(_ token: FokusColorToken, palette: FokusPalette = .default) -> Color {
-        Color("\(palette.assetFolder)/\(token.assetName)", bundle: .module)
+        #if os(watchOS)
+        // watchOS asset'lerde yalnızca "Any" varyantını derler ve saat uygulaması her zaman koyudur:
+        // `Watch<Palet>` klasörlerinde "Any" = koyu değer (`generate_palette_assets.py` üretir).
+        let folder = "Watch" + palette.assetFolder
+        #else
+        let folder = palette.assetFolder
+        #endif
+        return Color("\(folder)/\(token.assetName)", bundle: .module)
     }
 }
 

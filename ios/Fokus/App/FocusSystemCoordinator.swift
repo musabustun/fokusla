@@ -34,6 +34,7 @@ struct FocusSystemCoordinator: ViewModifier {
             guard !Task.isCancelled else { return }
             await FocusLiveActivitySync.sync(canStart: canStart)
             FokusSystem.reloadWidgets()
+            FocusLinkCoordinator.shared.publish()
         }
     }
 }

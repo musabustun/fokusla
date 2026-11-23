@@ -1,14 +1,10 @@
 import SwiftUI
 
-/// İki sayfa, dikey kaydırma: Odak ve Bugün. Odak sürerken açılış sayfası her zaman Odak'tır.
+/// Tek sayfa: Odak (Başlat / sayaç + Bitir).
 struct WatchRootView: View {
     var body: some View {
         NavigationStack {
-            TabView {
-                FocusPage()
-                TodayPage()
-            }
-            .tabViewStyle(.verticalPage)
+            FocusPage()
         }
     }
 }

@@ -67,16 +67,26 @@ def folder_name(palette: str) -> str:
     return asset_name(palette)
 
 
-def generate(folder: str, spec: dict, tokens: list[str]) -> None:
+WATCH_PREFIX = "Watch"
+
+
+def generate(folder: str, spec: dict, tokens: list[str], dark_only: bool = False) -> None:
+    """`dark_only`: watchOS yalnızca "Any" varyantını derler (koyu/açık ayrımı yok); saat uygulaması
+    "Gece mesaisi" gereği HER ZAMAN koyudur. Bu yüzden `Watch<Palet>` klasörlerinde "Any" = koyu değer
+    (FokusColor watchOS'ta bu adlara bakar)."""
     root = CATALOG / folder
     if root.exists():
         shutil.rmtree(root)
     write_json(root / "Contents.json", {"info": INFO, "properties": {"provides-namespace": True}})
     for token in tokens:
-        colors = [
-            color_entry(spec["light"][token], dark=False),
-            color_entry(spec["dark"][token], dark=True),
-        ]
+        colors = (
+            [color_entry(spec["dark"][token], dark=False)]
+            if dark_only
+            else [
+                color_entry(spec["light"][token], dark=False),
+                color_entry(spec["dark"][token], dark=True),
+            ]
+        )
         write_json(
             root / f"{asset_name(token)}.colorset" / "Contents.json",
             {"colors": colors, "info": INFO},
@@ -88,7 +98,9 @@ def main(argv: list[str]) -> int:
     wanted = {a.lower() for a in argv}
     if not wanted:
         # Kaynakta olmayan eski klasörleri temizle (yalnızca namespace klasörleri).
-        known = {folder_name(name) for name in source["order"]}
+        known = {folder_name(name) for name in source["order"]} | {
+            WATCH_PREFIX + folder_name(name) for name in source["order"]
+        }
         for child in CATALOG.iterdir():
             if child.is_dir() and child.suffix == "" and child.name not in known:
                 shutil.rmtree(child)
@@ -96,6 +108,9 @@ def main(argv: list[str]) -> int:
         if wanted and name.lower() not in wanted:
             continue
         generate(folder_name(name), source["palettes"][name], source["tokens"])
+        generate(
+            WATCH_PREFIX + folder_name(name), source["palettes"][name], source["tokens"], dark_only=True
+        )
         print(f"{folder_name(name)}: {len(source['tokens'])} renk üretildi")
     return 0
 

@@ -20,21 +20,6 @@ struct WatchPrimaryButtonStyle: ButtonStyle {
     }
 }
 
-/// İkincil yuvarlak düğme (çizgili); `filled` kehribar dolgu (duraklat/devam).
-struct WatchCircleButtonStyle: ButtonStyle {
-    var filled = false
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.title3.weight(.semibold))
-            .foregroundStyle(filled ? .fkAccentContrast : .fkLabel)
-            .frame(width: 56, height: 56)
-            .background { if filled { Circle().fill(.fkAccent) } }
-            .overlay { if !filled { Circle().stroke(.fkSeparatorStrong, lineWidth: 1.5) } }
-            .opacity(configuration.isPressed ? 0.8 : 1)
-    }
-}
-
 extension View {
     /// Bölüm etiketi: küçük, mono, BÜYÜK HARF, ikincil renk.
     func watchEyebrow() -> some View {

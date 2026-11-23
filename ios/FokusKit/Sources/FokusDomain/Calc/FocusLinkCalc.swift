@@ -34,17 +34,14 @@ public enum FocusLink {
         }
     }
 
-    /// Karşı cihazdaki oturuma uzaktan komut (yalnızca oturum yerel depoda henüz YOKKEN gönderilir).
+    /// Karşı cihazdaki oturumu BİTİR komutu (saatte "Bitir"; yalnızca oturum yerel depoda henüz YOKKEN
+    /// gönderilir — başlatmak her zaman yerel yazmadır).
     public struct Command: Codable, Sendable, Equatable {
-        public enum Kind: String, Codable, Sendable { case pause, resume, finish }
-
-        public var kind: Kind
         public var sessionId: UUID
         /// Kullanıcının dokunduğu an; alıcı bunu `now` olarak kullanır (gecikme süreyi bozmasın).
         public var at: Date
 
-        public init(kind: Kind, sessionId: UUID, at: Date) {
-            self.kind = kind
+        public init(sessionId: UUID, at: Date) {
             self.sessionId = sessionId
             self.at = at
         }
@@ -85,7 +82,7 @@ public enum FocusLink {
     // MARK: - Dokunsal geri bildirim
 
     public enum Cue: Sendable, Equatable {
-        case started, paused, resumed, finished, longBreak, goalReached
+        case started, paused, resumed, finished
     }
 
     /// Görünen durum değişince çalınacak ipucu (uzaktan gelen değişiklik de bileği titretsin).
@@ -103,23 +100,6 @@ public enum FocusLink {
             default: return nil
             }
         }
-    }
-
-    /// Moladaysak "molan uzadı" hatırlatmasının zamanı (`FocusCalc.longBreakThresholdMs`); molada değilse `nil`.
-    /// Süre dolmuşsa `nil` (geçmişe bildirim kurulmaz).
-    public static func longBreakReminder(_ live: LiveState?, now: Date) -> Date? {
-        guard let state = live?.state, state.phase == .break else { return nil }
-        let due = state.timerStart.addingTimeInterval(FocusCalc.longBreakThresholdMs / 1000)
-        return due > now ? due : nil
-    }
-
-    /// Odak sürerken günlük hedefin dolacağı an; hedef kapalı / mola / zaten dolmuşsa `nil`.
-    public static func goalReachedDate(_ live: LiveState?, now: Date) -> Date? {
-        guard let state = live?.state, state.phase == .focus,
-            let goal = state.goalMinutes, let dayStart = state.dayFocusStart
-        else { return nil }
-        let due = dayStart.addingTimeInterval(TimeInterval(goal) * 60)
-        return due > now ? due : nil
     }
 
     // MARK: - Taşıma biçimi (WCSession sözlüğü)

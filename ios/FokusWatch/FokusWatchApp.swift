@@ -16,11 +16,6 @@ struct FokusWatchApp: App {
         FokusFonts.registerAll()
         let container = Self.makeContainer()
         FokusSystem.register(container)
-        do {
-            try CurriculumSeeder.ensureSeeded(context: container.mainContext)
-        } catch {
-            logger.error("Müfredat tohumlanamadı: \(error.localizedDescription, privacy: .public)")
-        }
         _model = State(initialValue: WatchModel(container: container))
     }
 
@@ -29,6 +24,8 @@ struct FokusWatchApp: App {
             WatchRootView()
                 .environment(model)
                 .fokusTheme()
+                // "Gece mesaisi": saat her zaman koyu (açık görünüm tercihi saatte yoktur).
+                .preferredColorScheme(.dark)
         }
     }
 

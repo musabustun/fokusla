@@ -7,7 +7,7 @@ import SwiftData
 /// iPhone ↔ saat anlık odak eşitlemesi (iki hedefe de derlenir). Depo tek doğruluk kaynağıdır; bu sınıf
 /// (1) yerel durumu `FocusLink.Broadcast` olarak karşı cihaza yollar, (2) karşıdan gelen bildirimi
 /// `remote` olarak tutar (depoya YAZILMAZ — çift kayıt oluşmasın), (3) oturum karşı cihazdayken
-/// pause/resume/finish komutunu iletir ya da gelen komutu yerel depoda uygular.
+/// BİTİR komutunu iletir ya da gelen komutu yerel depoda uygular.
 /// Karar kuralları saf ve testlidir: `FokusDomain/FocusLink`.
 @MainActor
 @Observable
@@ -76,13 +76,13 @@ final class FocusLinkCoordinator {
         transport.send(FocusLink.Broadcast(stamp: view.stamp, live: view.live))
     }
 
-    /// Kullanıcının gördüğü oturuma komut: yerel depoda açıksa yerelde uygular, değilse karşı cihaza iletir.
+    /// Kullanıcının gördüğü oturumu bitirir: yerel depoda açıksa yerelde uygular, değilse karşı cihaza iletir.
     @discardableResult
-    func perform(_ kind: FocusLink.Command.Kind, now: Date = .now) async -> Bool {
+    func finish(now: Date = .now) async -> Bool {
         guard let view = try? localView(now: now),
             let live = FocusLink.resolve(local: view.live, localStamp: view.stamp, remote: remote, now: now)
         else { return false }
-        let command = FocusLink.Command(kind: kind, sessionId: live.sessionId, at: now)
+        let command = FocusLink.Command(sessionId: live.sessionId, at: now)
         let handled: Bool
         switch FocusLink.route(commandFor: live.sessionId, localActiveSessionId: view.live?.sessionId) {
         case .applyLocally:
@@ -108,11 +108,7 @@ final class FocusLinkCoordinator {
     private func apply(_ command: FocusLink.Command, at now: Date) -> Bool {
         do {
             let repository = FocusRepository(context: try FokusSystem.context())
-            switch command.kind {
-            case .pause: try repository.pause(sessionId: command.sessionId, now: now)
-            case .resume: try repository.resume(sessionId: command.sessionId, now: now)
-            case .finish: try repository.finish(sessionId: command.sessionId, now: now)
-            }
+            try repository.finish(sessionId: command.sessionId, now: now)
             FokusSystem.reloadWidgets()
             return true
         } catch {

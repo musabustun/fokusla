@@ -88,9 +88,9 @@ struct FocusLinkRouteTests {
 
     @Test("komut zamanı gelecek ve aşırı eski değerlere sıkıştırılır")
     func effectiveTime() {
-        let fresh = FocusLink.Command(kind: .pause, sessionId: sessionA, at: now.addingTimeInterval(-3))
-        let future = FocusLink.Command(kind: .pause, sessionId: sessionA, at: now.addingTimeInterval(90))
-        let old = FocusLink.Command(kind: .pause, sessionId: sessionA, at: now.addingTimeInterval(-3600))
+        let fresh = FocusLink.Command(sessionId: sessionA, at: now.addingTimeInterval(-3))
+        let future = FocusLink.Command(sessionId: sessionA, at: now.addingTimeInterval(90))
+        let old = FocusLink.Command(sessionId: sessionA, at: now.addingTimeInterval(-3600))
         #expect(FocusLink.effectiveTime(of: fresh, received: now) == now.addingTimeInterval(-3))
         #expect(FocusLink.effectiveTime(of: future, received: now) == now)
         #expect(FocusLink.effectiveTime(of: old, received: now) == now.addingTimeInterval(-FocusLink.commandMaxAge))
@@ -109,25 +109,6 @@ struct FocusLinkCueTests {
         #expect(FocusLink.cue(from: live(), to: live(since: -1)) == nil)
         #expect(FocusLink.cue(from: live(sessionA), to: live(sessionB)) == .started)
     }
-
-    @Test("uzun mola hatırlatması mola başlangıcından 30 dk sonra; süresi dolmuşsa ya da odaktaysa yok")
-    func longBreak() {
-        let due = FocusLink.longBreakReminder(live(phase: .break, since: -60), now: now)
-        #expect(due == now.addingTimeInterval(-60 + 30 * 60))
-        #expect(FocusLink.longBreakReminder(live(phase: .break, since: -31 * 60), now: now) == nil)
-        #expect(FocusLink.longBreakReminder(live(phase: .focus), now: now) == nil)
-        #expect(FocusLink.longBreakReminder(nil, now: now) == nil)
-    }
-
-    @Test("hedef zamanı: odakta ve hedef açıkken bugünkü toplamın hedefe varacağı an")
-    func goalReached() {
-        // Bugün 50 dk odaklandı, hedef 60 dk → 10 dk sonra.
-        let state = live(goal: 60, dayStart: -50 * 60)
-        #expect(FocusLink.goalReachedDate(state, now: now) == now.addingTimeInterval(10 * 60))
-        #expect(FocusLink.goalReachedDate(live(goal: 60, dayStart: -61 * 60), now: now) == nil)
-        #expect(FocusLink.goalReachedDate(live(phase: .break, goal: 60, dayStart: -50 * 60), now: now) == nil)
-        #expect(FocusLink.goalReachedDate(live(goal: nil), now: now) == nil)
-    }
 }
 
 @Suite("FocusLink taşıma biçimi")
@@ -138,7 +119,7 @@ struct FocusLinkPayloadTests {
         let decoded = FocusLink.broadcast(from: try #require(FocusLink.payload(broadcast)))
         #expect(decoded == broadcast)
 
-        let command = FocusLink.Command(kind: .finish, sessionId: sessionA, at: now)
+        let command = FocusLink.Command(sessionId: sessionA, at: now)
         #expect(FocusLink.command(from: try #require(FocusLink.payload(command))) == command)
 
         let ended = FocusLink.Broadcast(stamp: now, live: nil)

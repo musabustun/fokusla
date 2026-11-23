@@ -226,8 +226,10 @@ Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`,
 
 ## Apple Watch uygulaması (1.1)
 
-Kod: `ios/FokusWatch/` (uygulama: Odak + Bugün sayfaları, `WatchModel`, haptik/bildirimler), `ios/FokusWatchWidgets/`
-(komplikasyonlar + Smart Stack: circular, rectangular, corner, inline), `ios/WatchLink/` (iPhone VE saat uygulamasına
+Kapsam bilerek dar: yalnızca **Odak başlat / Odağı bitir** + sürerken büyük sayaç + sade komplikasyon.
+
+Kod: `ios/FokusWatch/` (uygulama: tek ekran, `WatchModel`, haptik), `ios/FokusWatchWidgets/`
+(sade komplikasyon: circular, rectangular, corner, inline), `ios/WatchLink/` (iPhone VE saat uygulamasına
 derlenir: `WCSession` taşıması + eşitleme koordinatörü), saf kurallar `FokusDomain/Calc/FocusLinkCalc.swift`
 (`FocusLinkCalcTests`). Mimari kararı ve gerekçesi: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) 4.12.
 

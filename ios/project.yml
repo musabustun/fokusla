@@ -116,7 +116,7 @@ targets:
   # Bundle ID: com.musabustun.fokus.messages (yalnızca projede tanımlı; Apple Developer hesabında
   # kaydedilmesi ve App Group'a eklenmesi gerekir — bkz. ios/README.md). Depoyu yalnızca OKUR.
   FokusMessages:
-    type: app-extension
+    type: app-extension.messages
     platform: iOS
     sources:
       - path: FokusMessages

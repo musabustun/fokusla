@@ -4,7 +4,8 @@
 //   FokusDomain  ← hiçbir şeye bağlı değil (Foundation + CryptoKit)
 //   FokusData    → FokusDomain (SwiftData, CloudKit mirroring, AuthenticationServices)
 //   FokusDesign  → FokusDomain (SwiftUI tokenları, fontlar, ortak bileşenler)
-//   FokusAudio   ← hiçbir şeye bağlı değil (AVFoundation: cihazda üretilen odak sesleri + MusicProvider sözleşmesi)
+//   FokusAudio   ← hiçbir şeye bağlı değil (AVFoundation: cihazda üretilen odak sesleri + MusicProvider sözleşmesi;
+//                  CryptoKit: Spotify PKCE)
 // Uygulama hedefi (ios/Fokus) yalnızca kompozisyon + ekranlardır.
 import PackageDescription
 

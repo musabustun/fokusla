@@ -1,5 +1,5 @@
 [English]
-Thank you for reviewing Fokus, a free, ad-free study tracker for Turkish students preparing for the national university entrance exam (YKS). The UI is Turkish.
+Thanks for reviewing Fokus, a free, ad-free study tracker for Turkish students preparing for the national university entrance exam (YKS). The UI is Turkish.
 
 NO ACCOUNT NEEDED. Sign-in is optional. On first launch: tap "Başla" (Get started) -> choose any exam field (e.g. SAY) and tap "Devam" -> keep the default theme and tap "Devam" -> tap "Şimdilik atla" (Skip for now). The app is then fully usable without any login. "Sign in with Apple" is optional and only stores the account identifier on the device (used to detect a revoked Apple ID).
 
@@ -12,9 +12,9 @@ How to try the main features:
 - Books and Tasks: add a book / a task; mark progress.
 - Settings: daily goal, reminders (local notifications, optional), themes, export (JSON) and "delete all data".
 
-Spotify is OPTIONAL. The Spotify integration uses Spotify's iOS App Remote only to control playback in the user's Spotify app; Fokus receives no profile data. Our Spotify developer app is in Spotify's Development mode, so it may not be possible to connect with the review device's Spotify account; if it cannot connect, Fokus shows a plain "Spotify'da aç" (Open in Spotify) link instead. Nothing else depends on Spotify.
+Spotify is OPTIONAL. It uses Spotify's iOS App Remote only to control playback in the user's Spotify app; Fokus receives no profile data. The first connect opens Spotify's consent page once (OAuth PKCE, scope app-remote-control, no client secret); tokens stay in the device Keychain. Our Spotify developer app is in Spotify's Development mode, so the review device's Spotify account may not connect; if it cannot connect, Fokus shows a plain "Spotify'da aç" (Open in Spotify) link. Nothing else depends on Spotify.
 
-Privacy: the app collects no data. There is no analytics, tracking, advertising or third-party service of ours; the app contains no network code of its own. Data lives on the device (SwiftData). If the user is signed in to iCloud and sync is enabled in Settings, data syncs only through the user's own private CloudKit database (iCloud.com.musabustun.fokus), which the developer cannot access. Notifications are local only. No in-app purchases, no subscriptions.
+Privacy: the app collects no data. No analytics, tracking, ads or server of ours. The app's only own network call is the Spotify token exchange/refresh at accounts.spotify.com, after the user connects Spotify. Data lives on the device (SwiftData). If the user is signed in to iCloud and sync is enabled in Settings, data syncs only through the user's own private CloudKit database (iCloud.com.musabustun.fokus), which the developer cannot access. Notifications are local only. No in-app purchases, no subscriptions.
 
 Encryption: only standard Apple system encryption/HTTPS; ITSAppUsesNonExemptEncryption = NO.
 
@@ -23,6 +23,6 @@ This release has no in-app social network, accounts or user-generated content ho
 [Türkçe]
 Fokus'u incelediğiniz için teşekkürler. Hesap gerekmez; giriş isteğe bağlıdır. İlk açılışta: "Başla" -> bir YKS alanı seç -> "Devam" -> "Devam" -> "Şimdilik atla". Ardından uygulama girişsiz tam çalışır. "Apple ile Giriş" isteğe bağlıdır; hesap kimliği yalnızca cihazda tutulur.
 
-Spotify isteğe bağlıdır ve Spotify'ın "Development mode"unda olduğu için inceleme hesabıyla bağlanamayabilir; bağlanamazsa yalnızca "Spotify'da aç" bağlantısı görünür. Başka hiçbir özellik Spotify'a bağlı değildir.
+Spotify isteğe bağlıdır; "Development mode"da olduğu için inceleme hesabıyla bağlanamayabilir; bağlanamazsa yalnızca "Spotify'da aç" görünür. İzin bir kez istenir (PKCE); tek ağ çağrısı accounts.spotify.com'dur.
 
-Veri toplanmaz: analitik, izleme, reklam yok. Veriler cihazdadır; iCloud eşitleme açıksa yalnızca kullanıcının kendi özel CloudKit veritabanı kullanılır (geliştirici erişemez). Bildirimler yalnızca yereldir. Uygulama içi sosyal ağ, hesap veya bizim barındırdığımız kullanıcı içeriği yoktur; tek paylaşım isteğe bağlı iMessage uzantısıdır (göndermeyi kullanıcı yapar). Apple Watch uygulaması yalnızca odak başlat/bitir içerir.
+Veri toplanmaz; analitik, izleme, reklam yok. Veriler cihazdadır; iCloud eşitleme açıksa yalnızca kullanıcının kendi özel CloudKit veritabanı kullanılır (geliştirici erişemez). Bildirimler yalnızca yereldir. Bizim barındırdığımız hesap veya kullanıcı içeriği yoktur; tek paylaşım isteğe bağlı iMessage uzantısıdır. Saat uygulaması yalnızca odak başlat/bitir içerir.

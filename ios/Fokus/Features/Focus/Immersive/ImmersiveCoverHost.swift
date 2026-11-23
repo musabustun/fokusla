@@ -111,23 +111,44 @@ extension View {
     }
 }
 
-/// UI testlerinde son seçilen sayfa testler arasında sızmasın: `-FokusUITestMode` ile başlarken
-/// saklanan sayfa silinir (argüman alanındaki `-fokus.focus.immersivePage` değeri etkilenmez).
+/// UI testlerinde son seçilen sayfa ve StandBy tercihleri testler arasında sızmasın: `-FokusUITestMode` ile
+/// başlarken saklanan sayfa silinir ve tercihler varsayılana (gece kırmızısı kapalı: saatten bağımsız) döner.
 /// Yeniden başlatmada hatırlamayı sınayan test `-FokusUITestKeepImmersivePage` verir.
+/// `-FokusUITestStandBy <json>` tercihleri açıkça verir (eksik anahtarlar varsayılan).
 enum ImmersiveUITestSupport {
     static func resetStoredPageIfNeeded(
-        arguments: [String] = ProcessInfo.processInfo.arguments, defaults: UserDefaults = .standard
+        arguments: [String] = ProcessInfo.processInfo.arguments, defaults: UserDefaults = .standard,
+        preferencesDefaults: UserDefaults = ImmersiveStorage.preferencesDefaults
     ) {
         guard arguments.contains("-FokusUITestMode") else { return }
         if !arguments.contains("-FokusUITestKeepImmersivePage") {
-            defaults.removeObject(forKey: ImmersivePage.storageKey)
+            defaults.removeObject(forKey: ImmersiveStorage.pageKey)
+            let reset = StandByPreferences.default.with(\.nightMode, .off)
+            preferencesDefaults.set(reset.encoded(), forKey: StandByPreferences.storageKey)
+        }
+        if let json = value(after: "-FokusUITestStandBy", in: arguments), let data = json.data(using: .utf8) {
+            let base = StandByPreferences.default.with(\.nightMode, .off)
+            preferencesDefaults.set(overlay(json: data, on: base).encoded(), forKey: StandByPreferences.storageKey)
         }
         // Başlangıç sayfası `-FokusUITestImmersivePage <raw>` ile verilir. `-fokus.focus.immersivePage`
         // KULLANILMAZ: UserDefaults argüman alanı uygulamanın yazdığı değeri ezer, sayfa hiç değişmezdi.
-        if let flag = arguments.firstIndex(of: "-FokusUITestImmersivePage"), flag + 1 < arguments.count,
-            ImmersivePage(rawValue: arguments[flag + 1]) != nil
-        {
-            defaults.set(arguments[flag + 1], forKey: ImmersivePage.storageKey)
+        if let raw = value(after: "-FokusUITestImmersivePage", in: arguments), StandByPage(rawValue: raw) != nil {
+            defaults.set(raw, forKey: ImmersiveStorage.pageKey)
         }
+    }
+
+    private static func value(after flag: String, in arguments: [String]) -> String? {
+        guard let index = arguments.firstIndex(of: flag), index + 1 < arguments.count else { return nil }
+        return arguments[index + 1]
+    }
+
+    /// Kısmi JSON'u (`{"nightMode":"on"}`) taban tercihlerin üstüne bindirir.
+    private static func overlay(json: Data, on base: StandByPreferences) -> StandByPreferences {
+        guard let patch = try? JSONSerialization.jsonObject(with: json) as? [String: Any],
+            let baseObject = try? JSONSerialization.jsonObject(with: base.encoded()) as? [String: Any]
+        else { return base }
+        let merged = baseObject.merging(patch) { _, new in new }
+        guard let data = try? JSONSerialization.data(withJSONObject: merged) else { return base }
+        return StandByPreferences.decoded(from: data)
     }
 }

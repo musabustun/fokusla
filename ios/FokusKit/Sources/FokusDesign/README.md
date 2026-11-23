@@ -96,3 +96,27 @@ karşılaştırır; web tarafında `src/ui/iosPalettes.test.ts` JSON'un güncel 
 - **Tek vurgu:** ekran başına bir kehribar ana eylem; mor yok.
 - **Fontlar:** yalnızca `Resources/Fonts/` içindeki 4 ağırlık (OFL lisansları yanlarında);
   PostScript adları `FokusFonts` sabitleridir.
+
+## StandBy (tam ekran odak) — müzik ve düzenleyici
+
+`Sources/FokusDesign/StandBy/`. Tercih sözleşmesi `StandByPreferences`; veri/ses katmanı bilinmez.
+
+- `NowPlayingInfo` (title, artist, artworkData, isPaused) + `NowPlayingCard`: tam sayfa müzik kartı; geniş
+  alanda kapak solda, dar alanda dikey. Kimlikler `immersive.nowPlaying[.title|.artist|.playPause|.next|.previous]`.
+- `NowPlayingChip`: köşe çipi (28pt kapak + tek satır başlık + eşitleyici; hareket azaltmada durağan),
+  `immersive.nowPlayingChip`.
+- `StandByEditorPanel`: düzenleme modunun alt tepsisi (Sayfalar | Yazı | Renk | Zemin). Bağlamaya her seferinde
+  yeni `StandByPreferences` yazar. Kimlikler `immersive.editor[.tab.*|.page.*|.clock.*|.accent.*|.tintedDigits|.backdrop.*|.night.*|.nowPlayingChip|.reset|.done]`.
+  Saf yardımcılar: `rowOrder(for:)`, `movingEnabled(_:fromOffsets:toOffset:)`.
+
+## StandBy (tam ekran odak)
+
+`StandBy/` tam ekran odak görünümünün yapı taşlarıdır (tercihler: `StandByPreferences`).
+
+- `StandByDigits(text:style:)`: alana sığan, titremeyen (sabit hücre genişlikli) büyük rakamlar;
+  `fontSize(text:style:in:)` / `cellWidths(text:style:)` saf ve testlidir. Renk `foregroundStyle`'dan.
+- `StandByBackdropView(_:)`: `plain` / `gradient` / `aura` (hareket azaltmada durağan) / `black` zemin.
+- `.standByNightTint(_:)`: gece kırmızısı (siyah üstünde soluk tek renk). `StandByNightTint.nightRed`
+  ve `Color.black` (OLED zemini), "yalnızca token" kuralının belgelenmiş TEK ham renk istisnalarıdır.
+- `StandByAnalogClock(date:showsSecondHand:)`: ince çizgili analog saat; hareket azaltmada
+  `showsSecondHand: false` verin.

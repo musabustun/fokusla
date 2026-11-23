@@ -33,6 +33,26 @@ struct ImmersiveSnapshot: Equatable {
         }
     }
 
+    /// Büyük sayaçta gösterilen değer (görünüm düzeyi; hesap `shownMs` ile aynıdır).
+    var primaryMs: Double { shownMs }
+
+    /// Büyük sayacın altındaki küçük ikincil satır: odakta bugünün toplamı, molada oturumun odak süresi.
+    struct Secondary: Equatable {
+        var label: String
+        var ms: Double
+    }
+
+    var secondary: Secondary? {
+        switch phase {
+        // Moladan dönüldüyse (büyük sayaç son devamdan beri) ikincil satır oturum toplamı; yoksa bugünkü toplam.
+        case .focus:
+            sessionFocusMs > currentFocusMs + 1_000
+                ? Secondary(label: "Toplam", ms: sessionFocusMs) : Secondary(label: "Bugün", ms: todayTotalMs)
+        case .break: Secondary(label: "Oturum", ms: sessionFocusMs)
+        case .idle: nil
+        }
+    }
+
     /// Halka dolumu: gösterilen sürenin saat içindeki payı (0–1).
     var hourLap: Double { Self.hourLap(shownMs) }
 

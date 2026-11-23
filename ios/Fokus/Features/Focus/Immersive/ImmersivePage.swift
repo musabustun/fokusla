@@ -1,35 +1,27 @@
+import FokusData
+import FokusDesign
 import Foundation
 
-/// Tam ekran odak görünümünün yatay kaydırmalı sayfaları (sıra = kaydırma sırası).
-/// Raw değerler `AppStorage` ve UI testi başlatma argümanında (`-fokus.focus.immersivePage night`) kullanılır.
-enum ImmersivePage: String, CaseIterable, Identifiable, Sendable {
-    case stopwatch, ring, night, summary, sound
+/// Tam ekran görünümün sayfa/tercih saklama sabitleri. Sayfa türü `StandByPage` (FokusDesign); burada yalnızca
+/// UserDefaults anahtarları ve ortak yardımcılar durur.
+enum ImmersiveStorage {
+    /// Son seçilen sayfanın (`StandByPage.rawValue`) saklandığı anahtar. UI testi: `-FokusUITestImmersivePage <raw>`.
+    static let pageKey = "fokus.focus.immersivePage"
+    static let defaultPage: StandByPage = .stopwatch
 
-    /// Son seçilen sayfanın saklandığı `UserDefaults` anahtarı.
-    static let storageKey = "fokus.focus.immersivePage"
-    static let `default`: ImmersivePage = .stopwatch
-
-    var id: String { rawValue }
-
-    /// VoiceOver'da sayfa göstergesinin okuduğu ad.
-    var title: String {
-        switch self {
-        case .stopwatch: "Kronometre"
-        case .ring: "Halka"
-        case .night: "Gece"
-        case .summary: "Bugünün özeti"
-        case .sound: "Ses ve müzik"
-        }
+    /// StandBy tercihlerinin saklandığı defaults: App Group (varsa), yoksa standart.
+    static var preferencesDefaults: UserDefaults {
+        UserDefaults(suiteName: FokusAppGroup.identifier) ?? .standard
     }
+}
 
-    var accessibilityIdentifier: String { "immersive.page.\(rawValue)" }
+extension Array where Element == StandByPage {
+    /// Verilen sayfanın listedeki 0 tabanlı sırası (yoksa 0).
+    func position(of page: StandByPage) -> Int { firstIndex(of: page) ?? 0 }
 
-    /// 0 tabanlı sıra.
-    var position: Int { Self.allCases.firstIndex(of: self) ?? 0 }
-
-    /// Verilen sayfaya `offset` kadar kayar; uçlarda durur.
-    func advanced(by offset: Int) -> ImmersivePage {
-        let all = Self.allCases
-        return all[min(max(position + offset, 0), all.count - 1)]
+    /// `page`'e `offset` kadar kayar; uçlarda durur.
+    func advanced(from page: StandByPage, by offset: Int) -> StandByPage {
+        guard !isEmpty else { return page }
+        return self[Swift.min(Swift.max(position(of: page) + offset, 0), count - 1)]
     }
 }

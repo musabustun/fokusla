@@ -60,6 +60,27 @@ struct ImmersiveMinimizeButton: View {
     }
 }
 
+/// "Özelleştir": düzenleme modunu açar (VoiceOver yolu; uzun basma bunun dokunma karşılığı).
+struct ImmersiveCustomizeButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: "slider.horizontal.3")
+                .font(.headline)
+                .foregroundStyle(.fkLabel)
+                .frame(width: fokusMinTapTarget, height: fokusMinTapTarget)
+                .background(.fkBackground.opacity(0.94), in: Circle())
+                .overlay(Circle().strokeBorder(.fkSeparatorStrong, lineWidth: 1))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("Özelleştir")
+        .accessibilityHint("Sayfaları, yazı stilini, rengi ve zemini değiştirir")
+        .accessibilityIdentifier("immersive.customize")
+    }
+}
+
 /// "Molan uzadı" rozeti: uzun mola uyarısı her sayfada görünür (gece sayfasında soluk ama okunur).
 struct ImmersiveLongBreakBadge: View {
     var isDimmed = false
@@ -81,10 +102,11 @@ struct ImmersiveLongBreakBadge: View {
     }
 }
 
-/// Sayfa göstergesi (noktalar). Sistem göstergesi yerine kendi çizimimiz: konumu kontrol çubuğuyla
-/// çakışmaz ve gece sayfasında soluklaşabilir. VoiceOver'da ayarlanabilir öğedir (yukarı/aşağı kaydır).
+/// Sayfa göstergesi (noktalar), yalnızca görünür sayfalar için. Sistem göstergesi yerine kendi çizimimiz:
+/// konumu kontrol çubuğuyla çakışmaz ve gece sayfasında soluklaşabilir. VoiceOver'da ayarlanabilir öğedir.
 struct ImmersivePageIndicator: View {
-    @Binding var page: ImmersivePage
+    let pages: [StandByPage]
+    @Binding var page: StandByPage
     let tone: FokusColor
     var isDimmed = false
 
@@ -92,7 +114,7 @@ struct ImmersivePageIndicator: View {
 
     var body: some View {
         HStack(spacing: FokusSpacing.sm) {
-            ForEach(ImmersivePage.allCases) { item in
+            ForEach(pages) { item in
                 Circle()
                     .fill(item == page ? tone : FokusColor(.separatorStrong))
                     .frame(width: Self.dotSize, height: Self.dotSize)
@@ -102,11 +124,11 @@ struct ImmersivePageIndicator: View {
         .opacity(isDimmed ? 0.5 : 1)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("Sayfa")
-        .accessibilityValue("\(page.title), \(page.position + 1) / \(ImmersivePage.allCases.count)")
+        .accessibilityValue("\(page.title), \(pages.position(of: page) + 1) / \(pages.count)")
         .accessibilityAdjustableAction { direction in
             switch direction {
-            case .increment: page = page.advanced(by: 1)
-            case .decrement: page = page.advanced(by: -1)
+            case .increment: page = pages.advanced(from: page, by: 1)
+            case .decrement: page = pages.advanced(from: page, by: -1)
             @unknown default: break
             }
         }

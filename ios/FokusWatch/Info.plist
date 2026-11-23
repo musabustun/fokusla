@@ -26,6 +26,10 @@
 	<false/>
 	<key>WKApplication</key>
 	<true/>
+	<key>WKBackgroundModes</key>
+	<array>
+		<string>mindfulness</string>
+	</array>
 	<key>WKCompanionAppBundleIdentifier</key>
 	<string>com.musabustun.fokus</string>
 	<key>WKRunsIndependentlyOfCompanionApp</key>

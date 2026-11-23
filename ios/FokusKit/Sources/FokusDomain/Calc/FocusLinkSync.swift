@@ -239,6 +239,30 @@ extension FocusLink {
         return parts
     }
 
+    // MARK: - Tercihler (telefon → saat)
+
+    /// Telefonda seçilen görünüm tercihleri. Saat bunları kendi `UserDefaults`'una yazar; `@AppStorage`
+    /// okuyan ekranlar (tema) anında güncellenir. Uygulama bağlamı ile gider: en yenisi kazanır ve saat
+    /// uygulaması kapalıyken gelse de açılışta okunur.
+    public struct Preferences: Codable, Sendable, Equatable {
+        /// `FokusPalette` raw value'su (`fokus.palette`); bilinmiyorsa `nil`.
+        public var palette: String?
+
+        public init(palette: String?) {
+            self.palette = palette
+        }
+    }
+
+    public static let preferencesKey = "fokus.link.preferences"
+
+    public static func payload(_ preferences: Preferences) -> [String: Any]? {
+        (try? JSONEncoder().encode(preferences)).map { [preferencesKey: $0] }
+    }
+
+    public static func preferences(from payload: [String: Any]) -> Preferences? {
+        (payload[preferencesKey] as? Data).flatMap { try? JSONDecoder().decode(Preferences.self, from: $0) }
+    }
+
     // MARK: - Taşıma biçimi
 
     public static let recordsKey = "fokus.link.records"

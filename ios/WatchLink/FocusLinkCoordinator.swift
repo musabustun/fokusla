@@ -32,8 +32,12 @@ final class FocusLinkCoordinator {
     @ObservationIgnored private var echo: [UUID: Date] = [:]
     @ObservationIgnored private var pendingPublish: Task<Void, Never>?
     @ObservationIgnored private var saveObserver: (any NSObjectProtocol)?
+    @ObservationIgnored private var defaultsObserver: (any NSObjectProtocol)?
+    @ObservationIgnored private var sentPalette: String?
 
     private static let lastSentKey = "fokus.link.lastSent"
+    /// `FokusThemeKeys.palette` (FokusDesign'a bağlanmamak için aynı anahtar burada da yazılı).
+    static let paletteKey = "fokus.palette"
     private static let subjectNamesKey = "fokus.link.subjectNames"
     private static let publishDebounce: Duration = .milliseconds(300)
 
@@ -50,6 +54,15 @@ final class FocusLinkCoordinator {
         isStarted = true
         transport.onRecords = { [weak self] batch in self?.receive(batch) }
         transport.onActivated = { [weak self] in self?.peerStateChanged() }
+        transport.onPreferences = { [weak self] preferences in self?.receive(preferences) }
+        #if os(iOS)
+        // Telefonda palet değişince saat de aynı temaya geçsin.
+        defaultsObserver = NotificationCenter.default.addObserver(
+            forName: UserDefaults.didChangeNotification, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.publishPreferences() }
+        }
+        #endif
         // Her yerel kayıt (uygulama, intent, Live Activity düğmesi) karşıya gitsin.
         saveObserver = NotificationCenter.default.addObserver(
             forName: ModelContext.didSave, object: nil, queue: .main
@@ -112,8 +125,29 @@ final class FocusLinkCoordinator {
 
     private func peerStateChanged() {
         // iPhone: saat uygulaması kaldırıldıysa bir sonraki kurulumda son 8 gün yeniden gitsin.
-        if !transport.isPeerAvailable { lastSent = nil }
+        if !transport.isPeerAvailable {
+            lastSent = nil
+            sentPalette = nil
+        }
         publish()
+        publishPreferences()
+    }
+
+    /// iPhone: seçili paleti saate bildirir (değiştiyse). Saatte tercih kaynağı telefondur; no-op.
+    func publishPreferences() {
+        #if os(iOS)
+        let palette = defaults.string(forKey: Self.paletteKey)
+        guard transport.isPeerAvailable, palette != sentPalette else { return }
+        transport.send(FocusLink.Preferences(palette: palette))
+        sentPalette = palette
+        #endif
+    }
+
+    private func receive(_ preferences: FocusLink.Preferences) {
+        #if os(watchOS)
+        guard let palette = preferences.palette, defaults.string(forKey: Self.paletteKey) != palette else { return }
+        defaults.set(palette, forKey: Self.paletteKey)
+        #endif
     }
 
     // MARK: - Alma

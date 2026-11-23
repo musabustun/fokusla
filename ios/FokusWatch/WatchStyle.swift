@@ -26,3 +26,15 @@ extension View {
         fokusTextStyle(.eyebrow).foregroundStyle(.fkSecondaryLabel)
     }
 }
+
+/// İkincil yuvarlak düğme (ör. Bitir): koyu dolgu, vurgu rengi simge.
+struct WatchRoundButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundStyle(.fkAccentInk)
+            .frame(width: 48, height: 44)
+            .background(Capsule().fill(.fkSurfaceElevated))
+            .opacity(configuration.isPressed ? 0.7 : 1)
+    }
+}

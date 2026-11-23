@@ -11,6 +11,7 @@ Fokus 1.0.0'ın App Store Connect'e girilecek içerikleri. Yalnızca Türkçe (b
 | `screenshots/iphone-6.3/` | **ASC'de zorunlu** "Dynamic Island (orta ekran)" yuvası: 1206×2622, alfasız PNG (şablon yerel boyutunda render edilir, yeniden örnekleme yok) |
 | `screenshots/iphone-6.9/`, `screenshots/ipad-13/` | 6.9" (1320×2868, isteğe bağlı) ve iPad 13" (2064×2752) karuseli, alfasız PNG |
 | `screenshots/watch/` | Apple Watch yuvası: 422×514 (Ultra 3, 49 mm), alfasız PNG; simülatör ekran görüntüsü olduğu gibi (`01-baslat`, `02-sayac`) |
+| `screenshots/imessage-iphone/`, `screenshots/imessage-ipad/` | ASC "iMessage App" sekmesi: uzantının Mesajlar içinde ham ekran görüntüleri (iPhone 1206×2622 ×3, iPad 2064×2752 ×2; iPad'de küçük görünüm ayrı çekilmez, açılan çekmece zaten kartı gösterir) |
 | `screenshots/build_screenshots.py`, `screenshots/src/` | Mockup + karusel üretimi (HTML/CSS + headless Chrome; başlıklar `src/*.json`) |
 | `scripts/capture_screenshots.sh` | Ham ekran görüntüleri: `StoreScreenshotsUITests` (demo veri: `-FokusUITestMode -FokusDemoData`) |
 | `header/`, `search-results/` | ASC "Header" (5244×2950, 3840×1646) ve "Arama sonuçları" (5244×2950, 3840×2560) görselleri; `scripts/build_header.py` |
@@ -46,6 +47,10 @@ python3 appstore/screenshots/build_screenshots.py --raw /tmp/raw --out appstore/
 #   xcrun simctl launch <UDID> com.musabustun.fokus.watchkitapp                           # 01-baslat
 #   xcrun simctl launch <UDID> com.musabustun.fokus.watchkitapp -FokusWatchDemoSession    # 02-sayac (23 dk'lık açık oturum, DEBUG)
 #   xcrun simctl io <UDID> screenshot 01-baslat.png
+# iMessage uzantısı (Mesajlar'ın örnek konuşması; hesap/gönderim yok):
+#   1) İmzasız yerine ad-hoc imzalı derle (App Group gerekli): xcodebuild build ... CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= CODE_SIGNING_ALLOWED=YES CODE_SIGNING_REQUIRED=NO
+#   2) Uygulamayı bir kez tohumla: xcrun simctl launch <UDID> com.musabustun.fokus -FokusDemoData -FokusDemoPersistent -AppleLanguages "(tr)" -AppleLocale tr_TR  (15 sn bekle, sonra terminate)
+#   3) TEST_RUNNER_FOKUS_STORE_SHOTS=1 xcodebuild test ... -only-testing:FokusUITests/IMessageScreenshotsUITests/testCaptureMessagesExtension  (çıktılar xcresult ekleridir: xcresulttool export attachments)
 python3 appstore/scripts/build_header.py
 ```
 

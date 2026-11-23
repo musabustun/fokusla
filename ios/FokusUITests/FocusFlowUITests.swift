@@ -78,10 +78,11 @@ class FocusUITestCase: XCTestCase {
 
     // MARK: Tam ekran yardımcıları
 
-    /// Tam ekranda kontrolleri gösterir (dokununca belirir, ~4 sn sonra kaybolur).
+    /// Tam ekranda kontrolleri gösterir (dokununca belirir; UI testinde kendiliğinden kaybolmaz).
     func revealImmersiveControls(expecting identifier: String = "immersive.minimize") {
         let root = element("immersive.root")
         XCTAssertTrue(root.waitForExistence(timeout: 8), "immersive.root yok")
+        waitForImmersivePresented()
         if element(identifier).exists { return }
         root.tap()
         XCTAssertTrue(element(identifier).waitForExistence(timeout: 5), "\(identifier) görünmedi")
@@ -90,6 +91,27 @@ class FocusUITestCase: XCTestCase {
     func tapImmersive(_ identifier: String) {
         revealImmersiveControls(expecting: identifier)
         element(identifier).tap()
+    }
+
+    /// Tam ekran kapağının sunum geçişi bitene dek bekler: kök pencereyi tam kaplar ve çerçevesi iki ardışık
+    /// ölçümde aynıdır. Geçiş sürerken UIKit dokunuşları yok sayar; uygulama saniyelik `TimelineView`
+    /// yüzünden hiç "boşta" olmadığından XCUITest'in kendi beklemesi geçişi kapsamaz ve yüklü simülatörde
+    /// dokunuş (Küçült, kontrolleri gösterme) kaybolurdu.
+    func waitForImmersivePresented(timeout: TimeInterval = 8, file: StaticString = #filePath, line: UInt = #line) {
+        let root = element("immersive.root")
+        let window = app.windows.firstMatch
+        var previous: CGRect?
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline {
+            if root.exists {
+                let frame = root.frame
+                let covers = abs(frame.minY - window.frame.minY) < 1 && abs(frame.height - window.frame.height) < 1
+                if covers, frame == previous { return }
+                previous = frame
+            }
+            Thread.sleep(forTimeInterval: 0.25)
+        }
+        XCTFail("Tam ekran sunumu oturmadı (kök: \(root.frame), pencere: \(window.frame))", file: file, line: line)
     }
 
     /// Küçült → normal Odak ekranı.

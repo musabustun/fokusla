@@ -12,7 +12,8 @@ struct StandByPreferencesTests {
         #expect(value.accent == nil)
         #expect(!value.tintedDigits)
         #expect(value.backdrop == .gradient)
-        #expect(value.nightMode == .auto)
+        // Gece kırmızısı varsayılan kapalı: odak başlayınca ekran kendiliğinden kırmızıya dönmez.
+        #expect(value.nightMode == .off)
         #expect(value.showsNowPlayingChip)
         #expect(value.musicWidgetPages == [.clock])
         #expect(StandByPreferences.storageKey == "fokus.focus.standby")
@@ -121,8 +122,20 @@ struct StandByPreferencesTests {
         let value = decode(#"{"clockStyle":"comic","backdrop":"disco","nightMode":"maybe","accent":"neon"}"#)
         #expect(value.clockStyle == .mono)
         #expect(value.backdrop == .gradient)
-        #expect(value.nightMode == .auto)
+        #expect(value.nightMode == .off)
         #expect(value.accent == nil)
+    }
+
+    /// Kayıtlı tercihi olmayan ya da anahtarı eksik veri Kapalı'ya düşer; elle seçilen Otomatik/Açık korunur.
+    @Test(arguments: [
+        (#"{}"#, StandByNightMode.off),
+        (#"{"pages":["clock"]}"#, .off),
+        (#"{"nightMode":"auto"}"#, .auto),
+        (#"{"nightMode":"on"}"#, .on),
+        (#"{"nightMode":"off"}"#, .off),
+    ])
+    func decodeNightModeKeepsExplicitChoice(json: String, expected: StandByNightMode) {
+        #expect(decode(json).nightMode == expected)
     }
 
     @Test func roundTrip() {

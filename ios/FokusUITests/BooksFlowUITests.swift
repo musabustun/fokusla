@@ -91,11 +91,22 @@ final class BooksFlowUITests: XCTestCase {
     ) {
         let target = element(identifier)
         XCTAssertTrue(target.waitForExistence(timeout: 5), "\(identifier) yok", file: file, line: line)
-        let matches = NSPredicate(format: "label == %@", expected)
-        let result = XCTWaiter().wait(for: [expectation(for: matches, evaluatedWith: target)], timeout: 5)
-        XCTAssertEqual(
-            result, .completed, "\(identifier): beklenen '\(expected)', bulunan '\(target.label)'", file: file,
-            line: line)
+        XCTAssertTrue(
+            label(of: target, becomes: expected, within: 5),
+            "\(identifier): beklenen '\(expected)', bulunan '\(target.label)'", file: file, line: line)
+    }
+
+    /// Etiketi yoklayarak bekler; süre dolduktan sonra da bir kez daha okur. `XCTNSPredicateExpectation`
+    /// yüklü simülatörde bir sorgu (erişilebilirlik anlık görüntüsü) süren beklemeden uzun sürünce, değer
+    /// çoktan doğruyken zaman aşımı veriyordu ("beklenen X, bulunan X"). Burada karar her zaman tamamlanmış
+    /// bir okumaya dayanır.
+    private func label(of target: XCUIElement, becomes expected: String, within timeout: TimeInterval) -> Bool {
+        let deadline = Date().addingTimeInterval(timeout)
+        repeat {
+            if target.exists, target.label == expected { return true }
+            Thread.sleep(forTimeInterval: 0.2)
+        } while Date() < deadline
+        return target.exists && target.label == expected
     }
 
     /// Başlığı içeren kitap satırı.
@@ -163,11 +174,9 @@ final class BooksFlowUITests: XCTestCase {
         type("0", into: "book.form.total")
         // iPad'de klavye tuş önizlemesi ilk dokunuşu yutabilir: hata metni değişene dek en çok 3 deneme.
         let expected = "Toplam pozitif bir tam sayı olmalı."
-        for _ in 1...3 where element("book.form.error").label != expected {
+        for _ in 1...3 where !label(of: element("book.form.error"), becomes: expected, within: 0) {
             tap("book.form.save")
-            _ = XCTWaiter().wait(
-                for: [expectation(for: NSPredicate(format: "label == %@", expected), evaluatedWith: element("book.form.error"))],
-                timeout: 2)
+            _ = label(of: element("book.form.error"), becomes: expected, within: 2)
         }
         waitForLabel("book.form.error", equals: expected)
 

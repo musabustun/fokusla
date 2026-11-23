@@ -147,10 +147,10 @@ struct RoomComposeView: View {
                 .frame(minHeight: fokusMinTapTarget)
             VStack(alignment: .leading, spacing: FokusSpacing.sm) {
                 Text("SÜRE").fokusTextStyle(.eyebrow).foregroundStyle(.fkSecondaryLabel)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: FokusSpacing.sm) {
-                        ForEach(RoomInvite.durationOptions, id: \.self) { minutes in durationChip(minutes) }
-                    }
+                // Sığan ızgara: yatay kaydırıcı dar genişlikte sağ kenardaki çipi yarıda kesiyordu.
+                // iPhone'da 4 × 2, geniş iPad'de tek satır.
+                LazyVGrid(columns: Self.chipColumns, alignment: .leading, spacing: FokusSpacing.sm) {
+                    ForEach(RoomInvite.durationOptions, id: \.self) { minutes in durationChip(minutes) }
                 }
             }
             Text("Arkadaşların \"Katıl\"a basınca Fokus açılır; odağı herkes kendisi başlatır. Katılanlar kartta görünür.")
@@ -159,6 +159,11 @@ struct RoomComposeView: View {
         }
     }
 
+    /// Çip en az bu genişlikte ("120 dk" sığar); sütun sayısı kullanılabilir genişlikten türetilir.
+    private static let chipColumns = [
+        GridItem(.adaptive(minimum: 72, maximum: 120), spacing: FokusSpacing.sm, alignment: .leading)
+    ]
+
     private func durationChip(_ minutes: Int) -> some View {
         let selected = model.durationMinutes == minutes
         return Button {
@@ -166,9 +171,11 @@ struct RoomComposeView: View {
         } label: {
             Text("\(minutes) dk")
                 .fokusTextStyle(.callout)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
                 .foregroundStyle(selected ? FokusColor(.background) : FokusColor(.label))
-                .padding(.horizontal, FokusSpacing.lg)
-                .frame(minHeight: fokusMinTapTarget)
+                .padding(.horizontal, FokusSpacing.sm)
+                .frame(maxWidth: .infinity, minHeight: fokusMinTapTarget)
                 .background(selected ? FokusColor(.label) : FokusColor(.fill), in: Capsule())
         }
         .buttonStyle(.plain)

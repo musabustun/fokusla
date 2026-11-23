@@ -186,7 +186,7 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
 
     public static let `default` = StandByPreferences(
         pages: defaultPages, clockStyle: .mono, accent: nil, tintedDigits: false, backdrop: .gradient,
-        nightMode: .auto, showsNowPlayingChip: true)
+        nightMode: .off, showsNowPlayingChip: true)
 
     public init(
         pages: [StandByPage], clockStyle: StandByClockStyle, accent: FokusPalette?, tintedDigits: Bool,

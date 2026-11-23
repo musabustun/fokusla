@@ -37,6 +37,8 @@ describe('BooksCard', () => {
       exam: null,
       unit: 'test',
       totalUnits: null,
+      barcode: null,
+      libraryKey: null,
       archivedAt: null,
       ...patch,
     })

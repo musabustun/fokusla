@@ -42,6 +42,8 @@ async function seedBook() {
     exam: null,
     unit: 'page',
     totalUnits: 200,
+    barcode: null,
+    libraryKey: null,
     archivedAt: null,
   })
 }

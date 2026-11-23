@@ -4,7 +4,9 @@
  */
 import {
   toISODateTime,
+  type Book,
   type BookProgress,
+  type BookSection,
   type FocusSegment,
   type FocusSession,
   type ISODate,
@@ -17,6 +19,8 @@ import {
 } from '@/domain'
 import type {
   BookProgressRepository,
+  BookRepository,
+  BookSectionRepository,
   FocusSegmentRepository,
   FocusSessionRepository,
   ProfileRepository,
@@ -51,6 +55,22 @@ export class DexieTopicRepository extends DexieRepository<Topic> implements Topi
   /** `order`'a göre artan. */
   async findBySubject(subjectId: UUID): Promise<Topic[]> {
     return sortBy(await this.findActiveWhere('subjectId', subjectId), (t) => t.order)
+  }
+}
+
+export class DexieBookRepository extends DexieRepository<Book> implements BookRepository {
+  async findByBarcode(barcode: string): Promise<Book[]> {
+    return sortBy(await this.findActiveWhere('barcode', barcode), (b) => b.createdAt)
+  }
+}
+
+export class DexieBookSectionRepository
+  extends DexieRepository<BookSection>
+  implements BookSectionRepository
+{
+  /** `order`'a göre artan. */
+  async findByBook(bookId: UUID): Promise<BookSection[]> {
+    return sortBy(await this.findActiveWhere('bookId', bookId), (s) => s.order)
   }
 }
 
@@ -129,8 +149,9 @@ export function createRepositories(db: FokusDatabase, context: RepositoryContext
     profiles: new DexieProfileRepository(db.profiles, 'profiles', context),
     subjects: new DexieSubjectRepository(db.subjects, 'subjects', context),
     topics: new DexieTopicRepository(db.topics, 'topics', context),
-    books: new DexieRepository(db.books, 'books', context),
+    books: new DexieBookRepository(db.books, 'books', context),
     bookProgress: new DexieBookProgressRepository(db.bookProgress, 'bookProgress', context),
+    bookSections: new DexieBookSectionRepository(db.bookSections, 'bookSections', context),
     testResults: new DexieTestResultRepository(db.testResults, 'testResults', context),
     focusSessions: new DexieFocusSessionRepository(db.focusSessions, 'focusSessions', context),
     focusSegments: new DexieFocusSegmentRepository(db.focusSegments, 'focusSegments', context),

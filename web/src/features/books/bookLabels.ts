@@ -82,3 +82,17 @@ export function addDays(now: Date, days: number): Date {
   result.setDate(result.getDate() + days)
   return result
 }
+
+/** Bölüm aralığı: "Test 1–12", "Sayfa 10–40"; tek uç ya da aynı uç → "Test 5"; ikisi de yoksa null. */
+export function formatSectionRange(
+  unit: BookUnit,
+  startUnit: number | null,
+  endUnit: number | null,
+): string | null {
+  const label = BOOK_UNIT_LABELS[unit]
+  if (startUnit === null && endUnit === null) return null
+  if (startUnit === null || endUnit === null || startUnit === endUnit) {
+    return `${label} ${formatNumber((startUnit ?? endUnit) as number)}`
+  }
+  return `${label} ${formatNumber(startUnit)}–${formatNumber(endUnit)}`
+}

@@ -257,4 +257,46 @@ describe('BookDetailScreen', () => {
       ROUTES.books,
     )
   })
+
+  describe('bölümler ve barkod', () => {
+    it('bölümleri aralık ve konu adıyla, barkodu ayrı satırda gösterir', async () => {
+      const subject = await services.repositories.subjects.create({
+        name: 'Matematik',
+        exam: 'TYT',
+        fields: ['SAY'],
+        catalogKey: null,
+        order: 0,
+      })
+      const topic = await services.repositories.topics.create({
+        subjectId: subject.id,
+        name: 'Türev',
+        catalogKey: null,
+        order: 0,
+      })
+      const book = await seedBook(services, {
+        barcode: '9781234567897',
+        sections: [
+          { title: 'Giriş', order: 1, startUnit: 1, endUnit: 12, topicId: topic.id },
+          { title: 'Karma', order: 2, startUnit: null, endUnit: null, topicId: null },
+        ],
+      })
+
+      renderDetail(services, book.id)
+
+      const sections = await screen.findByRole('region', { name: 'Bölümler' })
+      expect(within(sections).getByText('Giriş')).toBeInTheDocument()
+      expect(within(sections).getByText('Test 1–12 · Türev')).toBeInTheDocument()
+      expect(within(sections).getByText('Karma')).toBeInTheDocument()
+      expect(screen.getByText('Barkod')).toBeInTheDocument()
+      expect(screen.getByText('9781234567897')).toBeInTheDocument()
+    })
+
+    it('bölümü ve barkodu olmayan kitapta bu bölümler görünmez', async () => {
+      const book = await seedBook(services)
+      renderDetail(services, book.id)
+      await screen.findByRole('heading', { name: 'Limit Matematik' })
+      expect(screen.queryByRole('region', { name: 'Bölümler' })).not.toBeInTheDocument()
+      expect(screen.queryByText('Barkod')).not.toBeInTheDocument()
+    })
+  })
 })

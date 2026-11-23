@@ -23,6 +23,10 @@ public struct BookSnapshot: Sendable, Hashable, Identifiable {
     public var totalUnits: Int?
     /// Bitmeden rafa kaldırıldığı an; arşivde değilse nil.
     public var archivedAt: Date?
+    /// Normalize EAN-13 barkodu; yoksa nil.
+    public var barcode: String?
+    /// Gömülü katalog kaydının kalıcı anahtarı; yoksa nil.
+    public var libraryKey: String?
     /// Oluşturulma zamanı.
     public var createdAt: Date
     /// Son güncelleme zamanı (liste sıralamasında `activityAt` için kullanılır).
@@ -35,7 +39,7 @@ public struct BookSnapshot: Sendable, Hashable, Identifiable {
         id: UUID, title: String, publisher: String? = nil, kind: BookKind = .other,
         subjectId: UUID? = nil, exam: ExamType? = nil, unit: BookUnit = .page,
         totalUnits: Int? = nil, archivedAt: Date? = nil, createdAt: Date, updatedAt: Date,
-        deletedAt: Date? = nil
+        deletedAt: Date? = nil, barcode: String? = nil, libraryKey: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -46,6 +50,8 @@ public struct BookSnapshot: Sendable, Hashable, Identifiable {
         self.unit = unit
         self.totalUnits = totalUnits
         self.archivedAt = archivedAt
+        self.barcode = barcode
+        self.libraryKey = libraryKey
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.deletedAt = deletedAt
@@ -82,6 +88,43 @@ public struct BookProgressSnapshot: Sendable, Hashable, Identifiable {
         self.topicId = topicId
         self.recordedAt = recordedAt
         self.note = note
+        self.createdAt = createdAt
+        self.deletedAt = deletedAt
+    }
+}
+
+/// `BookSection`'ın değer tipi karşılığı (web `BookSection`).
+public struct BookSectionSnapshot: Sendable, Hashable, Identifiable {
+    /// Bölümün kimliği (UUID v4).
+    public var id: UUID
+    /// Bölümün ait olduğu kitap (`Book.id`); bağ yoksa nil.
+    public var bookId: UUID?
+    /// Bölüm başlığı.
+    public var title: String
+    /// Kitap içindeki sıra (artan).
+    public var order: Int
+    /// Bölümün ilk birimi; bilinmiyorsa nil.
+    public var startUnit: Int?
+    /// Bölümün son birimi (dahil); bilinmiyorsa nil.
+    public var endUnit: Int?
+    /// Eşlendiği konu (`Topic.id`); yoksa nil.
+    public var topicId: UUID?
+    /// Oluşturulma zamanı.
+    public var createdAt: Date
+    /// Soft-delete zamanı; silinmemişse nil.
+    public var deletedAt: Date?
+
+    public init(
+        id: UUID, bookId: UUID? = nil, title: String, order: Int, startUnit: Int? = nil,
+        endUnit: Int? = nil, topicId: UUID? = nil, createdAt: Date, deletedAt: Date? = nil
+    ) {
+        self.id = id
+        self.bookId = bookId
+        self.title = title
+        self.order = order
+        self.startUnit = startUnit
+        self.endUnit = endUnit
+        self.topicId = topicId
         self.createdAt = createdAt
         self.deletedAt = deletedAt
     }

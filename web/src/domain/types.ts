@@ -102,6 +102,10 @@ export interface Book extends BaseEntity {
   unit: BookUnit
   /** Toplam birim sayısı (sayfa/test/bölüm). Bilinmiyorsa null. */
   totalUnits: number | null
+  /** Normalize EAN-13 barkodu (yalnızca rakam). Barkodsuz kitapta null. */
+  barcode: string | null
+  /** Gömülü kitap kataloğundaki kaydın kalıcı anahtarı. Katalogdan gelmeyen kitapta null. */
+  libraryKey: string | null
   /** Kitap rafa kaldırıldıysa (bitti/bırakıldı) zaman damgası. */
   archivedAt: ISODateTime | null
 }
@@ -114,6 +118,20 @@ export interface BookProgress extends BaseEntity {
   topicId: UUID | null
   recordedAt: ISODateTime
   note: string | null
+}
+
+/** Kitabın bir bölümü/ünitesi (ör. "Üslü Sayılar", 12–30. sayfalar). */
+export interface BookSection extends BaseEntity {
+  bookId: UUID
+  title: string
+  /** Kitap içindeki sıra (artan). */
+  order: number
+  /** Bölümün ilk birimi (sayfa/test); bilinmiyorsa null. */
+  startUnit: number | null
+  /** Bölümün son birimi (dahil); bilinmiyorsa null. */
+  endUnit: number | null
+  /** Bölümün eşlendiği konu; yoksa null. */
+  topicId: UUID | null
 }
 
 // ---------------------------------------------------------------------------
@@ -279,6 +297,7 @@ export interface EntityMap {
   topics: Topic
   books: Book
   bookProgress: BookProgress
+  bookSections: BookSection
   testResults: TestResult
   focusSessions: FocusSession
   focusSegments: FocusSegment

@@ -18,11 +18,16 @@ public final class Book: SyncedEntity {
     public var unitRaw: String = "page"
     public var totalUnits: Int?
     public var archivedAt: Date?
+    /// Normalize EAN-13 barkodu (yalnızca rakam); barkodsuz kitapta `nil`.
+    public var barcode: String?
+    /// Gömülü kitap kataloğundaki kaydın kalıcı anahtarı; katalogdan gelmeyen kitapta `nil`.
+    public var libraryKey: String?
 
     public init(
         id: UUID = UUID(), title: String, publisher: String? = nil, kind: BookKind = .other,
         subjectId: UUID? = nil, exam: ExamType? = nil, unit: BookUnit = .page,
-        totalUnits: Int? = nil, archivedAt: Date? = nil
+        totalUnits: Int? = nil, archivedAt: Date? = nil,
+        barcode: String? = nil, libraryKey: String? = nil
     ) {
         self.id = id
         self.title = title
@@ -33,6 +38,8 @@ public final class Book: SyncedEntity {
         self.unitRaw = unit.rawValue
         self.totalUnits = totalUnits
         self.archivedAt = archivedAt
+        self.barcode = barcode
+        self.libraryKey = libraryKey
     }
 
     public var kind: BookKind {
@@ -75,5 +82,34 @@ public final class BookProgress: SyncedEntity {
         self.topicId = topicId
         self.recordedAt = recordedAt
         self.note = note
+    }
+}
+
+/// Kitabın bir bölümü/ünitesi (web `BookSection`). `order` kitap içindeki sıradır.
+@Model
+public final class BookSection: SyncedEntity {
+    public var id: UUID = UUID()
+    public var createdAt: Date = Date.now
+    public var updatedAt: Date = Date.now
+    public var deletedAt: Date?
+
+    public var bookId: UUID?
+    public var title: String = ""
+    public var order: Int = 0
+    public var startUnit: Int?
+    public var endUnit: Int?
+    public var topicId: UUID?
+
+    public init(
+        id: UUID = UUID(), bookId: UUID?, title: String, order: Int, startUnit: Int? = nil,
+        endUnit: Int? = nil, topicId: UUID? = nil
+    ) {
+        self.id = id
+        self.bookId = bookId
+        self.title = title
+        self.order = order
+        self.startUnit = startUnit
+        self.endUnit = endUnit
+        self.topicId = topicId
     }
 }

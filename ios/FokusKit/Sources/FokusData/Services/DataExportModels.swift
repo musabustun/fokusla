@@ -52,6 +52,7 @@ struct DataExportDocument: Encodable {
         var topics: [TopicDTO]
         var books: [BookDTO]
         var bookProgress: [BookProgressDTO]
+        var bookSections: [BookSectionDTO]
         var testResults: [TestResultDTO]
         var focusSessions: [FocusSessionDTO]
         var focusSegments: [FocusSegmentDTO]
@@ -147,6 +148,8 @@ struct BookDTO: Encodable {
     var unit: String
     @ExplicitNull var totalUnits: Int?
     @ExplicitNull var archivedAt: String?
+    @ExplicitNull var barcode: String?
+    @ExplicitNull var libraryKey: String?
 
     init(_ m: Book) {
         id = ExportFormat.id(m.id)
@@ -161,6 +164,34 @@ struct BookDTO: Encodable {
         unit = m.unitRaw
         totalUnits = m.totalUnits
         archivedAt = ExportFormat.dateTime(m.archivedAt)
+        barcode = m.barcode
+        libraryKey = m.libraryKey
+    }
+}
+
+struct BookSectionDTO: Encodable {
+    var id: String
+    var createdAt: String
+    var updatedAt: String
+    @ExplicitNull var deletedAt: String?
+    @ExplicitNull var bookId: String?
+    var title: String
+    var order: Int
+    @ExplicitNull var startUnit: Int?
+    @ExplicitNull var endUnit: Int?
+    @ExplicitNull var topicId: String?
+
+    init(_ m: BookSection) {
+        id = ExportFormat.id(m.id)
+        createdAt = ExportFormat.dateTime(m.createdAt)
+        updatedAt = ExportFormat.dateTime(m.updatedAt)
+        deletedAt = nil
+        bookId = ExportFormat.id(m.bookId)
+        title = m.title
+        order = m.order
+        startUnit = m.startUnit
+        endUnit = m.endUnit
+        topicId = ExportFormat.id(m.topicId)
     }
 }
 

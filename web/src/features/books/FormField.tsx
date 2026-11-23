@@ -38,19 +38,32 @@ function FieldShell({ label, hint, children }: FieldShellProps) {
 export interface TextFieldProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'id'> {
   label: string
   hint?: ReactNode
+  /** Alan hatası; verilirse alan `aria-invalid` olur ve mesaj duyurulur. */
+  error?: string | null
 }
 
 /** Etiketli metin/sayı girişi (`type` ile). */
-export function TextField({ label, hint, className, ...rest }: TextFieldProps) {
+export function TextField({ label, hint, error, className, ...rest }: TextFieldProps) {
+  const errorId = useId()
   return (
     <FieldShell label={label} hint={hint}>
       {({ inputId, hintId }) => (
-        <input
-          id={inputId}
-          aria-describedby={hintId}
-          className={cx(inputStyles(), className)}
-          {...rest}
-        />
+        <>
+          <input
+            id={inputId}
+            aria-describedby={
+              [hintId, error ? errorId : undefined].filter(Boolean).join(' ') || undefined
+            }
+            aria-invalid={error ? true : undefined}
+            className={cx(inputStyles(), className)}
+            {...rest}
+          />
+          {error && (
+            <p id={errorId} role="alert" className={FIELD_ERROR_CLASS}>
+              {error}
+            </p>
+          )}
+        </>
       )}
     </FieldShell>
   )

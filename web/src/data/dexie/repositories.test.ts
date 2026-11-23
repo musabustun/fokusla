@@ -178,4 +178,46 @@ describe('specific repositories', () => {
     expect(await repos.rooms.findAll()).toEqual([room])
     expect(await repos.books.findAll()).toEqual([])
   })
+
+  describe('books and sections', () => {
+    const bookBase = {
+      title: 'Kitap',
+      publisher: null,
+      kind: 'questionBank',
+      subjectId: null,
+      exam: null,
+      unit: 'page',
+      totalUnits: null,
+      libraryKey: null,
+      archivedAt: null,
+    } as const
+
+    it('books.findByBarcode returns only active matches', async () => {
+      const a = await repos.books.create({ ...bookBase, barcode: '9786050000001' })
+      const gone = await repos.books.create({ ...bookBase, barcode: '9786050000001' })
+      await repos.books.create({ ...bookBase, barcode: '9786050000002' })
+      await repos.books.create({ ...bookBase, barcode: null })
+      await repos.books.delete(gone.id)
+      expect(await repos.books.findByBarcode('9786050000001')).toEqual([a])
+      expect(await repos.books.findByBarcode('0000000000000')).toEqual([])
+    })
+
+    it('bookSections.findByBook sorts by order and excludes deleted and other books', async () => {
+      const section = (bookId: UUID, title: string, order: number) =>
+        repos.bookSections.create({
+          bookId,
+          title,
+          order,
+          startUnit: null,
+          endUnit: null,
+          topicId: null,
+        })
+      const second = await section('b1', 'İkinci', 2)
+      const first = await section('b1', 'Birinci', 1)
+      const removed = await section('b1', 'Silinen', 0)
+      await section('b2', 'Başka kitap', 0)
+      await repos.bookSections.delete(removed.id)
+      expect(await repos.bookSections.findByBook('b1')).toEqual([first, second])
+    })
+  })
 })

@@ -5,7 +5,9 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { useServices } from '@/data'
 import type { Book, BookKind, BookUnit, ExamType, Subject, UUID } from '@/domain'
+import { bookLibrary, type BookLibrary, type ResolvedLibraryBook } from '@/library'
 import { Button, FIELD_LABEL_CLASS, SegmentedControl, Sheet } from '@/ui'
+import { BarcodeSection } from './BarcodeSection'
 import { BookValidationError, createBook, updateBook, type BookInput } from './bookActions'
 import {
   BOOK_KIND_LABELS,
@@ -15,6 +17,7 @@ import {
   BOOK_UNITS,
 } from './bookLabels'
 import { FormError, SelectField, TextField } from './FormField'
+import { useBarcodeLookup } from './useBarcodeLookup'
 
 export interface BookFormSheetProps {
   open: boolean
@@ -25,6 +28,8 @@ export interface BookFormSheetProps {
   subjects: readonly Subject[]
   /** Kayıt başarılı olunca (oluşturulan/güncellenen kitapla) çağrılır; ardından onClose. */
   onSaved?: (book: Book) => void
+  /** Barkod aramasının kütüphanesi (testlerde enjekte edilir). Varsayılan: gömülü katalog. */
+  library?: BookLibrary
 }
 
 const EXAMS: readonly ExamType[] = ['TYT', 'AYT', 'YDT']
@@ -40,6 +45,8 @@ interface FormValues {
   unit: BookUnit
   /** Ham metin; boşsa "bilinmiyor". */
   total: string
+  /** Ham barkod metni; boşsa barkodsuz. */
+  barcode: string
 }
 
 function initialValues(book: Book | undefined): FormValues {
@@ -50,12 +57,15 @@ function initialValues(book: Book | undefined): FormValues {
     kind: book?.kind ?? 'questionBank',
     unit: book?.unit ?? 'test',
     total: book?.totalUnits == null ? '' : String(book.totalUnits),
+    barcode: book?.barcode ?? '',
   }
 }
 
-function toInput(values: FormValues): BookInput {
+function toInput(values: FormValues, found: ResolvedLibraryBook | null): BookInput {
   const total = values.total.trim()
   return {
+    ...(found ? { libraryKey: found.libraryKey, sections: found.sections } : {}),
+    barcode: values.barcode,
     title: values.title,
     publisher: values.publisher,
     kind: values.kind,
@@ -86,6 +96,7 @@ interface BookFormProps {
   formId: string
   book: Book | undefined
   subjects: readonly Subject[]
+  library: BookLibrary
   onSavingChange: (saving: boolean) => void
   onDone: (book: Book) => void
 }
@@ -104,21 +115,54 @@ function useInitialFocus() {
 }
 
 /** Sheet açıkken bağlanır; her açılışta değerler `book`'tan yeniden başlar. */
-function BookForm({ formId, book, subjects, onSavingChange, onDone }: BookFormProps) {
+function BookForm({ formId, book, subjects, library, onSavingChange, onDone }: BookFormProps) {
   const { repositories } = useServices()
   const [values, setValues] = useState<FormValues>(() => initialValues(book))
   const [error, setError] = useState<string | null>(null)
+  const [isSearching, setSearching] = useState(false)
   const formRef = useInitialFocus()
+  const { lookup, search, reset } = useBarcodeLookup({ library, selfId: book?.id })
+  const found = lookup.status === 'found' ? lookup.resolved : null
 
   const set = <K extends keyof FormValues>(key: K, value: FormValues[K]) =>
     setValues((current) => ({ ...current, [key]: value }))
+
+  const handleBarcodeChange = (barcode: string) => {
+    set('barcode', barcode)
+    reset()
+  }
+
+  const handleSearch = async () => {
+    setSearching(true)
+    try {
+      const result = await search(values.barcode)
+      if (result.status !== 'found') return
+      const { resolved } = result
+      const hasSubject = subjects.some((subject) => subject.id === resolved.subjectId)
+      setValues((current) => ({
+        ...current,
+        barcode: result.barcode,
+        title: resolved.title,
+        publisher: resolved.publisher ?? '',
+        subjectId: hasSubject && resolved.subjectId ? resolved.subjectId : NO_SUBJECT,
+        kind: resolved.kind,
+        unit: resolved.unit,
+        total: resolved.totalUnits === null ? '' : String(resolved.totalUnits),
+      }))
+    } catch (caught) {
+      console.error('Barkod aranamadı', caught)
+      setError(GENERIC_ERROR)
+    } finally {
+      setSearching(false)
+    }
+  }
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setError(null)
     onSavingChange(true)
     try {
-      const input = toInput(values)
+      const input = toInput(values, found)
       const saved = book
         ? await updateBook(repositories, book.id, input)
         : await createBook(repositories, input)
@@ -201,12 +245,27 @@ function BookForm({ formId, book, subjects, onSavingChange, onDone }: BookFormPr
         onChange={(event) => set('total', event.target.value)}
         hint={`Toplam ${unitNoun} sayısı. Bilmiyorsan boş bırak.`}
       />
+      <BarcodeSection
+        value={values.barcode}
+        onChange={handleBarcodeChange}
+        onSearch={() => void handleSearch()}
+        isSearching={isSearching}
+        lookup={lookup}
+        showSections={!book}
+      />
       {error && <FormError>{error}</FormError>}
     </form>
   )
 }
 
-export function BookFormSheet({ open, onClose, book, subjects, onSaved }: BookFormSheetProps) {
+export function BookFormSheet({
+  open,
+  onClose,
+  book,
+  subjects,
+  onSaved,
+  library = bookLibrary,
+}: BookFormSheetProps) {
   const formId = useId()
   const [isSaving, setSaving] = useState(false)
 
@@ -230,6 +289,7 @@ export function BookFormSheet({ open, onClose, book, subjects, onSaved }: BookFo
         formId={formId}
         book={book}
         subjects={subjects}
+        library={library}
         onSavingChange={setSaving}
         onDone={handleDone}
       />

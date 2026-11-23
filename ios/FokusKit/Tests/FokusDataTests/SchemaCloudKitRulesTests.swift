@@ -15,7 +15,7 @@ struct SchemaCloudKitRulesTests {
         #expect(
             names == [
                 "UserProfile", "Subject", "Topic", "Book", "BookProgress", "TestResult",
-                "FocusSession", "FocusSegment", "StudyTask", "TaskCompletion", "Friend", "Room",
+                "FocusSession", "FocusSegment", "StudyTask", "TaskCompletion", "Friend", "Room", "BookSection",
             ]
         )
     }

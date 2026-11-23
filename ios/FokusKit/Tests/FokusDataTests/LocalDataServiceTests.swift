@@ -25,7 +25,7 @@ struct LocalDataServiceTests {
     }
 
     private static let entityKeys: Set<String> = [
-        "profiles", "subjects", "topics", "books", "bookProgress", "testResults",
+        "profiles", "subjects", "topics", "books", "bookProgress", "bookSections", "testResults",
         "focusSessions", "focusSegments", "tasks", "taskCompletions", "friends", "rooms",
     ]
 

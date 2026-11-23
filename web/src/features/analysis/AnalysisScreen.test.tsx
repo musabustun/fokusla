@@ -95,6 +95,8 @@ async function seedResults(services: AppServices, s: Seed) {
     exam: 'TYT',
     unit: 'test',
     totalUnits: null,
+    barcode: null,
+    libraryKey: null,
     archivedAt: null,
   })
   // Problemler: 2 test, 24 soru, zayıf.

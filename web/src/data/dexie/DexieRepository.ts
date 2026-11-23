@@ -37,6 +37,7 @@ const ENTITY_LABELS: Readonly<Record<EntityName, string>> = {
   topics: 'Konu',
   books: 'Kitap',
   bookProgress: 'Kitap ilerlemesi',
+  bookSections: 'Kitap bölümü',
   testResults: 'Test sonucu',
   focusSessions: 'Odak oturumu',
   focusSegments: 'Odak aralığı',

@@ -14,6 +14,7 @@ import type {
   BaseEntity,
   Book,
   BookProgress,
+  BookSection,
   EntityPatch,
   FocusSegment,
   FocusSession,
@@ -74,10 +75,18 @@ export interface TopicRepository extends Repository<Topic> {
   findBySubject(subjectId: UUID): Promise<Topic[]>
 }
 
-export type BookRepository = Repository<Book>
+export interface BookRepository extends Repository<Book> {
+  /** Verilen (normalize) barkodlu, silinmemiş kitaplar. */
+  findByBarcode(barcode: string): Promise<Book[]>
+}
 
 export interface BookProgressRepository extends Repository<BookProgress> {
   findByBook(bookId: UUID): Promise<BookProgress[]>
+}
+
+export interface BookSectionRepository extends Repository<BookSection> {
+  /** `order`'a göre artan. */
+  findByBook(bookId: UUID): Promise<BookSection[]>
 }
 
 export interface TestResultRepository extends Repository<TestResult> {
@@ -112,6 +121,7 @@ export interface Repositories {
   topics: TopicRepository
   books: BookRepository
   bookProgress: BookProgressRepository
+  bookSections: BookSectionRepository
   testResults: TestResultRepository
   focusSessions: FocusSessionRepository
   focusSegments: FocusSegmentRepository

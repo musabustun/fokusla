@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint'
 
 /**
  * Modül sınırları (bkz. /CLAUDE.md → "Modül sınırları").
- * Her özellik (feature) yalnızca kendi klasörünü, ortak katmanları (ui, domain, data, curriculum)
+ * Her özellik (feature) yalnızca kendi klasörünü, ortak katmanları (ui, domain, data, curriculum, library)
  * ve app/routes'u import edebilir. Bir feature başka bir feature'ı import EDEMEZ.
  */
 const FEATURES = [
@@ -140,6 +140,23 @@ export default tseslint.config(
             {
               group: ['react', '@/*', '!@/domain', '!@/curriculum'],
               message: 'curriculum yalnızca @/domain tiplerine bağımlı saf veridir.',
+            },
+            DEXIE_ONLY_IN_DATA,
+          ],
+        },
+      ],
+    },
+  },
+  {
+    files: ['src/library/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['react', '@/*', '!@/domain', '!@/curriculum', '!@/library'],
+              message: 'library yalnızca @/domain ve @/curriculum tiplerine bağımlı saf veridir.',
             },
             DEXIE_ONLY_IN_DATA,
           ],

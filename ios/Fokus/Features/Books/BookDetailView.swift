@@ -22,6 +22,8 @@ struct BookDetailView: View {
     @Query(filter: #Predicate<Book> { $0.deletedAt == nil }) private var books: [Book]
     @Query(filter: #Predicate<BookProgress> { $0.deletedAt == nil }) private var progress: [BookProgress]
     @Query(filter: #Predicate<Subject> { $0.deletedAt == nil }) private var subjects: [Subject]
+    @Query(filter: #Predicate<BookSection> { $0.deletedAt == nil }) private var sections: [BookSection]
+    @Query(filter: #Predicate<Topic> { $0.deletedAt == nil }) private var topics: [Topic]
 
     @State private var isProgressOpen = false
     @State private var isEditOpen = false
@@ -59,6 +61,7 @@ struct BookDetailView: View {
                     Text(errorMessage).fokusTextStyle(.subheadline).foregroundStyle(.fkDanger)
                         .accessibilityIdentifier("book.detail.error")
                 }
+                sectionsSection(book: book)
                 statsSection(summary: summary, now: now)
                 historySection(summary: summary, now: now)
                 actionsSection(book: book, isArchived: summary.book.archivedAt != nil)
@@ -140,6 +143,28 @@ struct BookDetailView: View {
                 .fokusTextStyle(.subheadline).fontWeight(.semibold).foregroundStyle(.fkSecondaryLabel)
         case .notStarted, .inProgress:
             EmptyView()
+        }
+    }
+
+    // MARK: Bölümler
+
+    /// Kitabın bölümleri (varsa): başlık, aralık ve bağlı konu adı. Yoksa hiçbir şey göstermez.
+    @ViewBuilder private func sectionsSection(book: Book) -> some View {
+        let topicNames = Dictionary(
+            BooksData.deduplicated(topics).map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+        let items = BooksData.deduplicated(sections)
+            .filter { $0.bookId == book.id }.sorted { $0.order < $1.order }
+        if !items.isEmpty {
+            LineSection("Bölümler") {
+                ForEach(items) { section in
+                    let range = BooksFormat.sectionRange(book.unit, start: section.startUnit, end: section.endUnit)
+                    let topic = section.topicId.flatMap { topicNames[$0] }
+                    let detail = [range, topic].compactMap { $0 }.joined(separator: " · ")
+                    LineRow(section.title, subtitle: detail.isEmpty ? nil : detail)
+                    .accessibilityIdentifier("book.detail.section")
+                }
+            }
+            .accessibilityIdentifier("book.detail.sections")
         }
     }
 

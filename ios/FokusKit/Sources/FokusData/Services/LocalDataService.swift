@@ -23,6 +23,7 @@ public struct LocalDataService {
                 topics: try live(Topic.self).map(TopicDTO.init),
                 books: try live(Book.self).map(BookDTO.init),
                 bookProgress: try live(BookProgress.self).map(BookProgressDTO.init),
+                bookSections: try live(BookSection.self).map(BookSectionDTO.init),
                 testResults: try live(TestResult.self).map(TestResultDTO.init),
                 focusSessions: try live(FocusSession.self).map(FocusSessionDTO.init),
                 focusSegments: try live(FocusSegment.self).map(FocusSegmentDTO.init),
@@ -40,7 +41,7 @@ public struct LocalDataService {
         "fokus-yedek-\(Identifiers.isoDate(now, calendar: calendar)).json"
     }
 
-    /// 12 varlığın TÜM kayıtlarını KALICI olarak siler (tombstone'lar dahil) ve kaydeder.
+    /// 13 varlığın TÜM kayıtlarını KALICI olarak siler (tombstone'lar dahil) ve kaydeder.
     /// Müfredat kataloğunu yeniden tohumlamak çağıranın işidir. Geri alınamaz; senkron açıksa silme
     /// iCloud'a da yansıyabilir.
     public func deleteAll() throws {
@@ -49,6 +50,7 @@ public struct LocalDataService {
         try context.delete(model: Topic.self)
         try context.delete(model: Book.self)
         try context.delete(model: BookProgress.self)
+        try context.delete(model: BookSection.self)
         try context.delete(model: TestResult.self)
         try context.delete(model: FocusSession.self)
         try context.delete(model: FocusSegment.self)

@@ -182,6 +182,8 @@ function bookSummary(id: string, status: BookStatus): BookSummary {
     exam: null,
     unit: 'page',
     totalUnits: 100,
+    barcode: null,
+    libraryKey: null,
     archivedAt: null,
   }
   return {

@@ -162,4 +162,49 @@ struct BooksRepositoryTests {
         #expect(entrySnapshot.bookId == book.id && entrySnapshot.reachedUnit == 4 && entrySnapshot.note == "n")
         #expect(entrySnapshot.recordedAt == at(1) && entrySnapshot.createdAt == at(1))
     }
+
+    // MARK: Barkod ve bölümler
+
+    @Test func createStoresBarcodeAndLibraryKey() throws {
+        let book = try repository.create(
+            BookInput(title: "A", barcode: "9786050000001", libraryKey: "lib-a"), now: t0)
+        #expect(book.barcode == "9786050000001" && book.libraryKey == "lib-a")
+        let updated = try repository.update(book, with: BookInput(title: "A"), now: at(1))
+        #expect(updated.barcode == nil && updated.libraryKey == nil)
+    }
+
+    @Test func bookWithBarcodeReturnsOldestActiveMatch() throws {
+        let newer = try repository.create(BookInput(title: "Yeni", barcode: "111"), now: at(5))
+        let older = try repository.create(BookInput(title: "Eski", barcode: "111"), now: at(1))
+        _ = try repository.create(BookInput(title: "Başka", barcode: "222"), now: at(0))
+        #expect(try repository.book(withBarcode: "111")?.id == older.id)
+        try repository.delete(older, now: at(6))
+        #expect(try repository.book(withBarcode: "111")?.id == newer.id)
+        #expect(try repository.book(withBarcode: "yok") == nil)
+    }
+
+    @Test func sectionsAreOrderedAndReplaced() throws {
+        let book = try repository.create(BookInput(title: "A"), now: t0)
+        try repository.replaceSections(
+            [
+                BookSectionInput(title: "İkinci", order: 2, startUnit: 10, endUnit: 20),
+                BookSectionInput(title: "  Birinci ", order: 1),
+            ], for: book, now: at(1))
+        #expect(try repository.sections(of: book.id).map(\.title) == ["Birinci", "İkinci"])
+
+        try repository.replaceSections([BookSectionInput(title: "Yeni", order: 0)], for: book, now: at(2))
+        #expect(try repository.sections(of: book.id).map(\.title) == ["Yeni"])
+        let all = try context.fetch(FetchDescriptor<BookSection>())
+        #expect(all.count == 3 && all.filter { $0.deletedAt != nil }.count == 2)
+    }
+
+    @Test func deletingBookSoftDeletesItsSections() throws {
+        let book = try repository.create(BookInput(title: "A"), now: t0)
+        let other = try repository.create(BookInput(title: "B"), now: t0)
+        try repository.replaceSections([BookSectionInput(title: "x", order: 0)], for: book, now: t0)
+        try repository.replaceSections([BookSectionInput(title: "y", order: 0)], for: other, now: t0)
+        try repository.delete(book, now: at(1))
+        #expect(try repository.sections(of: book.id).isEmpty)
+        #expect(try repository.sections(of: other.id).count == 1)
+    }
 }

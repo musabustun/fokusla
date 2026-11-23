@@ -1,8 +1,11 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ServicesProvider, type AppServices } from '@/data'
-import type { Book, ExamType, Subject } from '@/domain'
+import { catalogEntityId, type Book, type ExamType, type Subject } from '@/domain'
+import type { BookLibrary } from '@/library'
+import { fixtureBook } from '@/library/fixtures'
 import { createTestServices, type TestServices } from '@/test/services'
 import { BookFormSheet, type BookFormSheetProps } from './BookFormSheet'
 import { createBook } from './bookActions'
@@ -27,7 +30,9 @@ function renderSheet(services: AppServices, props: Partial<BookFormSheetProps> =
   const onSaved = vi.fn()
   render(
     <ServicesProvider services={services}>
-      <BookFormSheet open onClose={onClose} onSaved={onSaved} subjects={[]} {...props} />
+      <MemoryRouter>
+        <BookFormSheet open onClose={onClose} onSaved={onSaved} subjects={[]} {...props} />
+      </MemoryRouter>
     </ServicesProvider>,
   )
   return { onClose, onSaved, user: userEvent.setup() }
@@ -226,6 +231,179 @@ describe('BookFormSheet', () => {
       rerender(view(true))
 
       expect(screen.getByLabelText('Kitap adı')).toHaveValue('Matematik Soru Bankası')
+    })
+  })
+
+  describe('barkod', () => {
+    const library: BookLibrary = { version: 1, updatedAt: '2026-11-24', books: [fixtureBook()] }
+    const FOUND_BARCODE = '9781234567897'
+    const UNKNOWN_BARCODE = '9780306406157'
+
+    async function search(user: ReturnType<typeof userEvent.setup>, barcode: string) {
+      await user.type(screen.getByLabelText('Barkod'), barcode)
+      await user.click(screen.getByRole('button', { name: 'Kütüphanede ara' }))
+    }
+
+    it('barkod boşken ara düğmesi kapalıdır', () => {
+      renderSheet(services, { library })
+      expect(screen.getByRole('button', { name: 'Kütüphanede ara' })).toBeDisabled()
+      expect(screen.getByLabelText('Barkod')).toHaveAttribute('inputmode', 'numeric')
+    })
+
+    it('geçersiz barkodda alan hatası gösterir', async () => {
+      const { user } = renderSheet(services, { library })
+
+      await search(user, '9781234567890')
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(
+        'Geçerli bir barkod değil. 13 haneli numarayı kontrol et.',
+      )
+      expect(screen.getByLabelText('Barkod')).toBeInvalid()
+    })
+
+    it('kaydederken geçersiz barkodu reddeder', async () => {
+      const { user, onClose } = renderSheet(services, { library })
+      await user.type(screen.getByLabelText('Kitap adı'), 'Kitap')
+      await user.type(screen.getByLabelText('Barkod'), '123')
+      await user.click(screen.getByRole('button', { name: 'Kaydet' }))
+
+      expect(await screen.findByRole('alert')).toHaveTextContent('Geçerli bir barkod değil')
+      expect(onClose).not.toHaveBeenCalled()
+      expect(await services.repositories.books.findAll()).toHaveLength(0)
+    })
+
+    it('kullanıcıda aynı barkodlu kitap varsa kitaba bağlantı verir', async () => {
+      const existing = await createBook(services.repositories, {
+        title: 'Elimdeki Kitap',
+        publisher: null,
+        kind: 'other',
+        subjectId: null,
+        unit: 'page',
+        totalUnits: null,
+        barcode: FOUND_BARCODE,
+      })
+      const { user } = renderSheet(services, { library })
+
+      await search(user, FOUND_BARCODE)
+
+      expect(await screen.findByText(/Bu kitap zaten kitaplığında/)).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'Elimdeki Kitap' })).toHaveAttribute(
+        'href',
+        `/kitaplar/${existing.id}`,
+      )
+      expect(screen.getByLabelText('Kitap adı')).toHaveValue('')
+    })
+
+    it('katalogda bulunursa alanları doldurur, bölümleri listeler ve kaydeder', async () => {
+      const subject = await services.repositories.subjects.create(
+        { name: 'Matematik', exam: 'TYT', fields: ['SAY'], catalogKey: 'tyt-matematik', order: 0 },
+        { id: await catalogEntityId('tyt-matematik') },
+      )
+      const topic = await services.repositories.topics.create(
+        {
+          subjectId: subject.id,
+          name: 'Temel Kavramlar',
+          catalogKey: 'tyt-matematik.temel-kavramlar',
+          order: 0,
+        },
+        { id: await catalogEntityId('tyt-matematik.temel-kavramlar') },
+      )
+      const { user, onClose } = renderSheet(services, { library, subjects: [subject] })
+
+      await search(user, '978-1-2345-6789-7')
+
+      await vi.waitFor(() =>
+        expect(screen.getByLabelText('Kitap adı')).toHaveValue(
+          'Örnek Yayınları TYT Matematik Soru Bankası',
+        ),
+      )
+      expect(screen.getByLabelText('Barkod')).toHaveValue(FOUND_BARCODE)
+      expect(screen.getByLabelText('Yayınevi')).toHaveValue('Örnek Yayınları')
+      expect(screen.getByLabelText('Ders')).toHaveValue(subject.id)
+      expect(screen.getByLabelText('Toplam')).toHaveValue(40)
+      const sections = screen.getByRole('region', { name: 'Bölümler (2)' })
+      expect(within(sections).getByText('Temel Kavramlar')).toBeInTheDocument()
+      expect(within(sections).getByText('Test 1–10')).toBeInTheDocument()
+      expect(within(sections).getByText('Test 11–40')).toBeInTheDocument()
+
+      await user.click(screen.getByRole('button', { name: 'Kaydet' }))
+      await vi.waitFor(() => expect(onClose).toHaveBeenCalled())
+
+      const [book] = await services.repositories.books.findAll()
+      if (!book) throw new Error('kitap yok')
+      expect(book).toMatchObject({
+        barcode: FOUND_BARCODE,
+        libraryKey: 'ornek-yayinlari-tyt-matematik-soru-bankasi',
+        exam: 'TYT',
+      })
+      const saved = await services.repositories.bookSections.findByBook(book.id)
+      expect(saved.map((s) => [s.title, s.order, s.startUnit, s.endUnit, s.topicId])).toEqual([
+        ['Temel Kavramlar', 1, 1, 10, topic.id],
+        ['Karma', 2, 11, 40, null],
+      ])
+    })
+
+    it('barkod değişince bulunan kayıt bağı kopar', async () => {
+      const { user, onClose } = renderSheet(services, { library })
+      await search(user, FOUND_BARCODE)
+      await screen.findByRole('region', { name: 'Bölümler (2)' })
+
+      await user.type(screen.getByLabelText('Barkod'), '1')
+      expect(screen.queryByRole('region', { name: /Bölümler/ })).not.toBeInTheDocument()
+      await user.type(screen.getByLabelText('Barkod'), '{Backspace}{Backspace}')
+      await user.clear(screen.getByLabelText('Barkod'))
+      await user.click(screen.getByRole('button', { name: 'Kaydet' }))
+
+      await vi.waitFor(() => expect(onClose).toHaveBeenCalled())
+      const [book] = await services.repositories.books.findAll()
+      if (!book) throw new Error('kitap yok')
+      expect(book).toMatchObject({ barcode: null, libraryKey: null })
+      expect(await services.repositories.bookSections.findByBook(book.id)).toHaveLength(0)
+    })
+
+    it('katalogda yoksa bilgi satırı gösterir ve elle girilen kitabı barkodla kaydeder', async () => {
+      const { user, onClose } = renderSheet(services, { library })
+
+      await search(user, UNKNOWN_BARCODE)
+
+      expect(await screen.findByText('Bu kitap kütüphanede yok. Bilgileri elle gir.')).toBeVisible()
+      await user.type(screen.getByLabelText('Kitap adı'), 'Elle Kitap')
+      await user.click(screen.getByRole('button', { name: 'Kaydet' }))
+
+      await vi.waitFor(() => expect(onClose).toHaveBeenCalled())
+      const [book] = await services.repositories.books.findAll()
+      expect(book).toMatchObject({
+        title: 'Elle Kitap',
+        barcode: UNKNOWN_BARCODE,
+        libraryKey: null,
+      })
+    })
+
+    it('düzenlemede barkodu gösterir ve günceller; kendi barkoduna "zaten var" demez', async () => {
+      const book = await createBook(services.repositories, {
+        title: 'Kitap',
+        publisher: null,
+        kind: 'other',
+        subjectId: null,
+        unit: 'page',
+        totalUnits: null,
+        barcode: '978-0-306-40615-7',
+      })
+      const { user, onClose } = renderSheet(services, { library, book })
+      expect(screen.getByLabelText('Barkod')).toHaveValue(UNKNOWN_BARCODE)
+
+      await user.click(screen.getByRole('button', { name: 'Kütüphanede ara' }))
+      expect(await screen.findByText(/kütüphanede yok/)).toBeVisible()
+      expect(screen.queryByText(/zaten kitaplığında/)).not.toBeInTheDocument()
+
+      await user.clear(screen.getByLabelText('Barkod'))
+      await user.type(screen.getByLabelText('Barkod'), FOUND_BARCODE)
+      await user.click(screen.getByRole('button', { name: 'Kaydet' }))
+
+      await vi.waitFor(() => expect(onClose).toHaveBeenCalled())
+      expect(await services.repositories.books.findById(book.id)).toMatchObject({
+        barcode: FOUND_BARCODE,
+      })
     })
   })
 })

@@ -16,6 +16,8 @@ public struct MusicTrack: Equatable, Sendable {
     /// Kapak görseli (PNG/JPEG baytları); yoksa `nil`.
     public var artworkData: Data?
     public var isPaused: Bool
+    /// Çalıyor mu (`!isPaused`).
+    public var isPlaying: Bool { !isPaused }
 
     public init(title: String, artist: String, artworkData: Data? = nil, isPaused: Bool = false) {
         self.title = title
@@ -48,7 +50,7 @@ public enum MusicProviderError: Error, Equatable, Sendable {
     case appNotInstalled
     /// Kullanıcı yetkilendirmeyi reddetti ya da iptal etti.
     case authorizationDenied
-    /// Bağlantı koptu (uygulama kapandı, arka plana alındı vb.).
+    /// Bağlantı kurulamadı/koptu ve otomatik yeniden denemeler tükendi (ya da token süresi doldu): "Yeniden bağlan" durumu.
     case connectionLost
     /// Komut reddedildi — çoğunlukla Spotify Premium gerektirir.
     case premiumRequired
@@ -60,7 +62,7 @@ public enum MusicProviderError: Error, Equatable, Sendable {
         case .notConfigured: "Spotify bağlantısı bu sürümde yapılandırılmamış."
         case .appNotInstalled: "Spotify uygulaması yüklü değil. Önce Spotify'ı App Store'dan yükle."
         case .authorizationDenied: "Spotify erişimi onaylanmadı. Bağlanmak için Spotify'da izin vermen gerekir."
-        case .connectionLost: "Spotify bağlantısı koptu. Spotify uygulamasını açıp yeniden bağlan."
+        case .connectionLost: "Spotify bağlantısı kesildi. Yeniden bağlanmak için dokun."
         case .premiumRequired:
             "Spotify bu komutu kabul etmedi. Uygulamadan çalmayı denetlemek çoğunlukla Spotify Premium gerektirir."
         case .commandFailed: "Spotify komutu uygulanamadı. Biraz sonra tekrar dene."
@@ -82,6 +84,9 @@ public protocol MusicProvider: AnyObject, Observable {
     /// Bağlıyken reddedilen son komutun hatası (ör. Premium gerektiren atlama); bağlantıyı düşürmez.
     /// Sonraki başarılı komut ya da çalma durumu güncellemesiyle temizlenir. Varsayılan: `nil`.
     var lastCommandError: MusicProviderError? { get }
+    /// Bağlantı kısa süreliğine yok ama sağlayıcı sessizce yeniden bağlanıyor (arka plandan dönüş, beklenmedik
+    /// kopma). `connectionState` bu sırada `connected` kalır; komutlar yoksayılır. Varsayılan: `false`.
+    var isReconnecting: Bool { get }
     /// Müzik uygulamasını doğrudan açan bağlantı (ör. `spotify:`); uygulama yüklü değilse açılmaz.
     var appURL: URL { get }
     /// Uygulama yüklü değilken açılacak web bağlantısı (ör. `https://open.spotify.com`).
@@ -103,6 +108,7 @@ public protocol MusicProvider: AnyObject, Observable {
 
 extension MusicProvider {
     public var lastCommandError: MusicProviderError? { nil }
+    public var isReconnecting: Bool { false }
 }
 
 /// Arayüzde bir sağlayıcının nasıl gösterileceği (saf; birim testli).

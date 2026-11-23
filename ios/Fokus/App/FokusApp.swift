@@ -31,7 +31,8 @@ struct FokusApp: App {
                 .environment(\.focusSound, environment.focusSound)
                 .environment(\.musicRegistry, environment.musicRegistry)
                 .onOpenURL { environment.musicRegistry.handleOpenURL($0) }
-                .onChange(of: scenePhase) { _, phase in
+                // `initial: true`: soğuk açılışta da (faz değişimi olmadan) Spotify kayıtlı token ile sessizce bağlansın.
+                .onChange(of: scenePhase, initial: true) { _, phase in
                     switch phase {
                     case .active: environment.musicRegistry.sceneDidBecomeActive()
                     case .inactive, .background: environment.musicRegistry.sceneWillResignActive()

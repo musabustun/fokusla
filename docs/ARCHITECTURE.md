@@ -379,6 +379,20 @@ Kurallar (`FocusLink`, `FocusLinkSyncTests`, `FocusLinkRepositoryTests`):
   titreşir (`WatchHaptics`).
 - 1.0'ın `FocusLink.Broadcast`/`Command`/`resolve` API'si FokusKit'te durur (public API yalnızca büyür) ama artık kullanılmaz.
 
+**Görünüm (1.0.1).**
+
+- **Üç kadran**, yatay sayfalı `TabView`: dijital (büyük mono sayaç + bugünkü toplam), analog (60 dakikalık kronometre:
+  dakika ibresi + dolan yay + saniye ibresi, tam saat rozeti), halka (hedef açıksa bugünkü toplam / hedef, kapalıysa
+  geçerli saatin dolan kısmı). Açılar ve ilerleme saf: `FokusDomain/Calc/WatchFaceCalc` (`WatchFaceCalcTests`). Seçim
+  saatte `@AppStorage("fokus.watch.face")` (`digital`/`analog`/`ring`); telefondan seçim bilerek YOK (kaydırmak yeterince
+  hızlı; Ayarlar modülüne dokunmamak için).
+- **Hep açık:** odak sürerken `WKExtendedRuntimeSession` (Info.plist `WKBackgroundModes` = `mindfulness`, ön planda,
+  en çok 1 saat; uygulama yeniden etkin olunca yenilenir, oturum bitince kapanır). Bilek inince uygulama kadranda kalır;
+  `isLuminanceReduced` ile kontroller gizlenir, renkler kısılır, analog/halka `TimelineView` dakikada bir çizilir, sayaçlar
+  `Text(timerInterval:)`. `HKWorkoutSession` YOK (inceleme riski); gerekçe `appstore/metadata/tr/review_notes.txt`.
+- **Tema:** telefon `fokus.palette` değişince `FocusLink.Preferences` uygulama bağlamıyla gider; saat aynı anahtara yazar,
+  `.fokusTheme()` anında yeni paleti uygular. Saat her zaman koyudur.
+
 FokusKit `Package.swift` platformlarına `.watchOS(.v11)` eklendi; `FokusDomain`, `FokusData`, `FokusDesign` watchOS'a
 derlenir (UIKit'e bağımlı kod yok; `FokusAudio` saate bağlanmaz).
 

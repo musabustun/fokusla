@@ -6,7 +6,7 @@ NO ACCOUNT NEEDED. Sign-in is optional. On first launch: tap "Başla" (Get start
 How to try the main features:
 - Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; swipe sideways to switch pages such as stopwatch, clock, goal ring and daily summary; tap the screen for controls, "küçült" to minimize; long-press the screen to open the customize panel for clock style, color and background). Pause/resume/finish are available. On a device, a Live Activity appears while a session runs.
 - Focus sounds are generated on the device (no downloads, no network).
-- Apple Watch app: a single screen with "Başlat" (start a focus session) and, while a session runs, a timer and "Bitir" (finish). It works without the iPhone nearby.
+- Apple Watch app: start, break ("Mola"), resume ("Devam") and finish a focus session; swipe between three timer faces; syncs with the iPhone via WatchConnectivity. Background mode "mindfulness" (WKExtendedRuntimeSession) runs only during a focus session, to keep the timer on screen (dimmed in Always On) when the wrist is lowered; it ends with the session. No HealthKit/workout session.
 - iMessage app (Messages extension): open the app drawer in any conversation and pick Fokus. "Bugün" shares a card with today's study time; "Oda" prepares a study-room invitation. Nothing is sent until the user taps Send; no server, no account.
 - Analysis tab: add a test result (correct / wrong / blank); net = correct - wrong/4.
 - Books and Tasks: add a book / a task; mark progress.
@@ -23,6 +23,6 @@ This release has no in-app social network, accounts or user-generated content ho
 [Türkçe]
 Fokus'u incelediğiniz için teşekkürler. Hesap gerekmez; giriş isteğe bağlıdır. İlk açılışta: "Başla" -> bir YKS alanı seç -> "Devam" -> "Devam" -> "Şimdilik atla". Ardından uygulama girişsiz tam çalışır. "Apple ile Giriş" isteğe bağlıdır; hesap kimliği yalnızca cihazda tutulur.
 
-Spotify isteğe bağlıdır; "Development mode"da olduğu için inceleme hesabıyla bağlanamayabilir; bağlanamazsa yalnızca "Spotify'da aç" görünür. İzin bir kez istenir (PKCE); tek ağ çağrısı accounts.spotify.com'dur.
+Spotify isteğe bağlıdır (Development mode; bağlanamazsa "Spotify'da aç" görünür).
 
-Veri toplanmaz; analitik, izleme, reklam yok. Veriler cihazdadır; iCloud eşitleme açıksa yalnızca kullanıcının kendi özel CloudKit veritabanı kullanılır (geliştirici erişemez). Bildirimler yalnızca yereldir. Bizim barındırdığımız hesap veya kullanıcı içeriği yoktur; tek paylaşım isteğe bağlı iMessage uzantısıdır. Saat uygulaması yalnızca odak başlat/bitir içerir.
+Veri toplanmaz; analitik, izleme, reklam yok. Veriler cihazda ve (eşitleme açıksa) kullanıcının kendi özel CloudKit veritabanındadır. Bildirimler yereldir; bizim barındırdığımız hesap veya içerik yoktur. Saatteki "mindfulness" modu yalnızca odak sürerken sayacı ekranda tutar.

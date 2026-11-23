@@ -13,6 +13,7 @@ import WatchConnectivity
 final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable {
     /// `activate()` ÖNCESİ atanır, sonra değişmez.
     var onRecords: (@MainActor @Sendable (FocusLink.RecordBatch) -> Void)?
+    var onPreferences: (@MainActor @Sendable (FocusLink.Preferences) -> Void)?
     var onActivated: (@MainActor @Sendable () -> Void)?
 
     private var session: WCSession? { WCSession.isSupported() ? WCSession.default : nil }
@@ -50,13 +51,29 @@ final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable
         return true
     }
 
+    /// Görünüm tercihlerini uygulama bağlamıyla yollar (en yenisi kazanır; saat uygulaması kapalıyken de
+    /// açılışta okunur).
+    func send(_ preferences: FocusLink.Preferences) {
+        guard isPeerAvailable, let session, let payload = FocusLink.payload(preferences) else { return }
+        try? session.updateApplicationContext(payload)
+    }
+
     // MARK: - WCSessionDelegate
 
     func session(
         _ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?
     ) {
         guard activationState == .activated else { return }
-        Task { @MainActor [onActivated] in onActivated?() }
+        let pending = FocusLink.preferences(from: session.receivedApplicationContext)
+        Task { @MainActor [onActivated, onPreferences] in
+            if let pending { onPreferences?(pending) }
+            onActivated?()
+        }
+    }
+
+    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
+        guard let preferences = FocusLink.preferences(from: applicationContext) else { return }
+        Task { @MainActor [onPreferences] in onPreferences?(preferences) }
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {

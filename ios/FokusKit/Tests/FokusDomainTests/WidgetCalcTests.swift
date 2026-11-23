@@ -404,3 +404,106 @@ struct WidgetTodayTasksTests {
         #expect(WidgetCalc.TaskList(items: [], done: 3, total: 3).isComplete)
     }
 }
+
+// MARK: - StandBy görünüm modeli
+
+@Suite struct WidgetStandByTests {
+    private func focus(
+        ms: Double, running: Bool = false, goalMinutes: Int? = nil
+    ) -> WidgetCalc.FocusSummary {
+        WidgetCalc.FocusSummary(
+            focusMs: ms, isRunning: running,
+            goal: DailyGoalCalc.progress(focusMs: ms, goalMinutes: goalMinutes),
+            timerStart: running ? now.addingTimeInterval(-ms / 1000) : nil)
+    }
+
+    @Test func runningShowsStatusAndSubject() {
+        let display = WidgetCalc.standBy(focus: focus(ms: 30 * minuteMs, running: true, goalMinutes: 60), subject: "TYT Türkçe")
+        #expect(display.statusText == "Odak sürüyor")
+        #expect(display.titleText == "TYT Türkçe")
+        #expect(display.isRunning)
+        #expect(display.ratio == 0.5)
+        #expect(display.goalText == "30 dk kaldı")
+        #expect(display.percentText == "%50")
+    }
+
+    @Test func runningWithoutSubjectIsFreeStudy() {
+        let display = WidgetCalc.standBy(focus: focus(ms: 0, running: true), subject: nil)
+        #expect(display.titleText == "Serbest çalışma")
+        #expect(display.goalText == nil)
+        #expect(display.percentText == nil)
+    }
+
+    @Test func blankSubjectIsTreatedAsMissing() {
+        let display = WidgetCalc.standBy(focus: focus(ms: 0, running: true), subject: "   ")
+        #expect(display.titleText == "Serbest çalışma")
+    }
+
+    @Test func idleShowsTodayAndRemaining() {
+        let display = WidgetCalc.standBy(focus: focus(ms: 15 * minuteMs, goalMinutes: 60), subject: "Yok sayılır")
+        #expect(display.statusText == "Bugün")
+        #expect(display.titleText == nil)
+        #expect(!display.isRunning)
+        #expect(display.goalText == "45 dk kaldı")
+    }
+
+    @Test func idleWithoutGoalHasNoGoalLine() {
+        let display = WidgetCalc.standBy(focus: focus(ms: 15 * minuteMs), subject: nil)
+        #expect(display.goalText == nil)
+        #expect(display.ratio == 0)
+        #expect(!display.isGoalReached)
+    }
+
+    @Test func reachedGoalIsExplicitInText() {
+        let display = WidgetCalc.standBy(focus: focus(ms: 90 * minuteMs, goalMinutes: 60), subject: nil)
+        #expect(display.isGoalReached)
+        #expect(display.goalText == "Hedef tamam")
+        #expect(display.ratio == 1)
+        #expect(display.percentText == "%100")
+    }
+
+    @Test func timerStartIsPassedThroughOnlyWhileRunning() {
+        #expect(WidgetCalc.standBy(focus: focus(ms: 60_000, running: true), subject: nil).timerStart != nil)
+        #expect(WidgetCalc.standBy(focus: focus(ms: 60_000), subject: nil).timerStart == nil)
+    }
+
+    @Test func accessibilitySummaryIsPlainSentence() {
+        let running = WidgetCalc.standBy(focus: focus(ms: 75 * minuteMs, running: true, goalMinutes: 120), subject: "AYT Matematik")
+        #expect(running.accessibilityText == "Odak sürüyor, AYT Matematik, 1 sa 15 dk, 45 dk kaldı")
+        let idle = WidgetCalc.standBy(focus: focus(ms: 75 * minuteMs), subject: nil)
+        #expect(idle.accessibilityText == "Bugün, 1 sa 15 dk")
+    }
+
+    @Test func dateLineIsTurkishDayTitle() {
+        #expect(WidgetCalc.standByDateLine(now, calendar: calendar) == "19 Kasım Perşembe")
+    }
+}
+
+// MARK: - "Odak saati" timeline
+
+@Suite struct ClockTimelineTests {
+    @Test func firstEntryIsCurrentMinuteStart() {
+        let plan = WidgetCalc.clockTimelinePlan(now: local(2026, 11, 19, 14, 7, 42), calendar: calendar)
+        #expect(plan.entries.first == local(2026, 11, 19, 14, 7, 0))
+    }
+
+    @Test func entriesAreOneMinuteApartAndMinuteAligned() {
+        let plan = WidgetCalc.clockTimelinePlan(now: local(2026, 11, 19, 14, 7, 42), calendar: calendar)
+        #expect(plan.entries.count == WidgetCalc.clockEntryCount)
+        for (a, b) in zip(plan.entries, plan.entries.dropFirst()) { #expect(b.timeIntervalSince(a) == 60) }
+        #expect(plan.entries.allSatisfy { calendar.component(.second, from: $0) == 0 })
+        #expect(plan.reloadAfter == local(2026, 11, 19, 16, 7, 0))
+    }
+
+    @Test func exactMinuteBoundaryKeepsThatMinute() {
+        let plan = WidgetCalc.clockTimelinePlan(now: local(2026, 11, 19, 9, 30, 0), calendar: calendar)
+        #expect(plan.entries.first == local(2026, 11, 19, 9, 30, 0))
+    }
+
+    @Test func entriesStopAtMidnightAndReloadThere() {
+        let plan = WidgetCalc.clockTimelinePlan(now: local(2026, 11, 19, 23, 40, 10), calendar: calendar)
+        #expect(plan.entries.count == 20)
+        #expect(plan.entries.last == local(2026, 11, 19, 23, 59, 0))
+        #expect(plan.reloadAfter == local(2026, 11, 20, 0, 0, 0))
+    }
+}

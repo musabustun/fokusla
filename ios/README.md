@@ -181,6 +181,13 @@ Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`,
   görevler (medium/large, daire düğmesi `ToggleTaskIntent` ile görevi widget'tan tamamlar). Veri App Group'taki
   SwiftData deposundan okunur; uygulama veri değişince `WidgetCenter.reloadAllTimelines()` çağırır. Odak sürerken
   sayaç sistemce sayılır, halka 5 dk aralıklı girdilerle ilerler. Palet: widget uzantısı varsayılan paleti kullanır.
+- **StandBy** (iPhone şarjda, yatay, kilitli): `systemSmall` widget'ları sistemce ekran boyuna büyütülür ve konteyner
+  arka planı kaldırılır (`showsWidgetContainerBackground == false`). "Bugünkü odak" bu durumda halka + büyük mono
+  sayaç (odak sürerken `Text(timerInterval:)`) + ders adı / hedef satırı düzenine geçer (`FokusWidgets/StandByViews.swift`;
+  saf model `WidgetCalc.standBy`). Yeni **"Odak saati"** widget'ı (`FocusClockWidget`, small): büyük saat + tarih + bugünkü
+  toplam; saat dakika başı girdilerle ilerler (`WidgetCalc.clockTimelinePlan`). Gece modunda (tek renk) renk anlam
+  taşımaz: hedef/durum metin ve simgeyle de söylenir; tek tonda `.accented`/`.vibrant` için `primary`/`secondary` kullanılır.
+  Cihazda: iPhone'u şarja tak, yatay çevir, kilitle → StandBy → widget yığınına dokun/uzun bas → Fokus widget'larını ekle.
 - **App Group deposu:** `group.com.musabustun.fokus`. Depo (`Fokus.store` + `-wal` + `-shm`) ilk açılışta eski
   konumdan App Group kapsayıcısına TAŞINIR (`FokusAppGroup.migrateLegacyStoreIfNeeded`: önce kopyalar, başarılıysa
   eskiyi siler; hedef varsa ezmez; hata olursa eski depoyu olduğu gibi bırakır). CloudKit yapılandırması aynı kalır.

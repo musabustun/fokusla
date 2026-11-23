@@ -1,6 +1,6 @@
 # Fokus — Gizlilik Politikası
 
-Son güncelleme: 23 Kasım 2026 · Sürüm: 1.0.0
+Son güncelleme: 23 Kasım 2026 · Sürüm: 1.0.0 (iMessage bölümü 1.1 ile geçerli olur)
 
 Fokus, YKS'ye hazırlanan öğrenciler için ücretsiz, reklamsız ve açık kaynaklı (MIT) bir çalışma takip uygulamasıdır. Kısaca: **Fokus senden hiçbir veri toplamaz.** Geliştirici olarak verilerine erişemeyiz, onları sunucuya göndermeyiz, satmayız ve paylaşmayız.
 
@@ -19,6 +19,10 @@ Giriş zorunlu değildir; "Şimdilik atla" ile uygulama girişsiz tam çalışı
 ## Spotify (isteğe bağlı)
 
 Odak ekranında istersen Spotify'ı bağlayıp çalan müziği denetleyebilirsin. Bu özellik yalnızca cihazındaki Spotify uygulamasıyla konuşur ve çalma kontrolü (oynat/duraklat/sonraki, çalan parçanın adı) için kullanılır. Fokus Spotify hesabının profil bilgilerini, çalma geçmişini ya da kütüphaneni almaz ve saklamaz. Spotify'ın kendi veri işlemesi [Spotify gizlilik politikasına](https://www.spotify.com/tr/legal/privacy-policy/) tabidir. Bağlantıyı istediğin an Spotify'dan veya Fokus'tan kesebilirsin.
+
+## iMessage uygulaması (isteğe bağlı)
+
+Fokus'un Mesajlar (iMessage) uzantısı, istersen "bugün şu kadar çalıştım" kartını ya da ortak odak davetini bir sohbete göndermeni sağlar. Uzantı verini cihazındaki Fokus deposundan **yalnızca okur**. Kart ya da davet, **sen Mesajlar'da gönder düğmesine bastığında** yalnızca o sohbete, Apple'ın iMessage'ı üzerinden gider; ondan önce hiçbir şey cihazdan çıkmaz ve Fokus'un kendi sunucusu yoktur. Kartta yalnızca senin seçtiğin alanlar (toplam süre, hedef durumu, isteğe bağlı ders dağılımı ve seri) ile profil adın bulunur. Oda davetinde ortak odanın saati, süresi ve katılanların adları mesajın içinde taşınır; katılan herkesin uygulaması o mesajı kendi cihazında açar. Bu bilgiler sohbetin diğer üyelerine görünür; göndermeden önce kartı önizleyip neyin gideceğini görürsün.
 
 ## Bildirimler
 

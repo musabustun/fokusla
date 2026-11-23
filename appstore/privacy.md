@@ -20,6 +20,18 @@ Apple'a göre "toplamak", verinin cihazdan çıkıp geliştiricinin (ya da üç�
 | Odak sesleri | AVAudioEngine ile cihazda sentez; dosya/ağ yok. |
 | Gizlilik manifesti | `ios/Fokus/Resources/PrivacyInfo.xcprivacy`: izleme yok, toplanan veri türü yok, required-reason API: UserDefaults (`CA92.1` uygulamanın kendi tercihleri, `1C8F.1` App Group). `ios/FokusWidgets/PrivacyInfo.xcprivacy`: boş beyan. |
 
+## iMessage uzantısı (1.1)
+
+`ios/FokusMessages` (Messages app extension, `com.musabustun.fokus.messages`) verilerin yalnızca kullanıcının kendi eylemiyle, kendi sohbetinde paylaşıldığı bir yoldur; **"Data Not Collected" beyanı değişmez.**
+
+| Konu | Bulgu |
+| --- | --- |
+| Ağ kodu | Uzantıda `URLSession`/soket yok. Mesaj, `MSConversation.insert` ile Mesajlar'ın yazı alanına konur; **gönderme kullanıcının dokunuşuyla** ve Apple'ın iMessage'ı üzerinden olur. Geliştirici bu mesajlara erişemez. |
+| Sunucu | Yok. Oda durumu (kimlik, saat, süre, takma adlar) mesajın bağlantısında (`fokus://room?…`) taşınır; `MSSession` ile aynı mesaj güncellenir. |
+| Veri erişimi | Uzantı App Group deposunu yalnızca okur (yazmaz). Cihaz başına rastgele bir katılımcı kimliğini App Group `UserDefaults`'a yazar (hesap/kişi bilgisi içermez). |
+| Paylaşılan veri | Yalnızca kullanıcının kartta seçtiği alanlar: toplam süre, hedef, isteğe bağlı ders adları + süreleri ve seri; profil adı. Kullanıcı göndermeden önce kartı önizler. |
+| Gizlilik manifesti | `ios/FokusMessages/PrivacyInfo.xcprivacy`: izleme yok, toplanan veri yok, required-reason API: UserDefaults (`CA92.1`, `1C8F.1`). |
+
 ## Dikkat: Spotify (üçüncü taraf SDK)
 
 Apple, uygulamaya gömülü üçüncü taraf kodun topladığı veriyi de beyan etmeni ister. Spotify App Remote, verileri Spotify uygulamasına yerel olarak iletir ve Fokus Spotify'a bir profil/kimlik verisi göndermez; bu nedenle "Data Not Collected" makul ve dürüst bir beyandır. Spotify SDK'sı ayrıca kendi `PrivacyInfo.xcprivacy`'sini paketleyebilir; yükleme sonrası App Store Connect uyarı e-postası gelirse önce onu kontrol et. Bu karar nihai olarak yükleyen kişiye aittir: Spotify tarafında bir toplama olduğuna dair kanıt çıkarsa "Usage Data / Diagnostics → Not linked, not used for tracking" gibi beyan eklenmelidir.

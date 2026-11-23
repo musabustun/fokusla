@@ -251,6 +251,38 @@ kuruluysa: `-destination 'platform=watchOS Simulator,name=Apple Watch Series 11 
 4. Cihazda doğrula (simülatörde WatchConnectivity/CloudKit çalışmaz): saatten odak başlat → telefonda görünür; telefonda
    duraklat → saatte anında yansır; telefon kapalıyken saatte başlat/bitir; komplikasyonlar; mola/hedef bildirimleri.
 
+## iMessage uygulaması (1.1): "bugün çalıştım" kartı ve sunucusuz oda daveti
+
+Kod yerleşimi: `ios/FokusMessages/` (Messages app extension, `com.musabustun.fokus.messages`; Fokus'a gömülü),
+`FokusKit/Sources/FokusDomain/Share/` (SAF mantık: `StudyShareCard`, `StudyShareCalc`, `RoomInvite`, `ShareLink`;
+testler `ShareLinkTests`), `FokusKit/Sources/FokusDesign/Share/ShareCards.swift` (kart görünümleri; `ShareCardsTests`
+örnek PNG üretir: `FOKUS_SHARE_SHOTS_DIR=… swift test --filter ShareCardsTests`), `ios/Fokus/App/RoomInviteHost.swift`
+(derin bağlantı → "Odaya katıl" sayfası).
+
+- **Sunucu yok, veri toplanmaz:** durum mesajın bağlantısındadır (`MSMessage.url`): `fokus://study?v=1&d=…&f=<dk>…`
+  ve `fokus://room?v=1&id=…&t=<başlangıç unix sn>&m=<dk>&p=<uuid>,<ad>…`. Mesaj yalnızca `MSConversation.insert` ile yazı
+  alanına konur; **gönderme kullanıcının dokunuşudur** (iMessage kısıtı da budur). Uzantı App Group deposunu yalnızca OKUR.
+- **Çalışma kartı:** toplam süre her zaman; hedef halkası (varsayılan açık), ders dağılımı (en çok 3), seri kullanıcı seçimiyle.
+  Kart görseli SwiftUI → `ImageRenderer` ile üretilir; alıcıda Fokus yoksa bu görsel + özet metin görünür.
+- **Oda daveti:** davet eden süre + başlangıç saati seçer. Katılan "Katıl"a basınca güncellenmiş mesaj (aynı `MSSession`)
+  yazı alanına konur, göndermesiyle kart herkeste güncellenir; "Fokus'ta aç" → `fokus://room…` → uygulamada geri sayım,
+  başlangıç saati gelince "Başla" (odağı **kullanıcı** başlatır; otomatik başlatma yok). Canlı "şu an odakta" durumu YOK
+  (sunucusuz iMessage'da mümkün değil); en çok 8 katılımcı (URL boyutu).
+- **Güvenilmez girdi:** bağlantı dışarıdan gelir; çözme sürüm, aralık, UUID, ad temizleme (denetim/biçim karakteri,
+  20 karakter) ve katılımcı sınırıyla doğrulanır (`ShareLinkTests`).
+- Alıcının Fokus'u yoksa mesaja dokununca App Store önerilir; Android/SMS alıcılar kartı görmez.
+
+### Hesapta yapılacaklar (kullanıcı onayıyla; bu PR hesapta HİÇBİR ŞEY kaydetmez)
+
+1. **Yeni App ID** `com.musabustun.fokus.messages` (Messages uzantısı) → App Groups yeteneği, aynı grup
+   `group.com.musabustun.fokus`.
+2. Xcode otomatik imzalamayla profil üretilir (ya da bir kez `-allowProvisioningUpdates`).
+3. App Store Connect: sürüm 1.1'in iMessage ekran görüntüleri/açıklaması; App Privacy "Data Not Collected" DEĞİŞMEZ
+   (bkz. `appstore/privacy.md`).
+4. Cihazda doğrula (simülatörde Mesajlar iki hesapla denenemez): uzantının depoyu okuması (Fokus bir kez açılmış olmalı),
+   kartın yazı alanına konması, iki cihazda oda daveti → Katıl → güncellenen kart, "Fokus'ta aç" ile derin bağlantının
+   uygulamayı açması (`extensionContext.open`).
+
 ## Cihazda çalıştırma (Apple tarafı)
 
 Simülatör derlemesi imzasızdır (`CODE_SIGNING_ALLOWED=NO`); CloudKit ve Apple ile Giriş orada

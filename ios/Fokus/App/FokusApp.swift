@@ -24,6 +24,7 @@ struct FokusApp: App {
                 // Tema/ortam değiştiricilerinin İÇİNDE: kapak onların ortamını (palet, ses, model) devralır.
                 .immersiveFocusHost()
                 .fokusSystemIntegration()
+                .roomInviteHost()
                 .fokusTheme()
                 .background(.fkBackground)
                 .environment(\.authService, environment.authService)

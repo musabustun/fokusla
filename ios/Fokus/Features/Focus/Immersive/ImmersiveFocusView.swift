@@ -1,3 +1,4 @@
+import FokusAudio
 import FokusData
 import FokusDesign
 import FokusDomain
@@ -13,8 +14,10 @@ private struct ScrollSample: Equatable {
     var index: Int
 }
 
-/// Odak oturumu açıkken gösterilen StandBy benzeri tam ekran görünüm: yatay kaydırmalı beş sayfa
-/// (kronometre, halka, gece, özet, ses), dokununca beliren Mola ver / Devam et / Bitir kontrolleri.
+/// Odak oturumu açıkken gösterilen StandBy benzeri tam ekran görünüm: yatay kaydırmalı kartlar
+/// (`StandByPreferences` ile seçilen/sıralanan; kronometre, saat, halka, ders, özet, müzik, gece, ses),
+/// dokununca beliren Mola ver / Devam et / Bitir kontrolleri. Uzun basınca (ya da "Özelleştir" düğmesiyle)
+/// kilit ekranı benzeri düzenleme moduna geçer.
 /// Kendi `@Query`'leriyle kurulur (yaşayan veri saniyelik `TimelineView` ile yenilenir) ve yazma
 /// işlemlerini `FocusRepository` ile kendisi yapar; sunumu `ImmersiveCoverHost` yönetir.
 struct ImmersiveFocusView: View {
@@ -26,6 +29,9 @@ struct ImmersiveFocusView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
+    /// Uygulamanın paleti (tam ekran paleti ezmeden ÖNCE): düzenleyici "Uygulama" seçeneği için.
+    @Environment(\.fokusPalette) private var appPalette
+    @Environment(\.musicRegistry) private var musicRegistry
 
     @Query(filter: #Predicate<FocusSession> { $0.deletedAt == nil }, sort: \FocusSession.startedAt, order: .reverse)
     private var sessions: [FocusSession]
@@ -36,10 +42,16 @@ struct ImmersiveFocusView: View {
     @Query(filter: #Predicate<Topic> { $0.deletedAt == nil })
     private var topics: [Topic]
 
-    @AppStorage(ImmersivePage.storageKey) private var pageRaw = ImmersivePage.default.rawValue
+    @Query(filter: #Predicate<UserProfile> { $0.deletedAt == nil }, sort: \UserProfile.createdAt)
+    private var profiles: [UserProfile]
+
+    @AppStorage(ImmersiveStorage.pageKey) private var pageRaw = ImmersiveStorage.defaultPage.rawValue
+    @AppStorage(StandByPreferences.storageKey, store: ImmersiveStorage.preferencesDefaults)
+    private var preferencesData = Data()
+    @State private var isEditing = false
     @State private var controls = ImmersiveControlsVisibility()
     /// Yatay kaydırıcının konumu (`scrollPosition`); `pageRaw` ile iki yönlü eşlenir.
-    @State private var scrolledPage: ImmersivePage?
+    @State private var scrolledPage: StandByPage?
     /// Başlangıç kaydırması oturduktan sonra gerçek kaydırma konumu sayfayı belirler.
     @State private var tracksScroll = false
     /// Boyut değişiminden sonra kaydırıcıyı mevcut sayfaya oturtan görev (yenisi eskisini iptal eder).
@@ -52,9 +64,25 @@ struct ImmersiveFocusView: View {
     private static let layoutSettleDelay: Duration = .milliseconds(350)
     private static let saveError = "İşlem kaydedilemedi. Lütfen tekrar dene."
 
-    private var page: ImmersivePage { ImmersivePage(rawValue: pageRaw) ?? .default }
+    private var preferences: StandByPreferences { StandByPreferences.decoded(from: preferencesData) }
 
-    private var pageBinding: Binding<ImmersivePage> {
+    private var preferencesBinding: Binding<StandByPreferences> {
+        Binding(get: { preferences }, set: { preferencesData = $0.encoded() })
+    }
+
+    private var music: ImmersiveMusic { ImmersiveMusic(registry: musicRegistry) }
+
+    /// Görünür sayfalar (müzik yalnızca bağlı ve çalıyorken).
+    private var pages: [StandByPage] { preferences.visiblePages(isMusicConnected: music.isAvailable) }
+
+    /// Geçerli sayfa; saklanan sayfa görünür listede değilse ilk görünür sayfa.
+    private var page: StandByPage {
+        let list = pages
+        if let stored = StandByPage(rawValue: pageRaw), list.contains(stored) { return stored }
+        return list[0]
+    }
+
+    private var pageBinding: Binding<StandByPage> {
         Binding(get: { page }, set: { pageRaw = $0.rawValue })
     }
 
@@ -62,12 +90,12 @@ struct ImmersiveFocusView: View {
         sessions.filter { $0.endedAt == nil }.max { $0.startedAt < $1.startedAt }
     }
 
-    private var sessionLabel: String? {
+    private var subjectInfo: ImmersiveSubjectInfo? {
         guard let activeSession,
             let subject = subjects.first(where: { $0.id == activeSession.subjectId })
         else { return nil }
         let topic = topics.first { $0.id == activeSession.topicId }
-        return [subject.exam.rawValue, subject.name, topic?.name].compactMap { $0 }.joined(separator: " · ")
+        return ImmersiveSubjectInfo(exam: subject.exam.rawValue, name: subject.name, topic: topic?.name)
     }
 
     var body: some View {
@@ -94,42 +122,148 @@ struct ImmersiveFocusView: View {
 
     // MARK: Yerleşim
 
+    private func digitColor(for phase: FocusTimerPhase) -> FokusColor {
+        if phase == .break { return FokusColor(.success) }
+        return preferences.tintedDigits ? FokusColor(.accentInk) : FokusColor(.label)
+    }
+
     private func layout(snapshot: ImmersiveSnapshot, now: Date) -> some View {
+        let prefs = preferences
         let pinned = ImmersiveControlsVisibility.isPinned(
             isVoiceOverRunning: voiceOverEnabled, isLongBreak: snapshot.isLongBreak)
-        let showsControls = controls.isShown(pinned: pinned) && snapshot.phase != .idle
-        let isNight = page == .night
+        let showsControls = controls.isShown(pinned: pinned) && snapshot.phase != .idle && !isEditing
+        let isNightPage = page == .night
+        let isNightTint = prefs.nightMode.isActive(at: now)
         let reserve = ImmersiveLayout.indicatorReserve + (pinned ? ImmersiveLayout.pinnedControlsReserve : 0)
+        // Okuyucu güvenli alana UYAR (yoksa `safeAreaInsets` hep 0 olur ve içerik Dynamic Island'ın altına
+        // kayar); yalnızca içteki ZStack kenardan kenara uzanır.
         return GeometryReader { proxy in
             let insets = proxy.safeAreaInsets
+            let fullSize = CGSize(
+                width: proxy.size.width + insets.leading + insets.trailing,
+                height: proxy.size.height + insets.top + insets.bottom)
             let context = ImmersivePageContext(
-                snapshot: snapshot, sessionLabel: sessionLabel, now: now, insets: insets, bottomReserve: reserve)
+                snapshot: snapshot, subject: subjectInfo, now: now, insets: insets, bottomReserve: reserve,
+                clockStyle: prefs.clockStyle, digitColor: digitColor(for: snapshot.phase), isNight: isNightTint,
+                dailyGoalMinutes: profiles.first?.dailyFocusGoalMinutes, music: music)
             ZStack {
-                pager(context)
-                overlay(snapshot: snapshot, insets: insets, showsControls: showsControls, isNight: isNight)
+                StandByBackdropView(isNightPage ? .black : prefs.backdrop).ignoresSafeArea()
+                if isEditing {
+                    editor(context: context, size: fullSize)
+                        .transition(.opacity)
+                } else {
+                    pager(context)
+                    overlay(
+                        snapshot: snapshot, insets: insets, showsControls: showsControls, isNight: isNightPage,
+                        showsChip: showsNowPlayingChip(prefs))
+                }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .standByNightTint(isNightTint)
+            .ignoresSafeArea()
         }
-        .ignoresSafeArea()
+        .environment(\.fokusPalette, prefs.palette(appPalette: appPalette))
         .background(.fkBackground)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("immersive.root")
-        .task(id: controls.timerKey(pinned: pinned)) {
-            guard controls.isRevealed, !pinned else { return }
+        .accessibilityAction(named: "Özelleştir") { enterEditing() }
+        .sensoryFeedback(.impact, trigger: isEditing) { _, new in new }
+        .animation(reduceMotion ? nil : FokusMotion.baseAnimation, value: isEditing)
+        // Düzenleme sırasında otomatik gizleme çalışmaz; kontroller zaten gizlidir.
+        .task(id: [controls.revision, pinned ? 1 : 0, isEditing ? 1 : 0]) {
+            guard controls.isRevealed, !pinned, !isEditing else { return }
             try? await Task.sleep(for: ImmersiveControlsVisibility.autoHideDelay)
             guard !Task.isCancelled else { return }
             controls.hide()
         }
     }
 
+    private func showsNowPlayingChip(_ prefs: StandByPreferences) -> Bool {
+        guard prefs.showsNowPlayingChip, music.isAvailable, !isEditing else { return false }
+        return ![StandByPage.music, .night, .sound].contains(page)
+    }
+
+    // MARK: Düzenleme modu
+
+    private func enterEditing() {
+        controls.hide()
+        isEditing = true
+    }
+
+    private func exitEditing() { isEditing = false }
+
+    /// Mevcut kart küçültülmüş canlı önizleme olarak üstte, düzenleyici tepsi altta (yatayda yanda).
+    private func editor(context: ImmersivePageContext, size: CGSize) -> some View {
+        let isWide = size.width > size.height * 1.15
+        let panel = StandByEditorPanel(
+            preferences: preferencesBinding, appPalette: appPalette, isMusicAvailable: music.isAvailable,
+            onDone: exitEditing, onReset: { preferencesData = StandByPreferences.default.encoded() })
+        let preview = editingPreview(context: context.forPreview(), fullSize: size)
+        return Group {
+            if isWide {
+                HStack(spacing: FokusSpacing.lg) {
+                    preview
+                    panel.frame(width: min(size.width * 0.45, 420))
+                }
+            } else {
+                VStack(spacing: FokusSpacing.md) {
+                    preview
+                    panel
+                }
+            }
+        }
+        .padding(.top, max(context.insets.top, FokusSpacing.lg))
+        .padding(.bottom, max(context.insets.bottom, FokusSpacing.md))
+        .padding(.leading, max(context.insets.leading, FokusSpacing.lg))
+        .padding(.trailing, max(context.insets.trailing, FokusSpacing.lg))
+    }
+
+    /// Kilit ekranı düzenleyicisi gibi: sayfa TAM ekran boyutunda dizilir, sonra ayrılan alana sığacak
+    /// kadar küçültülür (kırpılmaz). Çerçeve ve köşe yarıçapı ölçekten bağımsız görünür.
+    private func editingPreview(context: ImmersivePageContext, fullSize: CGSize) -> some View {
+        GeometryReader { proxy in
+            let scale = min(
+                proxy.size.width / max(fullSize.width, 1), proxy.size.height / max(fullSize.height, 1), 1)
+            let shape = RoundedRectangle(cornerRadius: FokusRadius.xl / max(scale, 0.1), style: .continuous)
+            pageView(page, context: context)
+                .frame(width: fullSize.width, height: fullSize.height)
+                .background(page == .night ? Color.black : Color.clear)
+                .clipShape(shape)
+                .overlay(shape.strokeBorder(.fkSeparatorStrong, lineWidth: 1 / max(scale, 0.1)))
+                .scaleEffect(scale)
+                .frame(width: proxy.size.width, height: proxy.size.height)
+                .allowsHitTesting(false)
+        }
+    }
+
+    // MARK: Sayfa kaydırıcı
+
+    /// Boyut/sayfa listesi değişince kaydırıcıyı mevcut sayfaya oturtur (yenisi eskisini iptal eder).
+    private func reanchor(_ proxy: ScrollViewProxy) {
+        tracksScroll = false
+        reanchorTask?.cancel()
+        reanchorTask = Task { @MainActor in
+            proxy.scrollTo(page, anchor: .leading)
+            try? await Task.sleep(for: Self.layoutSettleDelay)
+            guard !Task.isCancelled else { return }
+            proxy.scrollTo(page, anchor: .leading)
+            try? await Task.sleep(for: .milliseconds(100))
+            guard !Task.isCancelled else { return }
+            tracksScroll = true
+        }
+    }
+
     private func pager(_ context: ImmersivePageContext) -> some View {
         // `TabView(.page)` yerine sayfalı yatay `ScrollView`: UIKit sayfa kaydırıcısı kısa dokunuşları
         // (XCUITest ve hızlı parmak dokunuşları) yutuyordu; ScrollView içeriğinde dokunuş güvenilir.
-        ScrollViewReader { proxy in
+        let visible = pages
+        return ScrollViewReader { proxy in
             ScrollView(.horizontal) {
                 HStack(spacing: 0) {
-                    ForEach(ImmersivePage.allCases) { item in
+                    ForEach(visible) { item in
                         pageView(item, context: context)
                             .containerRelativeFrame(.horizontal)
+                            .clipped()
                             .contentShape(Rectangle())
                             // Her dokunuş kontrolleri gösterir/süreyi yeniler; çocuk düğmeler/kaydırıcılar
                             // kendi dokunuşunu korur.
@@ -144,8 +278,13 @@ struct ImmersiveFocusView: View {
             .scrollPosition(id: $scrolledPage)
             .scrollIndicators(.hidden)
             .ignoresSafeArea()
+            .simultaneousGesture(
+                LongPressGesture(minimumDuration: 0.5).onEnded { _ in enterEditing() })
             // `scrollPosition` ilk sunumda saklı sayfayı uygulamaz; açılışta animasyonsuz oraya git.
+            // Düzenlemeden dönüşte kaydırıcı yeniden kurulur: izleme önce kapanır.
             .onAppear {
+                tracksScroll = false
+                if pageRaw != page.rawValue { pageRaw = page.rawValue }
                 scrolledPage = page
                 proxy.scrollTo(page, anchor: .leading)
             }
@@ -162,61 +301,83 @@ struct ImmersiveFocusView: View {
                         ? Int((geometry.contentOffset.x / geometry.containerSize.width).rounded()) : 0)
             } action: { old, new in
                 // Genişlik değişti (açılışta düzen oturması, iPhone dönüşü, iPad yeniden boyutlama): ofset
-                // eski genişlikteki piksel değerinde kalır ve yanlış sayfa gibi okunurdu (ör. yatayda
-                // "Halka" → "Kronometre"). Sayfa DEĞİŞMEZ: izleme durur, kaydırıcı yeni genişlikte
-                // mevcut sayfaya oturtulur ve düzen sakinleşince izleme yeniden başlar.
+                // eski genişlikteki piksel değerinde kalır ve yanlış sayfa gibi okunurdu. Sayfa DEĞİŞMEZ:
+                // izleme durur, kaydırıcı yeni genişlikte mevcut sayfaya oturtulur, düzen sakinleşince
+                // izleme yeniden başlar.
                 if new.width != old.width {
-                    tracksScroll = false
-                    reanchorTask?.cancel()
-                    reanchorTask = Task { @MainActor in
-                        proxy.scrollTo(page, anchor: .leading)
-                        try? await Task.sleep(for: Self.layoutSettleDelay)
-                        guard !Task.isCancelled else { return }
-                        proxy.scrollTo(page, anchor: .leading)
-                        try? await Task.sleep(for: .milliseconds(100))
-                        guard !Task.isCancelled else { return }
-                        tracksScroll = true
-                    }
+                    reanchor(proxy)
                     return
                 }
                 // Açılıştaki ilk konum (0) saklı sayfayı ezmesin: başlangıç kaydırması oturana dek yok say.
                 guard tracksScroll else { return }
-                let pages = ImmersivePage.allCases
-                guard pages.indices.contains(new.index) else { return }
-                let target = pages[new.index]
-                if target.rawValue != pageRaw { pageRaw = target.rawValue }
+                let list = pages
+                guard list.indices.contains(new.index) else { return }
+                let target = list[new.index]
+                if target.rawValue != pageRaw {
+                    scrolledPage = target
+                    pageRaw = target.rawValue
+                }
             }
-            // Dışarıdan değişim (gösterge ayarı vb.) → kaydırma konumu.
+            // Dışarıdan değişim (gösterge ayarı, köşe çipi vb.) → kaydırma konumu.
             .onChange(of: pageRaw) { _, new in
-                guard let target = ImmersivePage(rawValue: new), scrolledPage != target else { return }
-                withAnimation(reduceMotion ? nil : FokusMotion.baseAnimation) { scrolledPage = target }
+                guard let target = StandByPage(rawValue: new), pages.contains(target), scrolledPage != target
+                else { return }
+                // Programatik geçiş (köşe çipi, gösterge): boyut değişimindeki güvenilir yeniden oturtma
+                // yolu kullanılır (izleme kapanır, `scrollTo`, düzen oturunca izleme açılır). Animasyonlu
+                // `scrollTo`/`scrollPosition` yazımı ara sayfaları `pageRaw`'a geri yazıp sayfayı eski
+                // yerine döndürüyordu.
+                scrolledPage = target
+                reanchor(proxy)
+            }
+            // Görünür sayfa listesi değişti (müzik bağlandı/koptu): geçerli sayfayı koru, yoksa ilkine düş.
+            .onChange(of: visible) { _, _ in
+                if pageRaw != page.rawValue { pageRaw = page.rawValue }
+                scrolledPage = page
+                reanchor(proxy)
             }
         }
     }
 
     @ViewBuilder
-    private func pageView(_ item: ImmersivePage, context: ImmersivePageContext) -> some View {
+    private func pageView(_ item: StandByPage, context: ImmersivePageContext) -> some View {
         switch item {
         case .stopwatch: ImmersiveStopwatchPage(context: context)
+        case .clock: ImmersiveClockPage(context: context)
         case .ring: ImmersiveRingPage(context: context)
-        case .night: ImmersiveNightPage(context: context)
+        case .subject: ImmersiveSubjectPage(context: context)
         case .summary: ImmersiveSummaryPage(context: context)
+        case .music: ImmersiveMusicPage(context: context)
+        case .night: ImmersiveNightPage(context: context)
         case .sound: ImmersiveSoundPage(context: context)
         }
     }
 
+    private func goToNowPlayingPage() {
+        let list = pages
+        if list.contains(.music) {
+            pageRaw = StandByPage.music.rawValue
+        } else if list.contains(.sound) {
+            pageRaw = StandByPage.sound.rawValue
+        }
+    }
+
     private func overlay(
-        snapshot: ImmersiveSnapshot, insets: EdgeInsets, showsControls: Bool, isNight: Bool
+        snapshot: ImmersiveSnapshot, insets: EdgeInsets, showsControls: Bool, isNight: Bool, showsChip: Bool
     ) -> some View {
         let animation = reduceMotion ? nil : FokusMotion.baseAnimation
         return VStack(spacing: 0) {
-            HStack {
-                Spacer()
+            HStack(alignment: .top, spacing: FokusSpacing.sm) {
+                if showsChip, let info = music.info {
+                    NowPlayingChip(info: info, action: goToNowPlayingPage)
+                        .frame(minHeight: fokusMinTapTarget)
+                        .transition(.opacity)
+                }
+                Spacer(minLength: 0)
                 // Gizliyken görünüm ağacında YOK (opaklık 0 değil): erişilebilirlik ağacında ve
                 // dokunma testinde de görünmez/dokunulamaz olur.
                 if showsControls {
-                    ImmersiveMinimizeButton(action: onMinimize)
-                        .transition(.opacity)
+                    ImmersiveCustomizeButton(action: enterEditing).transition(.opacity)
+                    ImmersiveMinimizeButton(action: onMinimize).transition(.opacity)
                 }
             }
             .padding(.top, max(insets.top, FokusSpacing.lg))
@@ -242,7 +403,8 @@ struct ImmersiveFocusView: View {
                         .accessibilityIdentifier("immersive.error")
                 }
                 ImmersivePageIndicator(
-                    page: pageBinding, tone: snapshot.phase == .break ? FokusColor(.success) : FokusColor(.label),
+                    pages: pages, page: pageBinding,
+                    tone: snapshot.phase == .break ? FokusColor(.success) : FokusColor(.label),
                     isDimmed: isNight)
             }
             .padding(.bottom, max(insets.bottom, FokusSpacing.md))

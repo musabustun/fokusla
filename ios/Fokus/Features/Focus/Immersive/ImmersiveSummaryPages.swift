@@ -3,85 +3,59 @@ import FokusDesign
 import FokusDomain
 import SwiftUI
 
-// MARK: - (d) Bugünün özeti
+// MARK: - Bugünün özeti
 
-/// Bugünkü toplam odak, oturum sayısı, ortalama kesintisiz odak ve ortalama mola.
+/// StandBy widget ızgarası: 2×2 hücre, hairline ile ayrılmış (toplam, oturum, ortalama odak, ortalama mola).
 struct ImmersiveSummaryPage: View {
     let context: ImmersivePageContext
 
     var body: some View {
         let snap = context.snapshot
-        GeometryReader { proxy in
-            let isWide = proxy.size.width > proxy.size.height * 1.15
-            ScrollView {
-                Group {
-                    if isWide {
-                        HStack(alignment: .center, spacing: FokusSpacing.xxl) {
-                            hero(snap).frame(maxWidth: .infinity, alignment: .leading)
-                            stats(snap).frame(maxWidth: .infinity)
-                        }
-                    } else {
-                        VStack(alignment: .leading, spacing: FokusSpacing.xl) {
-                            hero(snap)
-                            stats(snap)
-                        }
-                    }
-                }
-                .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .center)
-            }
-            .scrollBounceBehavior(.basedOnSize)
-            .scrollIndicators(.hidden)
-        }
-        .padding(context.contentPadding)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(ImmersivePage.summary.accessibilityIdentifier)
-    }
-
-    private func hero(_ snap: ImmersiveSnapshot) -> some View {
-        VStack(alignment: .leading, spacing: FokusSpacing.sm) {
+        VStack(alignment: .leading, spacing: FokusSpacing.lg) {
             Text("Bugünün özeti")
                 .fokusTextStyle(.eyebrow)
                 .foregroundStyle(.fkSecondaryLabel)
                 .accessibilityAddTraits(.isHeader)
-            Text("Bugün toplam odak").fokusTextStyle(.subheadline).foregroundStyle(.fkSecondaryLabel)
-            FocusDurationValue(ms: snap.todayTotalMs, style: .numeralHero)
-        }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Bugün toplam odak")
-        .accessibilityValue(FocusFormat.durationText(snap.todayTotalMs))
-        .accessibilityIdentifier("immersive.summary.today")
-    }
-
-    private func stats(_ snap: ImmersiveSnapshot) -> some View {
-        VStack(spacing: 0) {
-            Divider().overlay(.fkSeparator)
-            stat("Bugünkü oturum", id: "immersive.summary.count", spoken: "\(snap.todaySessionCount)") {
-                Text(snap.todaySessionCount.formatted(.number.locale(Locale(identifier: "tr_TR"))))
-                    .fokusTextStyle(.numeralLG).foregroundStyle(.fkLabel)
+            VStack(spacing: 0) {
+                HStack(spacing: 0) {
+                    cell(
+                        "Bugün toplam odak", id: "immersive.summary.today",
+                        spoken: FocusFormat.durationText(snap.todayTotalMs)
+                    ) { FocusDurationValue(ms: snap.todayTotalMs, style: .numeralXL) }
+                    Rectangle().fill(.fkSeparator).frame(width: 1)
+                    cell("Bugünkü oturum", id: "immersive.summary.count", spoken: "\(snap.todaySessionCount)") {
+                        Text(snap.todaySessionCount.formatted(.number.locale(Locale(identifier: "tr_TR"))))
+                            .fokusTextStyle(.numeralXL).foregroundStyle(.fkLabel)
+                    }
+                }
+                Rectangle().fill(.fkSeparator).frame(height: 1)
+                HStack(spacing: 0) {
+                    cell(
+                        "Ortalama kesintisiz odak", id: "immersive.summary.averageFocus",
+                        spoken: FocusFormat.durationText(snap.averageFocusMs)
+                    ) { FocusDurationValue(ms: snap.averageFocusMs, style: .numeralXL) }
+                    Rectangle().fill(.fkSeparator).frame(width: 1)
+                    cell(
+                        "Ortalama mola", id: "immersive.summary.averageBreak",
+                        spoken: FocusFormat.durationText(snap.averageBreakMs)
+                    ) { FocusDurationValue(ms: snap.averageBreakMs, style: .numeralXL) }
+                }
             }
-            Divider().overlay(.fkSeparator)
-            stat(
-                "Ortalama kesintisiz odak", id: "immersive.summary.averageFocus",
-                spoken: FocusFormat.durationText(snap.averageFocusMs)
-            ) { FocusDurationValue(ms: snap.averageFocusMs, style: .numeralLG) }
-            Divider().overlay(.fkSeparator)
-            stat(
-                "Ortalama mola", id: "immersive.summary.averageBreak",
-                spoken: FocusFormat.durationText(snap.averageBreakMs)
-            ) { FocusDurationValue(ms: snap.averageBreakMs, style: .numeralLG) }
-            Divider().overlay(.fkSeparator)
+            .frame(maxHeight: .infinity)
         }
+        .padding(context.contentPadding)
+        .immersivePageContainer(.summary)
     }
 
-    private func stat<Value: View>(
+    private func cell<Value: View>(
         _ title: String, id: String, spoken: String, @ViewBuilder value: () -> Value
     ) -> some View {
         VStack(alignment: .leading, spacing: FokusSpacing.xs) {
-            Text(title).fokusTextStyle(.eyebrow).foregroundStyle(.fkSecondaryLabel)
+            Text(title).fokusTextStyle(.eyebrow).foregroundStyle(.fkSecondaryLabel).lineLimit(2)
             value()
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.vertical, FokusSpacing.md)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+        .padding(FokusSpacing.lg)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
         .accessibilityValue(spoken)
@@ -89,7 +63,7 @@ struct ImmersiveSummaryPage: View {
     }
 }
 
-// MARK: - (e) Ses ve müzik
+// MARK: - Ses ve müzik
 
 /// Dikey kaydırılabilir sayfa: üstte odak sesleri, altında müzik. Ortam yoksa (önizleme) bölüm çizilmez.
 /// İçeriği kardeş görünümler çizer (`FocusSoundSection`, `FocusMusicSection`); burada yalnızca yerleşir.
@@ -121,7 +95,6 @@ struct ImmersiveSoundPage: View {
             .padding(context.contentPadding)
         }
         .scrollIndicators(.hidden)
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier(ImmersivePage.sound.accessibilityIdentifier)
+        .immersivePageContainer(.sound)
     }
 }

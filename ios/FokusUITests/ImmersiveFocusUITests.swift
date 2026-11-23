@@ -4,7 +4,8 @@ import XCTest
 /// uzun mola uyarısı ve görsel kontrol matrisi.
 @MainActor
 final class ImmersiveFocusUITests: FocusUITestCase {
-    private static let pages = ["stopwatch", "ring", "night", "summary", "sound"]
+    /// Varsayılan görünür sayfalar (müzik bağlı değilken): `StandByPreferences.defaultPages` eksi `music`.
+    private static let pages = ["stopwatch", "clock", "ring", "summary", "night", "sound"]
 
     private var isPad: Bool { UIDevice.current.userInterfaceIdiom == .pad }
 
@@ -71,7 +72,7 @@ final class ImmersiveFocusUITests: FocusUITestCase {
         for (index, page) in Self.pages.enumerated() {
             waitFor("immersive.page.\(page)")
             XCTAssertTrue(
-                (pageIndicator.value as? String ?? "").hasSuffix("\(index + 1) / 5"),
+                (pageIndicator.value as? String ?? "").hasSuffix("\(index + 1) / \(Self.pages.count)"),
                 "Gösterge: \(pageIndicator.value ?? "nil")")
             if page == "summary" {
                 XCTAssertEqual(element("immersive.summary.count").value as? String, "1")
@@ -81,7 +82,7 @@ final class ImmersiveFocusUITests: FocusUITestCase {
         }
         // Son sayfada (ses): yatay kaydırma geri döner.
         swipePage(.right)
-        waitFor("immersive.page.summary")
+        waitFor("immersive.page.night")
         swipePage(.left)
         waitFor("immersive.page.sound")
         attachScreenshot("immersive-page-sound")
@@ -94,7 +95,7 @@ final class ImmersiveFocusUITests: FocusUITestCase {
         skipOnboardingAndOpenFocus()
         waitFor("immersive.page.sound")
         // Sonraki testlere sızmasın: başa dön.
-        for _ in 0..<4 { swipePage(.right) }
+        for _ in 0..<(Self.pages.count - 1) { swipePage(.right) }
         waitFor("immersive.page.stopwatch")
     }
 
@@ -125,7 +126,7 @@ final class ImmersiveFocusUITests: FocusUITestCase {
     func testLongBreakAlertIsShownFullScreenOnEveryPage() {
         launch(seed: "longbreak", immersivePage: "stopwatch")
         waitFor("immersive.root")
-        for page in ["stopwatch", "night", "summary"] {
+        for page in ["stopwatch", "clock", "ring", "summary", "night"] {
             if page != "stopwatch" { goToPage(page) }
             waitFor("immersive.longBreak")
             XCTAssertTrue(app.staticTexts["Molan uzadı"].exists)
@@ -168,11 +169,11 @@ final class ImmersiveFocusUITests: FocusUITestCase {
 
     // MARK: Görsel kontrol matrisi
 
-    /// 5 sayfa × (dikey, yatay) × (koyu, açık) ekran görüntüsü. Ağır: `-only-testing` ile çağrılır.
-    /// iPad'de yalnızca bir sayfa (kronometre) yatayda, iki temada alınır.
+    /// 6 sayfa × (dikey, yatay) × (koyu, açık) ekran görüntüsü. Ağır: `-only-testing` ile çağrılır.
+    /// iPad'de yalnızca iki sayfa (kronometre, saat) yatayda, iki temada alınır.
     func testScreenshotMatrix() throws {
         defer { XCUIDevice.shared.orientation = .portrait }
-        let pages = isPad ? ["stopwatch"] : Self.pages
+        let pages = isPad ? ["stopwatch", "clock"] : Self.pages
         let orientations: [(String, UIDeviceOrientation)] =
             isPad ? [("landscape", .landscapeLeft)] : [("portrait", .portrait), ("landscape", .landscapeLeft)]
         for theme in ["dark", "light"] {
@@ -231,7 +232,8 @@ final class ImmersiveFocusUITests: FocusUITestCase {
     private func title(of page: String) -> String {
         switch page {
         case "stopwatch": "Kronometre"
-        case "ring": "Halka"
+        case "clock": "Saat"
+        case "ring": "Hedef halkası"
         case "night": "Gece"
         case "summary": "Bugünün özeti"
         default: "Ses ve müzik"

@@ -19,6 +19,8 @@ final class WatchModel {
     /// Ekranda gösterilecek açık oturum (yerel depo + telefondan gelen bildirim, yeni olan).
     private(set) var live: FocusLink.LiveState?
     private(set) var lastFinished: FinishedSummary?
+    /// Bugün + hedef, son 7 gün, son oturumlar (saatin deposundan; telefondan gelen kayıtlar dahil).
+    private(set) var stats: WatchStatsCalc.Summary?
     private(set) var actionFailed = false
 
     @ObservationIgnored private let link = FocusLinkCoordinator.shared
@@ -43,6 +45,8 @@ final class WatchModel {
         if hasLoaded, let cue = FocusLink.cue(from: live, to: resolved) { WatchHaptics.play(cue) }
         hasLoaded = true
         if !Self.isSame(live, resolved) { live = resolved }
+        let summary = Self.loadStats(now: now)
+        if summary != stats { stats = summary }
         if reloadWidgets { FokusSystem.reloadWidgets() }
     }
 
@@ -116,6 +120,26 @@ final class WatchModel {
                 && lhs.state.isEquivalent(to: rhs.state)
         default: false
         }
+    }
+
+    /// Ders adı: önce saatin kendi deposu, yoksa telefondan gelen önbellek.
+    func subjectName(for id: UUID?) -> String? {
+        guard let id else { return nil }
+        return link.subjectNames[id]
+    }
+
+    private static func loadStats(now: Date) -> WatchStatsCalc.Summary? {
+        guard let context = try? FokusSystem.context(),
+            let sessions = try? context.fetch(FetchDescriptor<FocusSession>()),
+            let segments = try? context.fetch(FetchDescriptor<FocusSegment>())
+        else { return nil }
+        let goal = ((try? ProfileRepository(context: context).current()) ?? nil)?.dailyFocusGoalMinutes
+        let subjectIds = Dictionary(
+            sessions.compactMap { session in session.subjectId.map { (session.id, $0) } },
+            uniquingKeysWith: { first, _ in first })
+        return WatchStatsCalc.summary(
+            sessions: sessions.map(\.snapshot), segments: segments.map(\.snapshot), subjectIds: subjectIds,
+            goalMinutes: goal, now: now)
     }
 
     /// Oturumun toplam odak süresi (ms): odakta `şimdi`ye, molada mola başlangıcına kadar.

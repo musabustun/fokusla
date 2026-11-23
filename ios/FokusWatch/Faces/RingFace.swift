@@ -38,6 +38,6 @@ struct RingFace: View {
         guard isFocus else { return "mola" }
         guard state.goalMinutes != nil, state.dayFocusStart != nil else { return "bu saat" }
         let percent = Int((progress * 100).rounded())
-        return progress >= 1 ? "hedef tamam" : "hedefin %\(percent)"
+        return progress >= 1 ? "hedef ✓" : "hedef %\(percent)"
     }
 }

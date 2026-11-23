@@ -58,6 +58,15 @@ public enum StandByPage: String, CaseIterable, Codable, Identifiable, Sendable {
     public var requiresMusic: Bool { self == .music }
 
     public var accessibilityIdentifier: String { "immersive.page.\(rawValue)" }
+
+    /// Sayfada yer ayrılmış "müzik widget'ı" (yan/alt kontrol bölgesi) seçilebilir mi? Müzik/Gece/Ses sayfaları
+    /// zaten müzikle ilgili ya da (gece) hiçbir şey eklemez; onlarda seçilemez.
+    public var supportsMusicWidget: Bool {
+        switch self {
+        case .stopwatch, .clock, .ring, .subject, .summary: true
+        case .music, .night, .sound: false
+        }
+    }
 }
 
 /// Büyük sayaç yazı tipi stili (kilit ekranı saat stilleri gibi). Yalnızca gömülü fontlar ve sistem fontu.
@@ -165,9 +174,15 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
     public var nightMode: StandByNightMode
     /// Müzik bağlıyken diğer sayfaların köşesinde küçük "şimdi çalıyor" çipi.
     public var showsNowPlayingChip: Bool
+    /// "Müzik widget'ı" seçilen sayfalar: müzik bağlıyken bu sayfalarda içerik iki bölgeye ayrılır (yatay: solda
+    /// içerik, sağda müzik kontrolleri; dikey: üstte içerik, altta kontroller) ve köşe çipi çıkmaz. Yalnızca
+    /// `supportsMusicWidget` sayfaları.
+    public var musicWidgetPages: [StandByPage]
 
     public static let storageKey = "fokus.focus.standby"
     public static let defaultPages: [StandByPage] = [.stopwatch, .clock, .ring, .music, .summary, .night, .sound]
+
+    public static let defaultMusicWidgetPages: [StandByPage] = [.clock]
 
     public static let `default` = StandByPreferences(
         pages: defaultPages, clockStyle: .mono, accent: nil, tintedDigits: false, backdrop: .gradient,
@@ -175,7 +190,8 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
 
     public init(
         pages: [StandByPage], clockStyle: StandByClockStyle, accent: FokusPalette?, tintedDigits: Bool,
-        backdrop: StandByBackdrop, nightMode: StandByNightMode, showsNowPlayingChip: Bool
+        backdrop: StandByBackdrop, nightMode: StandByNightMode, showsNowPlayingChip: Bool,
+        musicWidgetPages: [StandByPage] = StandByPreferences.defaultMusicWidgetPages
     ) {
         self.pages = Self.unique(pages)
         self.clockStyle = clockStyle
@@ -184,9 +200,28 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
         self.backdrop = backdrop
         self.nightMode = nightMode
         self.showsNowPlayingChip = showsNowPlayingChip
+        self.musicWidgetPages = Self.widgetPages(musicWidgetPages)
     }
 
     // MARK: Okuma
+
+    /// Bu sayfada müzik widget'ı seçili mi?
+    public func hasMusicWidget(_ page: StandByPage) -> Bool {
+        page.supportsMusicWidget && musicWidgetPages.contains(page)
+    }
+
+    /// Verilen sayfada müzik widget'ı (iki bölgeli düzen) çizilsin mi? Seçili ve müzik bağlı/çalıyor olmalı.
+    public func showsMusicWidget(on page: StandByPage, isMusicAvailable: Bool) -> Bool {
+        isMusicAvailable && hasMusicWidget(page)
+    }
+
+    /// Köşe çipi bu sayfada görünsün mü? Çip açık, müzik çalıyor, sayfa müzik/gece/ses değil ve sayfada
+    /// zaten widget yok.
+    public func showsChip(on page: StandByPage, isMusicAvailable: Bool) -> Bool {
+        guard showsNowPlayingChip, isMusicAvailable else { return false }
+        guard ![StandByPage.music, .night, .sound].contains(page) else { return false }
+        return !hasMusicWidget(page)
+    }
 
     public func isEnabled(_ page: StandByPage) -> Bool { pages.contains(page) }
 
@@ -236,6 +271,15 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
         return copy
     }
 
+    /// Sayfanın müzik widget'ını açar/kapatır (desteklemeyen sayfada değişmez).
+    public func togglingMusicWidget(_ page: StandByPage) -> StandByPreferences {
+        guard page.supportsMusicWidget else { return self }
+        var copy = self
+        copy.musicWidgetPages =
+            hasMusicWidget(page) ? musicWidgetPages.filter { $0 != page } : musicWidgetPages + [page]
+        return copy
+    }
+
     /// Tek alanı değiştirilmiş kopya.
     public func with<Value>(
         _ keyPath: WritableKeyPath<StandByPreferences, Value>, _ value: Value
@@ -243,13 +287,14 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
         var copy = self
         copy[keyPath: keyPath] = value
         copy.pages = Self.unique(copy.pages)
+        copy.musicWidgetPages = Self.widgetPages(copy.musicWidgetPages)
         return copy
     }
 
     // MARK: Kodlama
 
     private enum CodingKeys: String, CodingKey {
-        case pages, clockStyle, accent, tintedDigits, backdrop, nightMode, showsNowPlayingChip
+        case pages, clockStyle, accent, tintedDigits, backdrop, nightMode, showsNowPlayingChip, musicWidgetPages
     }
 
     /// Hoşgörülü çözme: eksik alan → varsayılan, bilinmeyen sayfa/değer → atlanır/varsayılan.
@@ -264,6 +309,9 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
         }
         let rawPages = (try? container.decodeIfPresent([String].self, forKey: .pages)) ?? nil
         let decodedPages = rawPages.map { $0.compactMap(StandByPage.init(rawValue:)) } ?? fallback.pages
+        let rawWidgetPages = (try? container.decodeIfPresent([String].self, forKey: .musicWidgetPages)) ?? nil
+        let decodedWidgetPages =
+            rawWidgetPages.map { $0.compactMap(StandByPage.init(rawValue:)) } ?? fallback.musicWidgetPages
         self.init(
             pages: decodedPages.isEmpty ? fallback.pages : decodedPages,
             clockStyle: string(.clockStyle).flatMap(StandByClockStyle.init(rawValue:)) ?? fallback.clockStyle,
@@ -271,7 +319,8 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
             tintedDigits: bool(.tintedDigits) ?? fallback.tintedDigits,
             backdrop: string(.backdrop).flatMap(StandByBackdrop.init(rawValue:)) ?? fallback.backdrop,
             nightMode: string(.nightMode).flatMap(StandByNightMode.init(rawValue:)) ?? fallback.nightMode,
-            showsNowPlayingChip: bool(.showsNowPlayingChip) ?? fallback.showsNowPlayingChip)
+            showsNowPlayingChip: bool(.showsNowPlayingChip) ?? fallback.showsNowPlayingChip,
+            musicWidgetPages: decodedWidgetPages)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -283,6 +332,7 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
         try container.encode(backdrop.rawValue, forKey: .backdrop)
         try container.encode(nightMode.rawValue, forKey: .nightMode)
         try container.encode(showsNowPlayingChip, forKey: .showsNowPlayingChip)
+        try container.encode(musicWidgetPages.map(\.rawValue), forKey: .musicWidgetPages)
     }
 
     /// Saklanan veriden okur; boş/bozuk veri → varsayılan.
@@ -298,6 +348,11 @@ public struct StandByPreferences: Codable, Equatable, Sendable {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys]
         return (try? encoder.encode(self)) ?? Data()
+    }
+
+    /// Tekrarsız ve yalnızca widget destekleyen sayfalar.
+    private static func widgetPages(_ pages: [StandByPage]) -> [StandByPage] {
+        unique(pages).filter(\.supportsMusicWidget)
     }
 
     private static func unique(_ pages: [StandByPage]) -> [StandByPage] {

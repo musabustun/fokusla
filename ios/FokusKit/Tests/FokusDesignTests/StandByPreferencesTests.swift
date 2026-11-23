@@ -14,6 +14,7 @@ struct StandByPreferencesTests {
         #expect(value.backdrop == .gradient)
         #expect(value.nightMode == .auto)
         #expect(value.showsNowPlayingChip)
+        #expect(value.musicWidgetPages == [.clock])
         #expect(StandByPreferences.storageKey == "fokus.focus.standby")
     }
 
@@ -130,6 +131,59 @@ struct StandByPreferencesTests {
             backdrop: .aura, nightMode: .on, showsNowPlayingChip: false)
         #expect(StandByPreferences.decoded(from: value.encoded()) == value)
         #expect(StandByPreferences.decoded(from: StandByPreferences.default.encoded()) == .default)
+    }
+
+    @Test func roundTripKeepsMusicWidgetPages() {
+        let value = StandByPreferences.default.with(\.musicWidgetPages, [.ring, .stopwatch])
+        #expect(StandByPreferences.decoded(from: value.encoded()).musicWidgetPages == [.ring, .stopwatch])
+    }
+
+    // MARK: Müzik widget'ı
+
+    @Test func decodeWithoutWidgetKeyUsesDefault() {
+        #expect(decode(#"{"clockStyle":"thin"}"#).musicWidgetPages == [.clock])
+    }
+
+    @Test func decodeSkipsUnknownAndUnsupportedWidgetPages() {
+        let value = decode(#"{"musicWidgetPages":["ring","hologram","music","night","sound","ring","summary"]}"#)
+        #expect(value.musicWidgetPages == [.ring, .summary])
+        #expect(decode(#"{"musicWidgetPages":[]}"#).musicWidgetPages.isEmpty)
+    }
+
+    @Test(arguments: StandByPage.allCases)
+    func widgetSupportMatchesPage(page: StandByPage) {
+        let expected: Bool = ![StandByPage.music, .night, .sound].contains(page)
+        #expect(page.supportsMusicWidget == expected)
+    }
+
+    @Test func togglingMusicWidgetAddsAndRemoves() {
+        let value = StandByPreferences.default
+        let added = value.togglingMusicWidget(.ring)
+        #expect(added.hasMusicWidget(.ring))
+        #expect(added.musicWidgetPages == [.clock, .ring])
+        #expect(!added.togglingMusicWidget(.ring).hasMusicWidget(.ring))
+        // Desteklemeyen sayfada değişmez.
+        #expect(value.togglingMusicWidget(.music) == value)
+        #expect(value.togglingMusicWidget(.night) == value)
+    }
+
+    @Test func widgetAndChipAreMutuallyExclusivePerPage() {
+        let value = StandByPreferences.default  // widget: clock, çip açık
+        #expect(value.showsMusicWidget(on: .clock, isMusicAvailable: true))
+        #expect(!value.showsChip(on: .clock, isMusicAvailable: true))
+        #expect(!value.showsMusicWidget(on: .ring, isMusicAvailable: true))
+        #expect(value.showsChip(on: .ring, isMusicAvailable: true))
+        // Müzik yoksa ikisi de yok (mevcut davranış korunur).
+        #expect(!value.showsMusicWidget(on: .clock, isMusicAvailable: false))
+        #expect(!value.showsChip(on: .ring, isMusicAvailable: false))
+        // Çip anahtarı kapalıysa çip yok; widget bağımsız.
+        let chipOff = value.with(\.showsNowPlayingChip, false)
+        #expect(!chipOff.showsChip(on: .ring, isMusicAvailable: true))
+        #expect(chipOff.showsMusicWidget(on: .clock, isMusicAvailable: true))
+        // Müzik/gece/ses sayfalarında çip çıkmaz.
+        for page in [StandByPage.music, .night, .sound] {
+            #expect(!value.showsChip(on: page, isMusicAvailable: true))
+        }
     }
 
     // MARK: Gece modu

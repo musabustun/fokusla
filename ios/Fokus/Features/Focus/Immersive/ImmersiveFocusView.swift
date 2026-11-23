@@ -59,10 +59,16 @@ struct ImmersiveFocusView: View {
     /// Oturum biterken kapak kapanma animasyonunda 00:00'a düşmesin diye son açık anın görüntüsü.
     @State private var lastActive: ImmersiveSnapshot?
     @State private var errorMessage: String?
+    /// Köşe çipi yerinde kontrol kartına genişlemiş mi?
+    @State private var isChipExpanded = false
+    /// Kart açıkken her etkileşimde artar: otomatik daralma süresini yeniler.
+    @State private var chipRevision = 0
 
     /// Boyut değişiminden sonra düzenin (sayfa genişlikleri) oturması için bekleme.
     private static let layoutSettleDelay: Duration = .milliseconds(350)
     private static let saveError = "İşlem kaydedilemedi. Lütfen tekrar dene."
+    /// Açık müzik kartı bu süre etkileşim olmazsa çipe daralır.
+    private static let chipAutoCollapseDelay: Duration = .seconds(6)
 
     private var preferences: StandByPreferences { StandByPreferences.decoded(from: preferencesData) }
 
@@ -145,7 +151,7 @@ struct ImmersiveFocusView: View {
             let context = ImmersivePageContext(
                 snapshot: snapshot, subject: subjectInfo, now: now, insets: insets, bottomReserve: reserve,
                 clockStyle: prefs.clockStyle, digitColor: digitColor(for: snapshot.phase), isNight: isNightTint,
-                dailyGoalMinutes: profiles.first?.dailyFocusGoalMinutes, music: music)
+                dailyGoalMinutes: profiles.first?.dailyFocusGoalMinutes, music: music, preferences: prefs)
             ZStack {
                 StandByBackdropView(isNightPage ? .black : prefs.backdrop).ignoresSafeArea()
                 if isEditing {
@@ -178,9 +184,9 @@ struct ImmersiveFocusView: View {
         }
     }
 
+    /// Köşe çipi yalnızca müzik widget'ı OLMAYAN sayfalarda (widget varsa kontroller zaten sayfada).
     private func showsNowPlayingChip(_ prefs: StandByPreferences) -> Bool {
-        guard prefs.showsNowPlayingChip, music.isAvailable, !isEditing else { return false }
-        return ![StandByPage.music, .night, .sound].contains(page)
+        !isEditing && prefs.showsChip(on: page, isMusicAvailable: music.isAvailable)
     }
 
     // MARK: Düzenleme modu
@@ -282,15 +288,15 @@ struct ImmersiveFocusView: View {
                 LongPressGesture(minimumDuration: 0.5).onEnded { _ in enterEditing() })
             // `scrollPosition` ilk sunumda saklı sayfayı uygulamaz; açılışta animasyonsuz oraya git.
             // Düzenlemeden dönüşte kaydırıcı yeniden kurulur: izleme önce kapanır.
+            // Düzenlemeden dönüşte de aynı güvenilir yol: izleme kapanır, kaydırıcı sayfaya oturtulur (iki kez,
+            // düzen sakinleşince), sonra izleme açılır. Aksi halde ilk (0) ofset saklı sayfayı ezip kronometreye
+            // atlıyordu.
             .onAppear {
                 tracksScroll = false
                 if pageRaw != page.rawValue { pageRaw = page.rawValue }
                 scrolledPage = page
                 proxy.scrollTo(page, anchor: .leading)
-            }
-            .task {
-                try? await Task.sleep(for: .milliseconds(400))
-                tracksScroll = true
+                reanchor(proxy)
             }
             // Kaydırma → saklanan sayfa (gösterge, erişilebilirlik, hatırlama). Sayfa, gerçek kaydırma
             // konumundan türetilir (`scrollPosition` bağlaması hızlı kaydırmalarda güncellenmeyebiliyor).
@@ -338,8 +344,18 @@ struct ImmersiveFocusView: View {
         }
     }
 
+    /// Sayfa; müzik widget'ı seçiliyse iki bölgeli düzenin içinde (içerik + müzik kontrolleri).
     @ViewBuilder
     private func pageView(_ item: StandByPage, context: ImmersivePageContext) -> some View {
+        if context.showsMusicWidget(on: item) {
+            ImmersiveMusicSplit(context: context) { content(item, context: $0) }
+        } else {
+            content(item, context: context.reservingChipRow(on: item))
+        }
+    }
+
+    @ViewBuilder
+    private func content(_ item: StandByPage, context: ImmersivePageContext) -> some View {
         switch item {
         case .stopwatch: ImmersiveStopwatchPage(context: context)
         case .clock: ImmersiveClockPage(context: context)
@@ -352,15 +368,6 @@ struct ImmersiveFocusView: View {
         }
     }
 
-    private func goToNowPlayingPage() {
-        let list = pages
-        if list.contains(.music) {
-            pageRaw = StandByPage.music.rawValue
-        } else if list.contains(.sound) {
-            pageRaw = StandByPage.sound.rawValue
-        }
-    }
-
     private func overlay(
         snapshot: ImmersiveSnapshot, insets: EdgeInsets, showsControls: Bool, isNight: Bool, showsChip: Bool
     ) -> some View {
@@ -368,14 +375,12 @@ struct ImmersiveFocusView: View {
         return VStack(spacing: 0) {
             HStack(alignment: .top, spacing: FokusSpacing.sm) {
                 if showsChip, let info = music.info {
-                    NowPlayingChip(info: info, action: goToNowPlayingPage)
-                        .frame(minHeight: fokusMinTapTarget)
-                        .transition(.opacity)
+                    nowPlayingChip(info: info)
                 }
                 Spacer(minLength: 0)
                 // Gizliyken görünüm ağacında YOK (opaklık 0 değil): erişilebilirlik ağacında ve
-                // dokunma testinde de görünmez/dokunulamaz olur.
-                if showsControls {
+                // dokunma testinde de görünmez/dokunulamaz olur. Müzik kartı açıkken üst düğmeler gizlenir.
+                if showsControls && !isChipExpanded {
                     ImmersiveCustomizeButton(action: enterEditing).transition(.opacity)
                     ImmersiveMinimizeButton(action: onMinimize).transition(.opacity)
                 }
@@ -413,6 +418,55 @@ struct ImmersiveFocusView: View {
         .padding(.trailing, max(insets.trailing, FokusSpacing.xl))
         .modifier(ImmersiveNightScheme(isNight: isNight))
         .animation(animation, value: showsControls)
+        .background { chipDismissLayer }
+        // Sayfa/düzenleme/müzik durumu değişince kart çipe döner; açıkken etkileşim yoksa kendiliğinden daralır.
+        .onChange(of: page) { _, _ in collapseChip() }
+        .onChange(of: isEditing) { _, _ in collapseChip() }
+        .onChange(of: showsChip) { _, shown in if !shown { collapseChip() } }
+        .task(id: [chipRevision, isChipExpanded ? 1 : 0]) {
+            guard isChipExpanded else { return }
+            try? await Task.sleep(for: Self.chipAutoCollapseDelay)
+            guard !Task.isCancelled else { return }
+            collapseChip()
+        }
+    }
+
+    // MARK: Müzik çipi (yerinde genişler)
+
+    /// Köşe çipi: dokununca AYRI EKRANA GİTMEDEN yerinde kontrol kartına genişler.
+    private func nowPlayingChip(info: NowPlayingInfo) -> some View {
+        let expansion = Binding(
+            get: { isChipExpanded },
+            set: { newValue in
+                isChipExpanded = newValue
+                chipRevision += 1
+                if newValue { controls.hide() }
+            })
+        let music = music
+        return NowPlayingExpandableChip(
+            info: info, errorMessage: music.errorMessage, isExpanded: expansion,
+            onPrevious: { chipRevision += 1; music.previous() },
+            onPlayPause: { chipRevision += 1; music.playPause() },
+            onNext: { chipRevision += 1; music.next() }
+        )
+        .zIndex(1)
+    }
+
+    /// Kart açıkken kartın dışına dokunmak kartı kapatır (sayfa kaydırması/uzun basma etkilenmez: katman yalnızca
+    /// kart açıkken vardır ve dokunuşu yutar).
+    @ViewBuilder private var chipDismissLayer: some View {
+        if isChipExpanded {
+            Color.black.opacity(0.001)
+                .ignoresSafeArea()
+                .contentShape(Rectangle())
+                .onTapGesture { collapseChip() }
+                .accessibilityHidden(true)
+        }
+    }
+
+    private func collapseChip() {
+        guard isChipExpanded else { return }
+        isChipExpanded = false
     }
 
     // MARK: Eylemler

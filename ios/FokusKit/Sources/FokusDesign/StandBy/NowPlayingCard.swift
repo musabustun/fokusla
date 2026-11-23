@@ -21,13 +21,17 @@ struct NowPlayingArtwork: View {
     let data: Data?
     let cornerRadius: CGFloat
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         ZStack {
             Color.clear.overlay { placeholder }
             if let image = Self.image(from: data) {
-                image.resizable().scaledToFill()
+                image.resizable().scaledToFill().transition(.opacity)
             }
         }
+        // Parça değişince kapak çapraz solar (hareket azaltmada animasyonsuz).
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.35), value: data)
         .aspectRatio(1, contentMode: .fit)
         .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         .accessibilityHidden(true)
@@ -63,6 +67,8 @@ public struct NowPlayingCard: View {
     private let onPlayPause: () -> Void
     private let onNext: () -> Void
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     /// Yatay düzene geçiş oranı.
     nonisolated static let wideAspectThreshold: CGFloat = 1.15
 
@@ -96,6 +102,7 @@ public struct NowPlayingCard: View {
             .padding(FokusSpacing.xl)
             .frame(width: proxy.size.width, height: proxy.size.height)
         }
+        .animation(reduceMotion ? nil : .smooth(duration: 0.35), value: info)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("immersive.nowPlaying")
     }
@@ -105,8 +112,12 @@ public struct NowPlayingCard: View {
         width > height * wideAspectThreshold
     }
 
+    /// Duraklatılınca kapak hafifçe küçülür (Apple Müzik gibi).
     private var artwork: some View {
         NowPlayingArtwork(data: info.artworkData, cornerRadius: FokusRadius.lg)
+            .scaleEffect(info.isPaused && !reduceMotion ? 0.92 : 1)
+            .shadow(color: .black.opacity(info.isPaused ? 0.1 : 0.3), radius: info.isPaused ? 6 : 20, y: 8)
+            .animation(reduceMotion ? nil : .spring(response: 0.5, dampingFraction: 0.7), value: info.isPaused)
     }
 
     private func details(alignment: HorizontalAlignment) -> some View {
@@ -117,11 +128,13 @@ public struct NowPlayingCard: View {
                 .foregroundStyle(.fkLabel)
                 .lineLimit(2)
                 .multilineTextAlignment(textAlignment)
+                .contentTransition(.opacity)
                 .accessibilityIdentifier("immersive.nowPlaying.title")
             Text(info.artist)
                 .font(.title3)
                 .foregroundStyle(.fkSecondaryLabel)
                 .lineLimit(1)
+                .contentTransition(.opacity)
                 .accessibilityIdentifier("immersive.nowPlaying.artist")
             transport.padding(.top, FokusSpacing.sm)
             if let errorMessage {
@@ -135,36 +148,9 @@ public struct NowPlayingCard: View {
     }
 
     private var transport: some View {
-        HStack(spacing: FokusSpacing.xl) {
-            transportButton("backward.fill", label: "Önceki parça", id: "previous", action: onPrevious)
-            Button(action: onPlayPause) {
-                Image(systemName: info.isPaused ? "play.fill" : "pause.fill")
-                    .font(.title)
-                    .foregroundStyle(.fkAccentContrast)
-                    .frame(width: 72, height: 72)
-                    .background(Circle().fill(.fkAccent))
-                    .contentShape(Circle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel(info.isPaused ? "Oynat" : "Duraklat")
-            .accessibilityIdentifier("immersive.nowPlaying.playPause")
-            transportButton("forward.fill", label: "Sonraki parça", id: "next", action: onNext)
-        }
-    }
-
-    private func transportButton(
-        _ symbol: String, label: String, id: String, action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.title2)
-                .foregroundStyle(.fkLabel)
-                .frame(width: fokusMinTapTarget + 8, height: fokusMinTapTarget + 8)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-        .accessibilityIdentifier("immersive.nowPlaying.\(id)")
+        NowPlayingTransport(
+            isPaused: info.isPaused, identifierPrefix: "immersive.nowPlaying", playDiameter: 72,
+            spacing: FokusSpacing.xl, onPrevious: onPrevious, onPlayPause: onPlayPause, onNext: onNext)
     }
 }
 

@@ -35,7 +35,7 @@ struct ImmersiveMusic {
     func next() { provider?.skipToNext() }
 }
 
-/// "Şimdi çalıyor" kartı (yalnızca müzik bağlıyken sayfa listesinde).
+/// "Şimdi çalıyor" sayfası (yalnızca müzik bağlıyken sayfa listesinde): büyük kapak + kontroller.
 struct ImmersiveMusicPage: View {
     let context: ImmersivePageContext
 

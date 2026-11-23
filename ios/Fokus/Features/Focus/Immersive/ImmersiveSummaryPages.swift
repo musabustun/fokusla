@@ -73,11 +73,12 @@ struct ImmersiveSoundPage: View {
     @Environment(\.focusSound) private var focusSound
     @Environment(\.musicRegistry) private var musicRegistry
 
-    /// Kontrol çubuğunun (sabitlenmemişken de) üstüne binen alt boşluk.
-    private static let controlsClearance: CGFloat = 120
     private static let maxContentWidth: CGFloat = 560
 
     var body: some View {
+        let padding = context.contentPadding
+        // Kaydırıcı sayfa göstergesinin (ve sabit kontrol çubuğunun) ÜSTÜNDE biter: içerik altına kayıp
+        // "Spotify'da aç" gibi düğmelerin üstüne binmez.
         ScrollView {
             VStack(alignment: .leading, spacing: FokusSpacing.xxl) {
                 if let focusSound { FocusSoundSection(sound: focusSound) }
@@ -90,10 +91,12 @@ struct ImmersiveSoundPage: View {
             }
             .frame(maxWidth: Self.maxContentWidth, alignment: .leading)
             .frame(maxWidth: .infinity)
-            .padding(.top, fokusMinTapTarget + FokusSpacing.md)
-            .padding(.bottom, Self.controlsClearance)
-            .padding(context.contentPadding)
+            .padding(.top, fokusMinTapTarget + FokusSpacing.md + padding.top)
+            .padding(.bottom, FokusSpacing.xl)
+            .padding(.leading, padding.leading)
+            .padding(.trailing, padding.trailing)
         }
+        .padding(.bottom, padding.bottom)
         .scrollIndicators(.hidden)
         .immersivePageContainer(.sound)
     }

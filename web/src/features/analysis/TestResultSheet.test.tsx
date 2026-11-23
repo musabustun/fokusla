@@ -54,6 +54,8 @@ async function seed(services: AppServices): Promise<Fixture> {
     exam: 'AYT',
     unit: 'test',
     totalUnits: null,
+    barcode: null,
+    libraryKey: null,
   } as const
   const book = await books.create({ ...bookBase, title: 'Limit Soru Bankası', archivedAt: null })
   const archivedBook = await books.create({

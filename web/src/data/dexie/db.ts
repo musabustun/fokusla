@@ -26,7 +26,7 @@ export type FokusTables = {
 export type FokusDatabase = Dexie & FokusTables
 
 /** Sürüm 1 şeması. İlk anahtar birincil anahtardır (`id`), kalanlar ikincil indekslerdir. */
-const SCHEMA_V1: Readonly<Record<EntityName, string>> = {
+const SCHEMA_V1: Readonly<Record<Exclude<EntityName, 'bookSections'>, string>> = {
   profiles: 'id',
   subjects: 'id, catalogKey, exam',
   topics: 'id, subjectId, catalogKey',
@@ -48,5 +48,17 @@ const SCHEMA_V1: Readonly<Record<EntityName, string>> = {
 export function createDatabase(name: string = DEFAULT_DB_NAME): FokusDatabase {
   const db = new Dexie(name) as FokusDatabase
   db.version(1).stores(SCHEMA_V1)
+  // Sürüm 2: kitaba barkod indeksi + bölüm tablosu. Eski kitaplarda yeni alanlar yoktu → null.
+  db.version(2)
+    .stores({ books: 'id, subjectId, barcode', bookSections: 'id, bookId' })
+    .upgrade((tx) =>
+      tx
+        .table('books')
+        .toCollection()
+        .modify((book: Record<string, unknown>) => {
+          book.barcode ??= null
+          book.libraryKey ??= null
+        }),
+    )
   return db
 }

@@ -46,6 +46,8 @@ export async function createBook(repos: BookRepos, input: BookInput): Promise<Bo
   return repos.books.create({
     ...clean,
     exam: await examOf(repos, clean.subjectId),
+    barcode: null,
+    libraryKey: null,
     archivedAt: null,
   })
 }

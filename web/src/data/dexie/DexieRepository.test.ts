@@ -16,6 +16,8 @@ const bookInput = (): NewEntity<Book> => ({
   exam: 'TYT',
   unit: 'test',
   totalUnits: 120,
+  barcode: null,
+  libraryKey: null,
   archivedAt: null,
 })
 

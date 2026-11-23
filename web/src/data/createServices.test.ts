@@ -25,6 +25,8 @@ describe('createServices', () => {
       exam: null,
       unit: 'page',
       totalUnits: null,
+      barcode: null,
+      libraryKey: null,
       archivedAt: null,
     })
 
@@ -36,7 +38,7 @@ describe('createServices', () => {
 
   it('works with no arguments (as main.tsx calls it)', () => {
     const services = createServices()
-    expect(Object.keys(services.repositories)).toHaveLength(12)
+    expect(Object.keys(services.repositories)).toHaveLength(13)
   })
   it('wires the mock social service to the mock auth service', async () => {
     const services = createServices({

@@ -31,6 +31,6 @@ struct FokusStoreTests {
 
     @Test @MainActor func inMemoryContainerIsUsable() throws {
         let container = try FokusStore.makeInMemoryContainer()
-        #expect(container.schema.entities.count == 12)
+        #expect(container.schema.entities.count == 13)
     }
 }

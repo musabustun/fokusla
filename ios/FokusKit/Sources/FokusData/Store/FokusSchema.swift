@@ -21,6 +21,7 @@ public enum FokusSchemaV1: VersionedSchema {
             TaskCompletion.self,
             Friend.self,
             Room.self,
+            BookSection.self,
         ]
     }
 }

@@ -29,6 +29,7 @@ describe('DexieLocalDataService', () => {
     expect(Object.keys(backup.entities).sort()).toEqual(
       [
         'bookProgress',
+        'bookSections',
         'books',
         'focusSegments',
         'focusSessions',
@@ -54,6 +55,8 @@ describe('DexieLocalDataService', () => {
       exam: null,
       unit: 'page',
       totalUnits: 100,
+      barcode: null,
+      libraryKey: null,
       archivedAt: null,
     })
     const removed = await repositories.books.create({
@@ -64,6 +67,8 @@ describe('DexieLocalDataService', () => {
       exam: null,
       unit: 'page',
       totalUnits: null,
+      barcode: null,
+      libraryKey: null,
       archivedAt: null,
     })
     await repositories.books.delete(removed.id)

@@ -5,6 +5,7 @@ options:
   bundleIdPrefix: com.musabustun
   deploymentTarget:
     iOS: "18.0"
+    watchOS: "11.0"
   developmentLanguage: tr
   createIntermediateGroups: true
   groupSortPosition: top
@@ -28,12 +29,15 @@ targets:
     sources:
       - path: Fokus
       - path: Shared
+      - path: WatchLink
     dependencies:
       - package: FokusKit
         products: [FokusDomain, FokusData, FokusDesign, FokusAudio]
       - package: SpotifyiOS
         product: SpotifyiOS
       - target: FokusWidgets
+        embed: true
+      - target: FokusWatch
         embed: true
     settings:
       base:
@@ -62,6 +66,50 @@ targets:
         SKIP_INSTALL: YES
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
+  # Apple Watch uygulaması (watchOS 11+, telefondan bağımsız çalışır; iOS uygulamasına gömülü companion).
+  # Bundle ID: com.musabustun.fokus.watchkitapp — yalnızca projede tanımlı; Apple Developer hesabında
+  # kaydedilmesi gerekir (bkz. ios/README.md). FokusAudio/Spotify saate GİRMEZ.
+  FokusWatch:
+    type: application
+    platform: watchOS
+    sources:
+      - path: FokusWatch
+      - path: WatchLink
+      - path: Shared
+        includes: [FocusActions.swift, FokusSystemStore.swift]
+    dependencies:
+      - package: FokusKit
+        products: [FokusDomain, FokusData, FokusDesign]
+      - target: FokusWatchWidgets
+        embed: true
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.musabustun.fokus.watchkitapp
+        INFOPLIST_FILE: FokusWatch/Info.plist
+        CODE_SIGN_ENTITLEMENTS: FokusWatch/FokusWatch.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        TARGETED_DEVICE_FAMILY: "4"
+        WATCHOS_DEPLOYMENT_TARGET: "11.0"
+  # Saat komplikasyonları / Smart Stack. Bundle ID: com.musabustun.fokus.watchkitapp.widgets
+  FokusWatchWidgets:
+    type: app-extension
+    platform: watchOS
+    sources:
+      - path: FokusWatchWidgets
+      - path: Shared
+        includes: [FokusSystemStore.swift]
+    dependencies:
+      - package: FokusKit
+        products: [FokusDomain, FokusData, FokusDesign]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.musabustun.fokus.watchkitapp.widgets
+        INFOPLIST_FILE: FokusWatchWidgets/Info.plist
+        CODE_SIGN_ENTITLEMENTS: FokusWatchWidgets/FokusWatchWidgets.entitlements
+        SKIP_INSTALL: YES
+        TARGETED_DEVICE_FAMILY: "4"
+        WATCHOS_DEPLOYMENT_TARGET: "11.0"
   FokusUITests:
     type: bundle.ui-testing
     platform: iOS
@@ -75,6 +123,12 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.musabustun.fokus.uitests
         TEST_TARGET_NAME: Fokus
 schemes:
+  FokusWatch:
+    build:
+      targets:
+        FokusWatch: all
+    run:
+      config: Debug
   Fokus:
     build:
       targets:

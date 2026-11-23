@@ -14,6 +14,8 @@ struct FokusApp: App {
         FokusFonts.registerAll()
         environment = AppEnvironment.make()
         ImmersiveUITestSupport.resetStoredPageIfNeeded()
+        // Apple Watch ile anlık odak durumu (WatchConnectivity); kalıcı veri yine CloudKit'ten akar.
+        FocusLinkCoordinator.shared.start()
     }
 
     var body: some Scene {

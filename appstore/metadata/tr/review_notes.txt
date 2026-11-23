@@ -4,7 +4,7 @@ Thank you for reviewing Fokus, a free, ad-free study tracker for Turkish student
 NO ACCOUNT NEEDED. Sign-in is optional. On first launch: tap "Başla" (Get started) -> choose any exam field (e.g. SAY) and tap "Devam" -> keep the default theme and tap "Devam" -> tap "Şimdilik atla" (Skip for now). The app is then fully usable without any login. "Sign in with Apple" is optional and only stores the account identifier on the device (used to detect a revoked Apple ID).
 
 How to try the main features:
-- Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; tap the screen for controls, "küçült" to minimize). Pause/resume/finish are available. On a device, a Live Activity / Dynamic Island appears while a session is running.
+- Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; swipe sideways to switch pages such as stopwatch, clock, goal ring and daily summary; tap the screen for controls, "küçült" to minimize; long-press the screen to open the customize panel for clock style, color and background). Pause/resume/finish are available. On a device, a Live Activity / Dynamic Island appears while a session is running.
 - Focus sounds are generated on the device (no downloads, no network).
 - Analysis tab: add a test result (correct / wrong / blank); net = correct - wrong/4.
 - Books and Tasks: add a book / a task; mark progress.

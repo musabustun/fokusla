@@ -8,14 +8,27 @@ import Foundation
 struct FocusActivityAttributes: ActivityAttributes {
     struct ContentState: Codable, Hashable {
         var phase: FocusActivityCalc.Phase
+        /// Ana sayaç: odakta son devamdan, molada mola başından beri.
         var timerStart: Date
+        /// Oturum toplam odak sayacı (molada `timerStart`'ta durur). Eski etkinlikte `nil`.
+        var sessionFocusStart: Date?
+        /// Bugünkü toplam odak sayacı ve günlük hedef (dk); hedef kapalıysa `nil`.
+        var dayFocusStart: Date?
+        var goalMinutes: Int?
 
         init(_ state: FocusActivityCalc.State) {
             phase = state.phase
             timerStart = state.timerStart
+            sessionFocusStart = state.sessionFocusStart
+            dayFocusStart = state.dayFocusStart
+            goalMinutes = state.goalMinutes
         }
 
-        var state: FocusActivityCalc.State { .init(phase: phase, timerStart: timerStart) }
+        var state: FocusActivityCalc.State {
+            .init(
+                phase: phase, timerStart: timerStart, sessionFocusStart: sessionFocusStart,
+                dayFocusStart: dayFocusStart, goalMinutes: goalMinutes)
+        }
     }
 
     /// Etkinliğin ait olduğu odak oturumu.

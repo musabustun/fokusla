@@ -166,11 +166,17 @@ eşitleme, `FokusIntents`, `FocusActions`, `FokusSystemStore`), `ios/FokusWidget
 Live Activity arayüzü), `ios/Fokus/App/` (`FocusSystemCoordinator`, `FokusShortcuts`, `FocusFilter`).
 Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`, `SystemDialogs`.
 
-- **Live Activity / Dynamic Island:** süre saklanmaz; `Text(timerInterval:)` ile sistem sayar. Odakta sayaç oturumun
-  toplam odak süresini (mola hariç), molada açık mola segmentini gösterir; mola/devam yeni segment açtığı için
-  etkinlik her geçişte güncellenir. `FocusSystemCoordinator` açık oturumu etkinlikle eşitler (uygulama öne gelince
-  ve veri kaydedilince); Mola ver/Devam et ve Bitir `LiveActivityIntent`'tir (uygulama sürecinde çalışır).
-  Push güncellemesi YOK; sistem 8 saat sonra etkinliği sonlandırır, uygulama açılınca yeniden başlatılır.
+- **Live Activity / Dynamic Island:** süre saklanmaz; `Text(timerInterval:)` ile sistem sayar. Ana sayaç odakta SON
+  DEVAMDAN (açık odak segmentinin başlangıcından; moladan dönüşte sıfırlanır), molada açık mola segmentinden beri
+  geçen süredir (`FocusCalc.currentSegmentElapsedMs`; Odak ekranı ve tam ekran sayaç aynı hesabı kullanır). İkincil
+  "Toplam odak" sayacı oturum toplamıdır ve molada `pauseTime` ile donar; günlük hedef açıksa kilit ekranında hedef
+  çubuğu (odakta sistem `ProgressView(timerInterval:)`, molada sabit) görünür. Sayaç aralıkları 12 saatle sınırlıdır.
+  Kilit ekranı kartı en fazla 160 pt yüksekliğindedir (içerik bütçesi
+  `LockScreenFocusView` belgesinde); Dynamic Island genişletilmiş görünümünde kameranın iki yanı yalnızca kısa
+  durum etiketi/toplam içindir, sayaç ve düğmeler `.bottom` bölgesindedir. `FocusSystemCoordinator` açık oturumu
+  etkinlikle eşitler (uygulama öne gelince ve veri kaydedilince); Mola ver/Devam et ve Bitir `LiveActivityIntent`'tir
+  (uygulama sürecinde çalışır). Push güncellemesi YOK; sistem 8 saat sonra etkinliği sonlandırır, uygulama açılınca
+  yeniden başlatılır.
 - **Widget'lar:** Bugünkü odak + hedef halkası (small/medium, kilit ekranı circular/rectangular/inline) ve bugünkü
   görevler (medium/large, daire düğmesi `ToggleTaskIntent` ile görevi widget'tan tamamlar). Veri App Group'taki
   SwiftData deposundan okunur; uygulama veri değişince `WidgetCenter.reloadAllTimelines()` çağırır. Odak sürerken

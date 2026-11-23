@@ -7,6 +7,8 @@ struct ImmersiveSnapshot: Equatable {
     var phase: FocusTimerPhase
     /// Açık oturumun toplam odak süresi (ms).
     var sessionFocusMs: Double
+    /// Açık odak segmentinin süresi (ms) = son devamdan (moladan dönüşten) beri; odakta değilse 0.
+    var currentFocusMs: Double
     /// Açık molanın süresi (ms); molada değilse 0.
     var breakMs: Double
     /// Bugünün toplam odak süresi (ms).
@@ -19,14 +21,14 @@ struct ImmersiveSnapshot: Equatable {
     var isLongBreak: Bool
 
     static let empty = ImmersiveSnapshot(
-        phase: .idle, sessionFocusMs: 0, breakMs: 0, todayTotalMs: 0, todaySessionCount: 0,
+        phase: .idle, sessionFocusMs: 0, currentFocusMs: 0, breakMs: 0, todayTotalMs: 0, todaySessionCount: 0,
         averageFocusMs: 0, averageBreakMs: 0, isLongBreak: false)
 
-    /// Büyük saatte gösterilen süre: molada mola süresi, odakta oturum odak süresi.
+    /// Büyük saatte gösterilen süre: molada mola süresi, odakta son devamdan beri geçen süre.
     var shownMs: Double {
         switch phase {
         case .break: breakMs
-        case .focus: sessionFocusMs
+        case .focus: currentFocusMs
         case .idle: 0
         }
     }
@@ -67,6 +69,7 @@ struct ImmersiveSnapshot: Equatable {
         return ImmersiveSnapshot(
             phase: phase,
             sessionFocusMs: FocusCalc.computeSessionStats(activeSegments, now: now).focusMs,
+            currentFocusMs: FocusCalc.openSegmentDurationMs(activeSegments, kind: .focus, now: now),
             breakMs: FocusCalc.openSegmentDurationMs(activeSegments, kind: .break, now: now),
             todayTotalMs: todayTotal,
             todaySessionCount: todayCount,

@@ -9,6 +9,8 @@ struct ImmersiveMusicSplit<Content: View>: View {
     let content: (ImmersivePageContext) -> Content
 
     private static var hairline: CGFloat { 1 }
+    /// Geniş (iPad dikey) ekranda alt şerit bu genişlikte ortalanır.
+    private static var maxStripWidth: CGFloat { 560 }
 
     var body: some View {
         GeometryReader { proxy in
@@ -25,7 +27,6 @@ struct ImmersiveMusicSplit<Content: View>: View {
         let columnWidth = StandByMusicSplit.sideColumnWidth(totalWidth: size.width)
         var left = context
         left.insets.trailing = 0
-        left.isCompactColumn = true
         return HStack(spacing: 0) {
             content(left)
                 .frame(width: size.width - columnWidth, height: size.height)
@@ -51,7 +52,6 @@ struct ImmersiveMusicSplit<Content: View>: View {
         var top = context
         top.insets.bottom = 0
         top.bottomReserve = FokusSpacing.lg
-        top.isCompactColumn = true
         return VStack(spacing: 0) {
             content(top)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -59,6 +59,8 @@ struct ImmersiveMusicSplit<Content: View>: View {
                 .padding(.horizontal, max(context.insets.leading, FokusSpacing.xl))
                 .accessibilityHidden(true)
             musicPanel(style: .row)
+                .frame(maxWidth: Self.maxStripWidth, alignment: .leading)
+                .frame(maxWidth: .infinity)
                 .padding(.leading, max(context.insets.leading, FokusSpacing.xl))
                 .padding(.trailing, max(context.insets.trailing, FokusSpacing.xl))
                 .padding(.top, FokusSpacing.md)

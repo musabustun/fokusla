@@ -189,7 +189,7 @@ final class ImmersiveStandByUITests: FocusUITestCase {
         } else {
             XCUIDevice.shared.orientation = .landscapeRight
         }
-        Thread.sleep(forTimeInterval: 2)
+        Thread.sleep(forTimeInterval: 6)
         waitFor("immersive.musicWidget")
         attachScreenshot("music-widget-clock-landscape-light")
 
@@ -265,7 +265,11 @@ final class ImmersiveStandByUITests: FocusUITestCase {
         waitFor("immersive.page.sound")
         let connect = element("music.spotify.connect")
         XCTAssertTrue(connect.waitForExistence(timeout: 5))
-        for _ in 0..<3 { element("immersive.root").swipeUp() }
+        let root = element("immersive.root")
+        for _ in 0..<3 {
+            root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8))
+                .press(forDuration: 0.05, thenDragTo: root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2)))
+        }
         Thread.sleep(forTimeInterval: 0.5)
         attachScreenshot("sound-page-scrolled-portrait")
         XCTAssertTrue(connect.exists)

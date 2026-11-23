@@ -193,6 +193,10 @@ struct ImmersiveFocusView: View {
 
     private func enterEditing() {
         controls.hide()
+        // Kaydırıcı sökülürken ofset 0'a düşer; izleme açık kalırsa bu "ilk sayfa" gibi okunup saklı sayfayı
+        // ezerdi. Dönüşte `pager.onAppear` izlemeyi yeniden açar.
+        tracksScroll = false
+        reanchorTask?.cancel()
         isEditing = true
     }
 

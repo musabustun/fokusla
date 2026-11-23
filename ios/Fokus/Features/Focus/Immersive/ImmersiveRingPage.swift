@@ -16,7 +16,7 @@ struct ImmersiveRingPage: View {
         let goal = DailyGoalCalc.progress(focusMs: snap.todayTotalMs, goalMinutes: context.dailyGoalMinutes)
         GeometryReader { proxy in
             let size = proxy.size
-            let isWide = !context.isCompactColumn && size.width > size.height * 1.15
+            let isWide = size.width > size.height * 1.15
             let diameter = isWide ? min(size.height, size.width * 0.45) : min(size.width, size.height * 0.62)
             Group {
                 if isWide {

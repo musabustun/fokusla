@@ -13,7 +13,7 @@ struct ImmersiveClockPage: View {
     var body: some View {
         GeometryReader { proxy in
             let size = proxy.size
-            let isWide = !context.isCompactColumn && size.width > size.height * 1.15
+            let isWide = size.width > size.height * 1.15
             let side = isWide ? min(size.height, size.width * 0.48) : min(size.width, size.height * 0.52)
             Group {
                 if isWide {

@@ -31,9 +31,6 @@ struct ImmersivePageContext {
     var music = ImmersiveMusic.none
     /// Tam ekran tercihleri (müzik widget'ı ve köşe çipi hangi sayfada çıkar?).
     var preferences = StandByPreferences.default
-    /// Müzik widget'ının yan/alt bölgesi içerik alanını daralttı: sayfalar yatay "geniş" düzen yerine kompakt
-    /// (dikey yığın) düzeni seçer.
-    var isCompactColumn = false
     /// Köşe çipi satırı için üstte ayrılan ek yükseklik (çip sayfa içeriğinin üstüne binmesin).
     var chipTopReserve: CGFloat = 0
 

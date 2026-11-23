@@ -44,11 +44,30 @@ struct StandByEditorPagesTab: View {
                 }
             }
             Spacer(minLength: FokusSpacing.sm)
+            if isMusicAvailable, isEnabled, page.supportsMusicWidget { musicWidgetButton(page) }
             toggleButton(page, isEnabled: isEnabled)
         }
         .frame(minHeight: fokusMinTapTarget)
         .accessibilityAction(named: "Yukarı taşı") { preferences = preferences.moving(page, by: -1) }
         .accessibilityAction(named: "Aşağı taşı") { preferences = preferences.moving(page, by: 1) }
+    }
+
+    /// Sayfaya müzik widget'ı (yan/alt kontrol bölgesi) ekler/kaldırır.
+    private func musicWidgetButton(_ page: StandByPage) -> some View {
+        let isOn = preferences.hasMusicWidget(page)
+        return Button {
+            preferences = preferences.togglingMusicWidget(page)
+        } label: {
+            Image(systemName: isOn ? "music.note.square.stack.fill" : "music.note.square.stack")
+                .font(.title3)
+                .foregroundStyle(isOn ? .fkAccent : .fkTertiaryLabel)
+                .frame(width: fokusMinTapTarget, height: fokusMinTapTarget)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(page.title) sayfasında müzik widget'ı")
+        .accessibilityValue(isOn ? "Açık" : "Kapalı")
+        .accessibilityIdentifier("immersive.editor.musicWidget.\(page.rawValue)")
     }
 
     private func toggleButton(_ page: StandByPage, isEnabled: Bool) -> some View {

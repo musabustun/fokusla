@@ -1,7 +1,7 @@
 import XCTest
 
 /// StandBy tarzı tam ekran: düzenleme modu (uzun basma / "Özelleştir"), kalıcı tercihler, sayfa
-/// açma-kapama, müzik sayfası + köşe çipi (sahte Spotify) ve görsel kontrol ekran görüntüleri.
+/// açma-kapama, müzik sayfası + yerinde açılan köşe çipi + müzik widget'ı (sahte Spotify) ve görsel kontrol ekran görüntüleri.
 @MainActor
 final class ImmersiveStandByUITests: FocusUITestCase {
     private var pageIndicator: XCUIElement { element("immersive.pageIndicator") }
@@ -88,14 +88,56 @@ final class ImmersiveStandByUITests: FocusUITestCase {
 
     // MARK: Müzik
 
-    func testMusicPageAndChipWhenSpotifyConnected() {
+    /// Çipe dokunmak AYRI müzik sayfasına GİTMEZ: kart yerinde açılır, kontroller çalışır, başlığa dokununca daralır.
+    func testChipExpandsInPlaceWithoutLeavingPage() {
         launch(seed: "running", immersivePage: "stopwatch", extraArguments: ["-FokusUITestSpotify", "connected"])
         XCTAssertTrue(waitForIndicator(suffix: "1 / 7"), "Gösterge: \(indicatorValue)")
-        // Köşe çipi kronometre sayfasında görünür; dokununca müzik sayfasına gider.
+        waitFor("immersive.nowPlayingChip")
+        attachScreenshot("music-chip-collapsed-portrait")
+        element("immersive.nowPlayingChip").tap()
+        waitFor("immersive.nowPlayingChip.expanded")
+        // Sayfa değişmedi; müzik sayfasına gidilmedi.
+        XCTAssertTrue(element("immersive.page.stopwatch").exists, "Kronometre sayfası kaybolmamalı")
+        XCTAssertFalse(element("immersive.page.music").exists, "Çip müzik sayfasına götürmemeli")
+        XCTAssertTrue(indicatorValue.hasSuffix("1 / 7"), "Gösterge: \(indicatorValue)")
+        Thread.sleep(forTimeInterval: 0.7)
+        attachScreenshot("music-chip-expanded-portrait")
+
+        let playPause = element("immersive.nowPlayingChip.playPause")
+        XCTAssertTrue(playPause.waitForExistence(timeout: 3))
+        XCTAssertEqual(playPause.label, "Duraklat")
+        XCTAssertGreaterThanOrEqual(playPause.frame.width, 44)
+        playPause.tap()
+        XCTAssertTrue(waitLabel(of: "immersive.nowPlayingChip.playPause", equals: "Oynat"))
+        element("immersive.nowPlayingChip.playPause").tap()
+        XCTAssertTrue(waitLabel(of: "immersive.nowPlayingChip.playPause", equals: "Duraklat"))
+        XCTAssertTrue(element("immersive.nowPlayingChip.previous").exists)
+        XCTAssertTrue(element("immersive.nowPlayingChip.next").exists)
+
+        // Başlığa dokununca çipe daralır.
+        element("immersive.nowPlayingChip.collapse").tap()
+        waitFor("immersive.nowPlayingChip")
+        XCTAssertTrue(waitForDisappearance(of: element("immersive.nowPlayingChip.expanded")))
+        XCTAssertTrue(element("immersive.page.stopwatch").exists)
+    }
+
+    /// Kart açıkken dışarıya dokunmak da kartı kapatır; sayfa yine aynı kalır.
+    func testChipCollapsesOnOutsideTap() {
+        launch(seed: "running", immersivePage: "stopwatch", extraArguments: ["-FokusUITestSpotify", "connected"])
         waitFor("immersive.nowPlayingChip")
         element("immersive.nowPlayingChip").tap()
+        waitFor("immersive.nowPlayingChip.expanded")
+        element("immersive.root").coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.75)).tap()
+        XCTAssertTrue(waitForDisappearance(of: element("immersive.nowPlayingChip.expanded")))
+        waitFor("immersive.nowPlayingChip")
+        XCTAssertTrue(element("immersive.page.stopwatch").exists)
+    }
+
+    /// Ayrı müzik sayfası StandBy sayfası olarak kalır: büyük kapak + kontroller.
+    func testDedicatedMusicPageStillWorks() {
+        launch(seed: "running", immersivePage: "music", extraArguments: ["-FokusUITestSpotify", "connected"])
         waitFor("immersive.page.music")
-        XCTAssertTrue(waitForDisappearance(of: element("immersive.nowPlayingChip")), "Çip müzik sayfasında gizli olmalı")
+        XCTAssertFalse(element("immersive.nowPlayingChip").exists, "Çip müzik sayfasında gizli olmalı")
         XCTAssertEqual(element("immersive.nowPlaying.title").label, "Odak Müziği — Sakin Piyano")
         XCTAssertEqual(element("immersive.nowPlaying.artist").label, "Fokus Sessions")
         attachScreenshot("standby-music-portrait-dark")
@@ -108,11 +150,131 @@ final class ImmersiveStandByUITests: FocusUITestCase {
         XCTAssertTrue(waitLabel(of: "immersive.nowPlaying.playPause", equals: "Duraklat"))
     }
 
+    // MARK: Müzik widget'ı (iki bölgeli düzen)
+
+    /// Saat sayfasında (varsayılan widget) müzik içeriğin üstüne binmez: dikeyde widget saatin ALTINDA, kontroller
+    /// çalışır ve çip çıkmaz.
+    func testClockPageMusicWidgetPortraitDoesNotOverlapClock() {
+        launch(seed: "running", immersivePage: "clock", extraArguments: ["-FokusUITestSpotify", "connected"])
+        waitFor("immersive.page.clock")
+        waitFor("immersive.musicWidget")
+        XCTAssertFalse(element("immersive.nowPlayingChip").exists, "Widget varken köşe çipi çıkmamalı")
+        Thread.sleep(forTimeInterval: 0.8)
+        attachScreenshot("music-widget-clock-portrait-dark")
+
+        let clock = element("immersive.clock").frame
+        let widget = element("immersive.musicWidget").frame
+        XCTAssertFalse(clock.intersects(widget), "Odak sayacı müzik widget'ıyla çakışıyor: \(clock) / \(widget)")
+        XCTAssertLessThanOrEqual(clock.maxY, widget.minY + 1, "Dikeyde widget altta olmalı")
+        let screen = app.windows.firstMatch.frame
+        XCTAssertLessThanOrEqual(widget.maxY, screen.maxY - 8, "Widget güvenli alanın içinde kalmalı")
+
+        let playPause = element("immersive.musicWidget.playPause")
+        XCTAssertGreaterThanOrEqual(playPause.frame.width, 44)
+        XCTAssertGreaterThanOrEqual(playPause.frame.height, 44)
+        XCTAssertEqual(playPause.label, "Duraklat")
+        playPause.tap()
+        XCTAssertTrue(waitLabel(of: "immersive.musicWidget.playPause", equals: "Oynat"))
+        element("immersive.musicWidget.playPause").tap()
+        XCTAssertTrue(waitLabel(of: "immersive.musicWidget.playPause", equals: "Duraklat"))
+    }
+
+    /// Yatay iPhone / iPad: sol = saat + odak süresi, sağ = müzik kontrolleri; çakışma yok, sütunlar yan yana.
+    func testClockPageMusicWidgetLandscapeTwoColumns() {
+        defer { XCUIDevice.shared.orientation = .portrait }
+        launch(seed: "running", theme: "light", immersivePage: "clock", extraArguments: ["-FokusUITestSpotify", "connected"])
+        waitFor("immersive.musicWidget")
+        if UIDevice.current.userInterfaceIdiom == .phone {
+            XCUIDevice.shared.orientation = .landscapeLeft
+        } else {
+            XCUIDevice.shared.orientation = .landscapeRight
+        }
+        Thread.sleep(forTimeInterval: 6)
+        waitFor("immersive.musicWidget")
+        attachScreenshot("music-widget-clock-landscape-light")
+
+        let clock = element("immersive.clock").frame
+        let widget = element("immersive.musicWidget").frame
+        XCTAssertFalse(clock.intersects(widget), "Çakışma: \(clock) / \(widget)")
+        XCTAssertLessThanOrEqual(clock.maxX, widget.minX + 1, "Yatayda widget sağ sütunda olmalı")
+        XCTAssertTrue(element("immersive.secondary").exists)
+        XCTAssertFalse(element("immersive.secondary").frame.intersects(widget))
+        for id in ["previous", "playPause", "next"] {
+            let button = element("immersive.musicWidget.\(id)").frame
+            XCTAssertGreaterThanOrEqual(button.width, 44, id)
+            XCTAssertGreaterThanOrEqual(button.height, 44, id)
+        }
+        element("immersive.musicWidget.playPause").tap()
+        XCTAssertTrue(waitLabel(of: "immersive.musicWidget.playPause", equals: "Oynat"))
+    }
+
+    /// Düzenleyiciden dönünce sayfa korunur (kronometreye atlamaz).
+    func testPageSurvivesEditorRoundTrip() {
+        launch(seed: "running", immersivePage: "ring")
+        waitFor("immersive.page.ring")
+        openEditorByLongPress()
+        tap("immersive.editor.done")
+        XCTAssertTrue(waitForDisappearance(of: element("immersive.editor")))
+        Thread.sleep(forTimeInterval: 2)
+        waitFor("immersive.page.ring")
+    }
+
+    /// Düzenleyiciden sayfa başına widget: halka sayfasında aç → iki bölge; saatte kapat → widget gider, çip gelir.
+    func testPerPageMusicWidgetToggleInEditor() {
+        launch(seed: "running", immersivePage: "ring", extraArguments: ["-FokusUITestSpotify", "connected"])
+        waitFor("immersive.page.ring")
+        XCTAssertFalse(element("immersive.musicWidget").exists)
+        waitFor("immersive.nowPlayingChip")
+        openEditorByLongPress()
+        tap("immersive.editor.tab.pages")
+        tap("immersive.editor.musicWidget.ring")
+        XCTAssertEqual(element("immersive.editor.musicWidget.ring").value as? String, "Açık")
+        tap("immersive.editor.musicWidget.clock")
+        XCTAssertEqual(element("immersive.editor.musicWidget.clock").value as? String, "Kapalı")
+        tap("immersive.editor.done")
+        XCTAssertTrue(waitForDisappearance(of: element("immersive.editor")))
+        waitFor("immersive.musicWidget")
+        XCTAssertFalse(element("immersive.nowPlayingChip").exists, "Halka sayfasında widget varken çip çıkmamalı")
+        attachScreenshot("music-widget-ring-portrait-dark")
+        XCTAssertFalse(element("immersive.todayTotal").frame.intersects(element("immersive.musicWidget").frame))
+        // Sonraki testlere sızmasın.
+        openEditorByLongPress()
+        tap("immersive.editor.reset")
+        tap("immersive.editor.done")
+    }
+
     func testNoMusicPageOrChipWhenSpotifyDisconnected() {
         launch(seed: "running", immersivePage: "stopwatch", extraArguments: ["-FokusUITestSpotify", "disconnected"])
         XCTAssertTrue(waitForIndicator(suffix: "1 / 6"), "Gösterge: \(indicatorValue)")
         XCTAssertFalse(element("immersive.nowPlayingChip").exists)
         XCTAssertFalse(element("immersive.page.music").exists)
+    }
+
+    /// Spotify bağlı değilken saat sayfasında widget bölgesi YOK (mevcut tek bölgeli düzen korunur).
+    func testNoMusicWidgetOnClockPageWhenSpotifyDisconnected() {
+        launch(seed: "running", immersivePage: "clock", extraArguments: ["-FokusUITestSpotify", "disconnected"])
+        waitFor("immersive.page.clock")
+        XCTAssertFalse(element("immersive.musicWidget").exists)
+        XCTAssertFalse(element("immersive.nowPlayingChip").exists)
+        waitFor("immersive.clock")
+    }
+
+    /// Ses sayfasında içerik sayfa göstergesinin altına kaymaz: en alta kaydırınca "Bağlan" göstergenin üstünde.
+    func testSoundPageContentStaysAbovePageIndicator() {
+        launch(seed: "running", immersivePage: "sound", extraArguments: ["-FokusUITestSpotify", "disconnected"])
+        waitFor("immersive.page.sound")
+        let connect = element("music.spotify.connect")
+        XCTAssertTrue(connect.waitForExistence(timeout: 5))
+        let root = element("immersive.root")
+        for _ in 0..<3 {
+            root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8))
+                .press(forDuration: 0.05, thenDragTo: root.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.2)))
+        }
+        Thread.sleep(forTimeInterval: 0.5)
+        attachScreenshot("sound-page-scrolled-portrait")
+        XCTAssertTrue(connect.exists)
+        XCTAssertLessThanOrEqual(
+            connect.frame.maxY, pageIndicator.frame.minY, "Bağlan düğmesi sayfa göstergesiyle çakışıyor")
     }
 
     // MARK: Ekran görüntüleri
@@ -168,6 +330,13 @@ final class ImmersiveStandByUITests: FocusUITestCase {
         waitFor("immersive.nowPlayingChip")
         attachScreenshot("standby-chip-stopwatch-light")
         element("immersive.nowPlayingChip").tap()
+        waitFor("immersive.nowPlayingChip.expanded")
+        Thread.sleep(forTimeInterval: 0.7)
+        attachScreenshot("standby-chip-expanded-light")
+        element("immersive.nowPlayingChip.collapse").tap()
+        XCTAssertTrue(waitForDisappearance(of: element("immersive.nowPlayingChip.expanded")))
+        // Ayrı müzik sayfası: kaydırarak.
+        for _ in 0..<3 { swipePage(left: true) }
         waitFor("immersive.page.music")
         Thread.sleep(forTimeInterval: 0.6)
         attachScreenshot("standby-music-portrait-light")

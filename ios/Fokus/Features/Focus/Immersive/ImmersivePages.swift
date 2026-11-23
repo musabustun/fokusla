@@ -29,10 +29,31 @@ struct ImmersivePageContext {
     /// Günlük odak hedefi (dakika); `nil` = kapalı.
     var dailyGoalMinutes: Int?
     var music = ImmersiveMusic.none
+    /// Tam ekran tercihleri (müzik widget'ı ve köşe çipi hangi sayfada çıkar?).
+    var preferences = StandByPreferences.default
+    /// Köşe çipi satırı için üstte ayrılan ek yükseklik (çip sayfa içeriğinin üstüne binmesin).
+    var chipTopReserve: CGFloat = 0
+
+    /// Bu sayfada müzik widget'ı (iki bölgeli düzen) çizilsin mi?
+    func showsMusicWidget(on page: StandByPage) -> Bool {
+        preferences.showsMusicWidget(on: page, isMusicAvailable: music.isAvailable)
+    }
+
+    /// Bu sayfa köşe çipine yer ayırmalı mı? (Kronometre başlığı kendi boşluğunu zaten ayırır.)
+    func reservesChipRow(on page: StandByPage) -> Bool {
+        page != .stopwatch && preferences.showsChip(on: page, isMusicAvailable: music.isAvailable)
+    }
+
+    /// Köşe çipi bu sayfada görünüyorsa üstte çip satırı kadar yer ayrılmış kopya.
+    func reservingChipRow(on page: StandByPage) -> ImmersivePageContext {
+        var copy = self
+        copy.chipTopReserve = reservesChipRow(on: page) ? fokusMinTapTarget + FokusSpacing.sm : 0
+        return copy
+    }
 
     var contentPadding: EdgeInsets {
         EdgeInsets(
-            top: max(insets.top, FokusSpacing.lg),
+            top: max(insets.top, FokusSpacing.lg) + chipTopReserve,
             leading: max(insets.leading, FokusSpacing.xl),
             bottom: insets.bottom + bottomReserve,
             trailing: max(insets.trailing, FokusSpacing.xl))

@@ -56,7 +56,7 @@ public struct NowPlayingChip: View {
 }
 
 /// Üç çubuklu küçük eşitleyici; `isAnimating == false` iken durağan.
-private struct EqualizerBars: View {
+struct EqualizerBars: View {
     let isAnimating: Bool
 
     private static let phases: [Double] = [0, 1.3, 2.6]

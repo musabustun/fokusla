@@ -129,6 +129,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.musabustun.fokus.messages
+        ASSETCATALOG_COMPILER_APPICON_NAME: "iMessage App Icon"
         INFOPLIST_FILE: FokusMessages/Info.plist
         CODE_SIGN_ENTITLEMENTS: FokusMessages/FokusMessages.entitlements
         SKIP_INSTALL: YES

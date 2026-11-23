@@ -208,7 +208,40 @@ Gerçek cihaz için takım `395SFU52ZD` hesabında bir kez:
 2. **iCloud kapsayıcısı** `iCloud.com.musabustun.fokus` oluştur ve App ID'ye bağla.
 3. Xcode'da otomatik imzalama (ya da bir kez `xcodebuild -allowProvisioningUpdates`) ile geliştirme
    profili üretilir; cihaz takıma kayıtlı olmalı.
-4. CloudKit Development şemasını başlat: DEBUG derlemesini iCloud'a girişli bir cihazda çalıştırıp
-   veri yaz (ya da `NSPersistentCloudKitContainer.initializeCloudKitSchema()` ile tek seferlik bir
-   yardımcı); CloudKit Console'da kayıt tiplerini (`CD_UserProfile` …) doğrula; yayından önce Production'a deploy et.
+4. CloudKit Development şemasını başlat ve Production'a deploy et: aşağıdaki
+   "CloudKit şemasını Production'a hazırlama" bölümü.
 5. TestFlight/App Store öncesi `aps-environment` → `production` (Release imzası bunu otomatik yapar).
+
+## CloudKit şemasını Production'a hazırlama
+
+SwiftData bir kayıt tipini (`CD_<Model>`) yalnızca o tipten veri yazıldıkça Development ortamında oluşturur;
+bu yüzden Console'da yalnızca kullanılmış tipler görünür ve olduğu gibi Production'a deploy edilirse şema
+eksik kalır. DEBUG derlemesi, `FokusSchemaV1.models` içindeki TÜM modellerin kayıt tiplerini ve alanlarını
+oluşturan tek seferlik bir yol içerir (`FokusCloudKitSchemaInitializer`, Apple'ın
+`NSPersistentCloudKitContainer.initializeCloudKitSchema` yolu). Release derlemesinde bu kod yoktur.
+
+1. **Debug derlemeyi cihaza kur** (iCloud'a girişli gerçek cihaz; simülatörde CloudKit yok):
+   `xcodebuild build -project Fokus.xcodeproj -scheme Fokus -configuration Debug -destination 'id=<UDID>' -allowProvisioningUpdates`
+   ve `xcrun devicectl device install app --device <UDID> <Fokus.app yolu>` (ya da Xcode'dan Run).
+2. **Argümanla çalıştır:**
+
+   ```bash
+   xcrun devicectl device process launch --device <UDID> com.musabustun.fokus -- -FokusInitCloudKitSchema
+   ```
+
+   Uygulama normal açılır; şema başlatma arka planda sürer (ağ; ~10–60 sn). Sonucu `Logger` yazar
+   (subsystem `com.musabustun.fokus`, category `cloudkit-schema`): başarıda
+   `CloudKit şeması başlatıldı: 12 kayıt tipi — …`, hatada `CloudKit şeması başlatılamadı: …`. Cihaz
+   günlüğü için Xcode → Devices and Simulators → Open Console, ya da `--console` bayrağını ekle.
+   Gerçek `Fokus.store`'a dokunmaz: geçici ayrı bir depo kullanır ve siler. Development'a örnek kayıtlar
+   yazılıp silinir (normal).
+3. **Doğrula:** [CloudKit Console](https://icloud.developer.apple.com/dashboard) → `iCloud.com.musabustun.fokus`
+   → **Development** → Schema → Record Types: 12 tipin hepsi (`CD_UserProfile`, `CD_Subject`, `CD_Topic`, `CD_Book`,
+   `CD_BookProgress`, `CD_TestResult`, `CD_FocusSession`, `CD_FocusSegment`, `CD_StudyTask`, `CD_TaskCompletion`,
+   `CD_Friend`, `CD_Room`) ve alanları görünmeli.
+4. **Production'a gönder:** Console'da **Deploy Schema Changes…** → onayla. Sonra Production ortamında tipleri
+   yeniden kontrol et.
+
+**Şema yalnızca büyür:** Production'a deploy edilen kayıt tipi/alan silinemez ve yeniden adlandırılamaz.
+Yeni alan/model eklediğinde (opsiyonel/varsayılanlı) adımları tekrarla ve yeniden deploy et; deploy etmeden
+önce Development şemasını gözden geçir. Argüman tekrar çalıştırılırsa zararsızdır (idempotent).

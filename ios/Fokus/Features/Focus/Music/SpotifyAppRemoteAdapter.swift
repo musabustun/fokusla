@@ -6,7 +6,8 @@ import UIKit
 
 /// `SpotifyRemoteControlling`'in gerçek uygulaması: Spotify iOS SDK'sı (`SPTAppRemote`). SDK yalnızca Spotify
 /// uygulamasını uzaktan yönetir (ses Spotify'dan çalar). Yetki yalnızca `app-remote-control`; kullanıcı
-/// adı/fotoğrafı/e-postası istenmez ve Web API kullanılmaz. Token saklama `SpotifyMusicProvider`'ın işidir.
+/// adı/fotoğrafı/e-postası istenmez ve Web API kullanılmaz. Token saklama ve yenileme `SpotifyMusicProvider`'ın
+/// işidir. Buradaki `authorize` yalnızca PKCE olmadan (ya da Spotify'ı uyandırmak için) kullanılır.
 @MainActor
 final class SpotifyAppRemoteAdapter: SpotifyRemoteControlling {
     var onEvent: (@MainActor (SpotifyRemoteEvent) -> Void)?
@@ -103,15 +104,25 @@ final class SpotifyAppRemoteAdapter: SpotifyRemoteControlling {
 
 extension SpotifyMusicProvider {
     /// `Info.plist`'teki `SpotifyClientID` (xcconfig `SPOTIFY_CLIENT_ID`); boşsa entegrasyon gizlenir ve SDK
-    /// nesnesi kurulmaz. Token Keychain'de saklanır.
+    /// nesnesi kurulmaz. Anahtarlar Keychain'de saklanır; erişim anahtarı yalnızca `accounts.spotify.com` ile
+    /// (PKCE, Client Secret YOK) sessizce yenilenir.
     @MainActor
     static func make(bundle: Bundle = .main) -> SpotifyMusicProvider {
         let clientID = (bundle.object(forInfoDictionaryKey: "SpotifyClientID") as? String ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !clientID.isEmpty else {
+            return SpotifyMusicProvider(
+                remote: nil, tokenStore: KeychainSpotifyTokenStore(),
+                canOpenURL: { UIApplication.shared.canOpenURL($0) })
+        }
         return SpotifyMusicProvider(
-            remote: clientID.isEmpty ? nil : SpotifyAppRemoteAdapter(clientID: clientID),
+            remote: SpotifyAppRemoteAdapter(clientID: clientID),
             tokenStore: KeychainSpotifyTokenStore(),
-            canOpenURL: { UIApplication.shared.canOpenURL($0) })
+            canOpenURL: { UIApplication.shared.canOpenURL($0) },
+            pkce: SpotifyPKCEAuthorization(
+                clientID: clientID,
+                tokenService: URLSessionSpotifyTokenService(clientID: clientID, redirectURL: redirectURL),
+                webAuthenticator: SpotifyWebAuthSession()))
     }
 }
 

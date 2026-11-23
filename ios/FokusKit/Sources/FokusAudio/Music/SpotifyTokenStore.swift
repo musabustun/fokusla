@@ -1,8 +1,9 @@
 import Foundation
 import Security
 
-/// Spotify App Remote erişim token'ı ve sona erme zamanı. Token yalnızca cihazda, Keychain'de saklanır
-/// (`UserDefaults` DEĞİL); sunucuya ya da başka bir yere gönderilmez. Saf değer tipi; birim testli.
+/// Spotify erişim token'ı, sona erme zamanı ve (PKCE ile alındıysa) yenileme anahtarı. Yalnızca cihazda,
+/// Keychain'de saklanır (`UserDefaults` DEĞİL); yalnızca Spotify'ın kendi hesap sunucusuna
+/// (`accounts.spotify.com`) yenileme için gönderilir. Saf değer tipi; birim testli.
 public struct SpotifyTokenRecord: Codable, Equatable, Sendable {
     /// Spotify erişim token'ları yaklaşık 1 saat geçerlidir; App Remote dönüşü süreyi bildirmez.
     public static let defaultLifetime: TimeInterval = 3600
@@ -11,11 +12,28 @@ public struct SpotifyTokenRecord: Codable, Equatable, Sendable {
 
     public var accessToken: String
     public var expiresAt: Date
+    /// PKCE akışının yenileme anahtarı; 1.0'daki (yalnızca App Remote) kayıtlarda yoktur. Varsa erişim anahtarı
+    /// süresi dolunca kullanıcıya hiçbir şey göstermeden yenilenir.
+    public var refreshToken: String?
 
-    public init(accessToken: String, issuedAt: Date, lifetime: TimeInterval = defaultLifetime) {
+    public init(
+        accessToken: String, issuedAt: Date, lifetime: TimeInterval = defaultLifetime, refreshToken: String? = nil
+    ) {
         self.accessToken = accessToken
-        self.expiresAt = issuedAt.addingTimeInterval(lifetime)
+        // Ömür, saat geri alınması denetimiyle (`state`) tutarlı kalsın diye `defaultLifetime` ile sınırlanır.
+        self.expiresAt = issuedAt.addingTimeInterval(min(max(lifetime, 0), Self.defaultLifetime))
+        self.refreshToken = refreshToken.flatMap { $0.isEmpty ? nil : $0 }
     }
+
+    /// Spotify yanıtından kayıt. Yenilemede yeni yenileme anahtarı gelmediyse eskisi korunur.
+    public init(grant: SpotifyTokenGrant, issuedAt: Date, previousRefreshToken: String?) {
+        self.init(
+            accessToken: grant.accessToken, issuedAt: issuedAt, lifetime: grant.expiresIn,
+            refreshToken: grant.refreshToken ?? previousRefreshToken)
+    }
+
+    /// Yenileme anahtarı var mı (kullanıcıya sormadan yeni erişim anahtarı alınabilir mi)?
+    public var canRefresh: Bool { refreshToken != nil }
 
     /// Boş olmayan, süresi dolmamış ve saat geri alınmasına karşı makul (en fazla `defaultLifetime` ileride) mi?
     public func isValid(at now: Date) -> Bool {

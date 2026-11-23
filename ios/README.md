@@ -150,24 +150,36 @@ hesabında hiçbir şey otomatik oluşturulmaz; hepsini sen yaparsın):
    kendi "extended quota" incelemesine bağlıdır.
 5. Dashboard'daki **Client ID**'yi git dışı `ios/Config/Local.xcconfig` dosyasına yaz
    (`SPOTIFY_CLIENT_ID = <client id>`; `Fokus.xcconfig` bu dosyayı varsa `#include?` ile okur, `.gitignore`'dadır).
-   Public repodaki `Fokus.xcconfig`'te değer boş kalır. Client Secret'a ihtiyaç yok (App Remote, Spotify
-   uygulaması üzerinden yetkilendirir; token swap sunucumuz yok) ve ASLA koda/repoya/uygulamaya konmaz.
+   Public repodaki `Fokus.xcconfig`'te değer boş kalır. Client Secret'a ihtiyaç yok (Spotify'ın "Authorization
+   Code with PKCE" akışı yalnızca Client ID ile çalışır; token swap sunucumuz yok) ve ASLA koda/repoya/uygulamaya
+   konmaz.
    Ardından `xcodegen generate` ve yeniden derle.
-6. Cihazda Spotify uygulaması yüklü ve giriş yapılmış olmalı. İlk "Spotify'a bağlan"da Spotify açılıp izin
-   ister, sonra Fokus'a döner. Çalmayı denetlemek çoğunlukla **Premium** gerektirir (Premium yoksa Spotify
+6. Cihazda Spotify uygulaması yüklü ve giriş yapılmış olmalı. İlk "Spotify'a bağlan"da uygulama içinde
+   Spotify'ın izin sayfası (sistemin güvenli web oturumu, `ASWebAuthenticationSession`) açılır; onaydan sonra
+   Fokus'a dönülür. Spotify o an çalışmıyorsa App Remote bağlanamaz; o zaman Spotify bir kez açılıp uyandırılır. Çalmayı denetlemek çoğunlukla **Premium** gerektirir (Premium yoksa Spotify
    komutu reddeder; uygulama bunu Türkçe bir mesajla gösterir).
 
-**Bağlantı kalıcılığı.** App Remote token'ı (~1 saat ömürlü) ve sona erme zamanı Keychain'de saklanır
-(`KeychainSpotifyTokenStore`: yalnızca bu cihaz, iCloud'a/yedeğe girmez; `UserDefaults` değil). Uygulama öne gelince
-token geçerliyse Spotify'a gitmeden sessizce bağlanılır (soğuk açılış dahil). Arka plana geçişte SDK bağlantısı
+**Bağlantı kalıcılığı.** İlk bağlanışta PKCE ile (Client Secret YOK) erişim anahtarı (~1 saat) ve **yenileme
+anahtarı** alınır; ikisi ve sona erme zamanı Keychain'de saklanır (`KeychainSpotifyTokenStore`: yalnızca bu cihaz,
+iCloud'a/yedeğe girmez; `UserDefaults` değil). Uygulama öne gelince erişim anahtarı geçerliyse Spotify'a gitmeden
+sessizce bağlanılır (soğuk açılış dahil); süresi dolmuşsa `accounts.spotify.com/api/token`'dan yalnızca `client_id`
++ yenileme anahtarıyla sessizce yenilenir (Spotify yeni bir yenileme anahtarı döndürürse o saklanır). Kullanıcı
+Spotify'da erişimi kaldırmadıkça (`invalid_grant`) izin sayfası bir daha görünmez; kaldırırsa anahtarlar silinir ve
+dokununca izin yeniden istenir. Ağ hatasında anahtar korunur, sonraki öne gelişte yeniden denenir. Spotify uygulaması
+hiç çalışmıyorsa App Remote sessizce bağlanamaz (SDK sınırı): kullanıcı dokununca `authorizeAndPlayURI("")` ile
+Spotify uyandırılır, yenileme anahtarı korunur. 1.0'dan kalan (yenileme anahtarsız) kayıtlar süreleri dolunca bir
+kez izin sayfası gösterir. Arka plana geçişte SDK bağlantısı
 bilerek kesilir ama arayüzde "bağlı" kalır; dönüşte otomatik yeniden bağlanır. Başarısız otomatik denemeler üstel
 beklemeyle (0,5 → 1 → 2 → 4 sn) en fazla 5 kez tekrarlanır, sonra **"Yeniden bağlan"** düğmesi görünür; token süresi
-dolmuşsa da Spotify'a kendiliğinden yönlenilmez, kullanıcı dokununca yetkilendirilir. **Bağlantıyı kes** token'ı siler.
+dolmuş ve yenilenemiyorsa da Spotify'a kendiliğinden yönlenilmez, kullanıcı dokununca yetkilendirilir. **Bağlantıyı
+kes** iki anahtarı da siler.
 
 **Gizlilik.** Spotify'dan yalnızca çalma için gerekenler okunur: çalan parça adı, sanatçı, albüm kapağı ve çalma
 durumu. Kullanıcının adı, profil fotoğrafı, e-postası ya da dinleme geçmişi istenmez/okunmaz/saklanmaz; Web API
-çağrısı yoktur. İstenen tek yetki kapsamı `app-remote-control`'dür (SDK varsayılanı; ek kapsam yok). Token yalnızca
-cihazın Keychain'indedir; Client Secret yoktur, sunucuya hiçbir şey gönderilmez.
+çağrısı yoktur. İstenen tek yetki kapsamı `app-remote-control`'dür (ek kapsam yok). Uygulamanın tek ağ çağrısı
+Spotify'ın kendi hesap sunucusunadır (`accounts.spotify.com`: izin kodunu anahtara çevirme ve anahtar yenileme;
+çerez/önbellek tutmayan ephemeral `URLSession`). Anahtarlar yalnızca cihazın Keychain'indedir; Client Secret yoktur,
+bizim bir sunucumuz yoktur.
 
 Simülatörde Spotify uygulaması yoktur; bağlantı akışı yalnızca gerçek cihazda uçtan uca denenebilir
 (arayüz/kontroller `-FokusUITestSpotify connected` sahte sağlayıcısıyla UI testlerinde doğrulanır).

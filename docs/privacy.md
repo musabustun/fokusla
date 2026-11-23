@@ -1,6 +1,6 @@
 # Fokus — Gizlilik Politikası
 
-Son güncelleme: 23 Kasım 2026 · Sürüm: 1.0.0 (iMessage bölümü 1.1 ile geçerli olur)
+Son güncelleme: 23 Kasım 2026 · Sürüm: 1.0.0 (iMessage bölümü 1.1, Spotify anahtar yenileme 1.0.1 ile geçerli olur)
 
 Fokus, YKS'ye hazırlanan öğrenciler için ücretsiz, reklamsız ve açık kaynaklı (MIT) bir çalışma takip uygulamasıdır. Kısaca: **Fokus senden hiçbir veri toplamaz.** Geliştirici olarak verilerine erişemeyiz, onları sunucuya göndermeyiz, satmayız ve paylaşmayız.
 
@@ -18,7 +18,9 @@ Giriş zorunlu değildir; "Şimdilik atla" ile uygulama girişsiz tam çalışı
 
 ## Spotify (isteğe bağlı)
 
-Odak ekranında istersen Spotify'ı bağlayıp çalan müziği denetleyebilirsin. Bu özellik yalnızca cihazındaki Spotify uygulamasıyla konuşur ve çalma kontrolü (oynat/duraklat/sonraki, çalan parçanın adı) için kullanılır. Fokus Spotify hesabının profil bilgilerini, çalma geçmişini ya da kütüphaneni almaz ve saklamaz. Spotify'ın kendi veri işlemesi [Spotify gizlilik politikasına](https://www.spotify.com/tr/legal/privacy-policy/) tabidir. Bağlantıyı istediğin an Spotify'dan veya Fokus'tan kesebilirsin.
+Odak ekranında istersen Spotify'ı bağlayıp çalan müziği denetleyebilirsin. Bu özellik çalmayı cihazındaki Spotify uygulaması üzerinden denetler ve yalnızca çalma kontrolü (oynat/duraklat/sonraki, çalan parçanın adı) için kullanılır. Fokus Spotify hesabının profil bilgilerini, çalma geçmişini ya da kütüphaneni almaz ve saklamaz.
+
+İlk bağlanışta Spotify'ın kendi izin sayfası açılır (yalnızca "uygulamadan çalmayı denetleme" izni istenir; şifren Fokus'a gelmez). Her saat yeniden izin istememek için Spotify'ın verdiği erişim ve yenileme anahtarları **yalnızca cihazının Keychain'inde** saklanır (iCloud'a ve yedeğe girmez). Fokus bu anahtarları yalnızca Spotify'ın hesap sunucusuna (`accounts.spotify.com`) göndererek yeniler; bu, Fokus'un kendi yaptığı tek ağ isteğidir ve Spotify'ı bağlamadıysan hiç yapılmaz. Bizim bir sunucumuz yoktur. "Bağlantıyı kes" anahtarları cihazdan siler; Spotify'daki uygulama erişimini Spotify hesap ayarlarından kaldırabilirsin. Spotify'ın kendi veri işlemesi [Spotify gizlilik politikasına](https://www.spotify.com/tr/legal/privacy-policy/) tabidir. Bağlantıyı istediğin an Spotify'dan veya Fokus'tan kesebilirsin.
 
 ## iMessage uygulaması (isteğe bağlı)
 

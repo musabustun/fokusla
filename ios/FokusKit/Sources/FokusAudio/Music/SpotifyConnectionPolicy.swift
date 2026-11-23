@@ -9,6 +9,16 @@ public enum SpotifyConnectionPolicy {
         /// Kullanıcı bağlı kalmak istiyor ama token yok/süresi dolmuş: Spotify'a YÖNLENDİRMEDEN "Yeniden bağlan"
         /// durumu göster (kullanıcı dokunursa yetkilendirilir).
         case needsReconnect
+        /// Erişim anahtarının süresi dolmuş ama yenileme anahtarı var: önce sessizce yenile, sonra bağlan.
+        case refreshThenConnect
+    }
+
+    /// Token yenileme/değiş tokuşu başarısız olunca ne yapılacağı.
+    public enum TokenFailureAction: Equatable, Sendable {
+        /// Anahtarları sil ve kullanıcıdan (web sayfasında) yeniden izin iste — yalnızca kullanıcı dokunduysa.
+        case reauthorize
+        /// "Yeniden bağlan" durumunu göster; `discardCredentials` ise anahtarlar silinir.
+        case showReconnect(discardCredentials: Bool, error: MusicProviderError)
     }
 
     public enum TokenState: Equatable, Sendable {
@@ -77,5 +87,35 @@ extension SpotifyConnectionPolicy {
         if isUserInitiated { return alreadyReauthorized ? .fail : .reauthorize }
         guard failedAttempts < maxAutomaticAttempts else { return .fail }
         return .retry(after: backoffDelay(afterFailedAttempt: failedAttempts))
+    }
+}
+
+extension SpotifyConnectionPolicy {
+    /// Uygulama öne gelince (yenileme anahtarı bilinen sürüm). Erişim anahtarı geçerliyse sessiz bağlan;
+    /// değilse yenilenebiliyorsa önce sessizce yenile; ikisi de yoksa "Yeniden bağlan" göster.
+    public static func activationAction(
+        wantsConnection: Bool, tokenState: TokenState, canRefresh: Bool, isConnected: Bool,
+        isAttemptInFlight: Bool
+    ) -> ActivationAction {
+        let base = activationAction(
+            wantsConnection: wantsConnection, tokenState: tokenState, isConnected: isConnected,
+            isAttemptInFlight: isAttemptInFlight)
+        return base == .needsReconnect && canRefresh ? .refreshThenConnect : base
+    }
+
+    /// Token isteği başarısız olunca. `invalid_grant` (kullanıcı Spotify'da erişimi kaldırdı / anahtar geçersiz)
+    /// ve kalıcı ret anahtarları siler; kullanıcı dokunduysa hemen yeniden izin istenir, otomatik denemede
+    /// yalnızca "Yeniden bağlan" gösterilir (kullanıcı kendiliğinden web sayfasına atılmaz). Ağ hatası
+    /// anahtarı korur: sonraki öne gelişte yeniden denenir.
+    public static func actionAfterTokenFailure(
+        _ failure: SpotifyTokenFailure, isUserInitiated: Bool
+    ) -> TokenFailureAction {
+        switch failure {
+        case .invalidGrant, .rejected:
+            return isUserInitiated
+                ? .reauthorize : .showReconnect(discardCredentials: true, error: .connectionLost)
+        case .transient, .invalidResponse:
+            return .showReconnect(discardCredentials: false, error: isUserInitiated ? .unknown : .connectionLost)
+        }
     }
 }

@@ -16,6 +16,9 @@ struct FokusWatchApp: App {
         FokusFonts.registerAll()
         let container = Self.makeContainer()
         FokusSystem.register(container)
+        #if DEBUG
+        Self.seedStoreListingDemoIfRequested()
+        #endif
         _model = State(initialValue: WatchModel(container: container))
     }
 
@@ -28,6 +31,15 @@ struct FokusWatchApp: App {
                 .preferredColorScheme(.dark)
         }
     }
+
+    #if DEBUG
+    /// Mağaza ekran görüntüsü için: `-FokusWatchDemoSession` verilirse 23 dakikadır süren açık bir odak
+    /// oturumu başlatır (yalnızca DEBUG; simülatörün kendi deposuna yazar, üretimi etkilemez).
+    private static func seedStoreListingDemoIfRequested(now: Date = .now) {
+        guard ProcessInfo.processInfo.arguments.contains("-FokusWatchDemoSession") else { return }
+        _ = try? FocusActions.start(subjectId: nil, now: now.addingTimeInterval(-23 * 60 - 14))
+    }
+    #endif
 
     /// CloudKit → yerel → bellek içi sırasıyla düşer; açılışta asla çökmez (iOS ile aynı kural).
     /// Depo App Group'ta durur ki komplikasyon uzantısı okuyabilsin.

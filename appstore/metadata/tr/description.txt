@@ -8,7 +8,7 @@ ODAK
 • Oturum süresi, günlük toplam, ortalama kesintisiz odak ve ortalama mola otomatik hesaplanır.
 • Tam ekran odak: ekranı açık tutan, StandBy tarzı büyük sayaç; saat, ilerleme halkası ve saf siyah "gece" görünümü arasında kaydır.
 • Odak sesleri: beyaz, pembe ve kahverengi gürültü, yağmur ve yumuşak melodi. Sesler cihazda üretilir; indirme ve internet gerekmez.
-• İstersen Spotify ile müziği Fokus içinden denetle. Spotify tamamen isteğe bağlıdır; bağlamadan da her şey çalışır.
+• İstersen Spotify ile müziği tam ekran odakta denetle. Spotify tamamen isteğe bağlıdır; bağlamadan da her şey çalışır.
 
 KONU VE TEST ANALİZİ
 • Ders ve konulara göre kitap, test, doğru / yanlış / boş sonuçlarını kaydet.
@@ -29,6 +29,8 @@ SİSTEMLE BÜTÜNLEŞİK
 • Widget'lar: bugünkü odak ve hedef halkası, bugünün görevleri (ana ekran ve kilit ekranı).
 • Live Activity ve Dynamic Island: kilit ekranından sayacı gör, mola ver ya da bitir.
 • Siri ve Kestirmeler: "Odak başlat", "Odağı bitir", "Bugün ne kadar çalıştım?", "Görev ekle".
+• Apple Watch: saatinden odak oturumunu başlat ve bitir; sayaç bileğinde. Saat uygulaması telefon olmadan da çalışır.
+• iMessage: "bugün şu kadar çalıştım" kartını paylaş ya da arkadaşlarını birlikte çalışmaya davet et. Hiçbir şey sen göndermeden gitmez; sunucu yoktur.
 • iPhone ve iPad için tasarlandı; açık ve koyu tema, altı renk paleti.
 
 VERİN SENİN

@@ -71,24 +71,38 @@ final class WatchModel {
 
     // MARK: - Eylemler
 
+    // Eylemler HER ZAMAN saatin kendi deposuna yazılır (telefon uzakta olsa da çalışır); kayıt eşlemesi
+    // (`FocusLinkCoordinator`) değişen kayıtları telefona yollar ya da kuyruğa alır.
+
     /// Ders seçmeden hemen başlatır (ders opsiyoneldir; telefondan sonradan eklenebilir).
     func start() {
-        actionFailed = false
-        do {
-            _ = try FocusActions.start(subjectId: nil)
-            lastFinished = nil
-            link.publish()
-            refresh()
-        } catch {
-            actionFailed = true
+        perform { _ = try FocusActions.start(subjectId: nil) }
+        if !actionFailed { lastFinished = nil }
+    }
+
+    /// Odaktaysa mola, moladaysa devam (telefondaki tam ekran ve Live Activity ile aynı işlem).
+    func togglePause() {
+        perform { _ = try FocusActions.togglePause() }
+    }
+
+    func finish() {
+        let summary = live.map { FinishedSummary(focusMs: Self.sessionFocusMs($0.state)) }
+        perform {
+            if case let .finished(focusMs) = try FocusActions.finish() {
+                lastFinished = FinishedSummary(focusMs: focusMs)
+            } else {
+                lastFinished = summary
+            }
         }
     }
 
-    func finish() async {
-        let summary = live.map { FinishedSummary(focusMs: Self.sessionFocusMs($0.state)) }
-        let handled = await link.finish()
-        actionFailed = !handled
-        if handled { lastFinished = summary }
+    private func perform(_ action: () throws -> Void) {
+        actionFailed = false
+        do {
+            try action()
+        } catch {
+            actionFailed = true
+        }
         refresh()
     }
 

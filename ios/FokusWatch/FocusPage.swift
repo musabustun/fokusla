@@ -3,8 +3,8 @@ import FokusDomain
 import SwiftUI
 
 /// Tek ekran: boştayken "Başlat" (ders seçmeden hemen başlar); oturum sürerken büyük sayaç ("son devamdan
-/// beri", `FocusActivityCalc.State.timerStart` — telefondaki tam ekran odakla aynı değer) ve "Bitir".
-/// Duraklat/devam saatte YOKTUR; telefonda duraklatılırsa saat "Mola" sayacını gösterir.
+/// beri", `FocusActivityCalc.State.timerStart` — telefondaki tam ekran odakla aynı değer), "Mola"/"Devam"
+/// ve "Bitir". Telefonda başlatılan oturum da burada görünür ve buradan yönetilir (kayıt eşlemesi).
 struct FocusPage: View {
     @Environment(WatchModel.self) private var model
 
@@ -68,12 +68,17 @@ private struct RunningView: View {
                 .minimumScaleFactor(0.5).lineLimit(1)
                 .accessibilityLabel(isFocus ? "Odak süresi" : "Mola süresi")
             Spacer(minLength: 0)
-            Button("Bitir") { confirmFinish = true }
-                .buttonStyle(WatchPrimaryButtonStyle())
-                .accessibilityIdentifier("watch.finish")
+            HStack(spacing: 6) {
+                Button(isFocus ? "Mola" : "Devam") { model.togglePause() }
+                    .buttonStyle(WatchPrimaryButtonStyle())
+                    .accessibilityIdentifier("watch.togglePause")
+                Button("Bitir") { confirmFinish = true }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("watch.finish")
+            }
         }
         .confirmationDialog("Oturum bitirilsin mi?", isPresented: $confirmFinish) {
-            Button("Bitir", role: .destructive) { Task { await model.finish() } }
+            Button("Bitir", role: .destructive) { model.finish() }
             Button("Vazgeç", role: .cancel) {}
         }
     }

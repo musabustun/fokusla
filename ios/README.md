@@ -236,14 +236,15 @@ Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`,
    (uzantı CloudKit'siz açtığı depoya yazar; uygulama öne gelince değişiklik CloudKit'e akar — gerçek cihazda
    doğrulanmalı), Live Activity düğmeleri, Odak filtresi.
 
-## Apple Watch uygulaması (1.1)
+## Apple Watch uygulaması
 
-Kapsam bilerek dar: yalnızca **Odak başlat / Odağı bitir** + sürerken büyük sayaç + sade komplikasyon.
+Kapsam (1.0.1): **Odak başlat / Mola / Devam / Bitir**, telefonda başlatılan oturumu canlı izleme ve yönetme, sürerken
+büyük sayaç, komplikasyon. Saat deposu yereldir (CloudKit YOK); odak kayıtları WatchConnectivity ile telefona gider.
 
 Kod: `ios/FokusWatch/` (uygulama: tek ekran, `WatchModel`, haptik), `ios/FokusWatchWidgets/`
 (sade komplikasyon: circular, rectangular, corner, inline), `ios/WatchLink/` (iPhone VE saat uygulamasına
-derlenir: `WCSession` taşıması + eşitleme koordinatörü), saf kurallar `FokusDomain/Calc/FocusLinkCalc.swift`
-(`FocusLinkCalcTests`). Mimari kararı ve gerekçesi: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) 4.12.
+derlenir: `WCSession` taşıması + kayıt eşleme koordinatörü), saf kurallar `FokusDomain/Calc/FocusLinkSync.swift`
+(`FocusLinkSyncTests`), depo `FokusData/Repositories/FocusRepository+Link.swift` (`FocusLinkRepositoryTests`). Mimari kararı ve gerekçesi: [docs/ARCHITECTURE.md](../docs/ARCHITECTURE.md) 4.12.
 
 ```bash
 xcodegen generate
@@ -260,8 +261,10 @@ kuruluysa: `-destination 'platform=watchOS Simulator,name=Apple Watch Series 11 
 2. **Yeni App ID** `com.musabustun.fokus.watchkitapp.widgets` (komplikasyon uzantısı) → App Groups, aynı grup.
 3. App Store Connect'te saat uygulaması iOS kaydına bağlıdır (yeni kayıt gerekmez); Apple Watch ekran görüntüleri
    (ör. 46 mm, 410×502) yüklenir.
-4. Cihazda doğrula (simülatörde WatchConnectivity/CloudKit çalışmaz): saatten odak başlat → telefonda görünür; telefonda
-   duraklat → saatte anında yansır; telefon kapalıyken saatte başlat/bitir; komplikasyonlar; mola/hedef bildirimleri.
+   Not (1.0.1): saat CloudKit'i kullanmaz; App ID'deki iCloud yetkisi zararsızdır, kaldırmak gerekmez.
+4. Cihazda doğrula: saatten odak başlat → telefonda görünür; telefonda mola → saatte anında yansır; saatten mola/devam →
+   telefondaki tam ekran ve Live Activity güncellenir; telefon kapalıyken saatte başlat/mola/devam/bitir → telefon açılınca
+   oturumlar görünür; komplikasyonlar.
 
 ## iMessage uygulaması (1.1): "bugün çalıştım" kartı ve sunucusuz oda daveti
 

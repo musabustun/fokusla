@@ -6,8 +6,9 @@ import SwiftUI
 
 private let logger = Logger(subsystem: "com.musabustun.fokus.watch", category: "composition")
 
-/// Fokus saat uygulaması. Telefon olmadan da çalışır: veri saatteki SwiftData deposundadır ve iPhone ile
-/// AYNI CloudKit container'ı (private database) eşitler; telefon yakınsa `WatchConnectivity` anlık durum taşır.
+/// Fokus saat uygulaması. Telefon olmadan da çalışır: veri saatteki SwiftData deposundadır. Odak kayıtları
+/// iPhone ile `WatchConnectivity` üzerinden kayıt kayıt eşlenir (`FocusLinkCoordinator`); telefon kayıtları
+/// kendi deposuna yazınca CloudKit onları iPad'e taşır. Saat deposu CloudKit'e BAĞLANMAZ (bkz. `makeContainer`).
 @main
 struct FokusWatchApp: App {
     @State private var model: WatchModel
@@ -36,27 +37,25 @@ struct FokusWatchApp: App {
     /// Mağaza ekran görüntüsü için: `-FokusWatchDemoSession` verilirse 23 dakikadır süren açık bir odak
     /// oturumu başlatır (yalnızca DEBUG; simülatörün kendi deposuna yazar, üretimi etkilemez).
     private static func seedStoreListingDemoIfRequested(now: Date = .now) {
-        guard ProcessInfo.processInfo.arguments.contains("-FokusWatchDemoSession") else { return }
+        let arguments = ProcessInfo.processInfo.arguments
+        guard arguments.contains("-FokusWatchDemoSession") else { return }
         _ = try? FocusActions.start(subjectId: nil, now: now.addingTimeInterval(-23 * 60 - 14))
+        // `-FokusWatchDemoBreak`: aynı oturum 4 dk 40 sn'dir molada (mola ekranı görüntüsü için).
+        if arguments.contains("-FokusWatchDemoBreak") {
+            _ = try? FocusActions.togglePause(now: now.addingTimeInterval(-4 * 60 - 40))
+        }
     }
     #endif
 
-    /// CloudKit → yerel → bellek içi sırasıyla düşer; açılışta asla çökmez (iOS ile aynı kural).
-    /// Depo App Group'ta durur ki komplikasyon uzantısı okuyabilsin.
+    /// Yerel → bellek içi sırasıyla düşer; açılışta asla çökmez. Depo App Group'ta durur ki komplikasyon
+    /// uzantısı okuyabilsin.
+    ///
+    /// Neden CloudKit yok: 1.0'da depo `ubiquityIdentityToken != nil` koşuluyla CloudKit'e bağlanmaya
+    /// çalışıyordu; watchOS'ta bu değer HER ZAMAN `nil`dir (Apple QA1935), yani depo zaten hep yereldi ve
+    /// saatte yapılan oturumlar telefona hiç ulaşmıyordu. Artık kayıtlar `WatchConnectivity` ile taşınır;
+    /// saatin ayrıca CloudKit'e yazması aynı `id`'li çift kayıtlar üretirdi.
     private static func makeContainer() -> ModelContainer {
-        let identifier = Bundle.main.object(forInfoDictionaryKey: "FokusICloudContainer") as? String
         let storeURL = FokusAppGroup.resolveStoreURL()
-        let preferred = FokusStore.preferredMode(
-            containerIdentifier: identifier,
-            syncEnabled: SyncPreferences.isEnabled(),
-            iCloudAvailable: FileManager.default.ubiquityIdentityToken != nil)
-        if case .cloudKit = preferred {
-            do {
-                return try FokusStore.makeContainer(mode: preferred, storeURL: storeURL)
-            } catch {
-                logger.error("CloudKit deposu kurulamadı: \(error.localizedDescription, privacy: .public)")
-            }
-        }
         do {
             return try FokusStore.makeContainer(mode: .local, storeURL: storeURL)
         } catch {

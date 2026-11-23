@@ -348,42 +348,36 @@ kaydı olarak senkronlanabilir (yalnızca ekleme; `UserProfile`'a `palette: Stri
 | Sosyal (arkadaşlar, istekler, paralel odak odaları; `SocialCalc`, `MockSocialService`)                      | Kuruldu (sahte servis, CloudKit yok)  | `FokusData/Social`, `ios/Fokus/Features/Social`                                |
 | CloudKit senkronunun cihazda doğrulanması, şema deploy'u                                                    | Bekliyor (Apple tarafı kayıt gerekli) | ios/README.md → "Cihazda çalıştırma"                                           |
 
-### 4.12 watchOS uygulaması (Apple Watch, 1.1)
+### 4.12 watchOS uygulaması (Apple Watch; 1.0.1'de genişledi)
 
 Hedefler: `FokusWatch` (`com.musabustun.fokus.watchkitapp`, watchOS 11+, telefondan bağımsız çalışan companion) ve
-`FokusWatchWidgets` (`…watchkitapp.widgets`, tek sade komplikasyon). **Kapsam bilerek dar:** yalnızca "Odak başlat" ve
-"Odağı bitir" (ders seçmeden hemen başlar; bitirme onaylı) + sürerken büyük sayaç ve sade komplikasyon (odak yokken
-"Odak başlat", sürerken sayaç). Duraklat/devam, Bugün ekranı, görevler, hedef halkası saatte YOK (istenirse sonra eklenir).
-FokusAudio/Spotify, sosyal, analiz ve kitaplar saate girmez. Saat uygulaması her zaman koyudur (watchOS asset'lerde yalnızca
-"Any" varyantını derlediği için `Watch<Palet>` koyu-only renk setleri `generate_palette_assets.py` ile üretilir).
+`FokusWatchWidgets` (`…watchkitapp.widgets`, komplikasyon). **Kapsam (1.0.1):** odak başlat / mola / devam / bitir
+(ders seçmeden hemen başlar; bitirme onaylı), telefonda başlatılan oturumu canlı izleme ve yönetme, sürerken büyük sayaç
+ve komplikasyon. FokusAudio/Spotify, sosyal, analiz ve kitaplar saate girmez.
 
-**Veri/senkron kararı.** İki katman, görevleri ayrı:
+**Veri/senkron kararı (1.0.1).** Saat deposu CloudKit'e BAĞLANMAZ; odak kayıtları WatchConnectivity ile eşlenir.
 
-| Katman      | Teknoloji                                                                 | Ne taşır                                                                   | Neden                                                                                                                                                                                                                                                                     |
-| ----------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Kalıcı veri | AYNI SwiftData + CloudKit private container, AYNI `FokusSchemaV1`         | Oturum, segment, görev, profil — tüm varlıklar                             | Saat telefon yokken de odak başlatabilmeli; CloudKit zaten tek senkron yolu. Yeni model/alan YOK (şema değişmedi). Saat deposu cihazın kendi App Group'unda durur (iPhone ile paylaşılmaz); komplikasyon uzantısı onu `.local` açıp okur (iOS widget'larıyla aynı desen). |
-| Anlık durum | WatchConnectivity (`ios/WatchLink`; saf kurallar `FokusDomain/FocusLink`) | "Şu an açık oturum şu" bildirimi + (oturum karşı cihazdayken) BİTİR komutu | CloudKit saniyeler sürebilir; telefon yakınken durum anında görünsün. Telefon yoksa hiçbir şey olmaz, saat bağımsız çalışır ve CloudKit eşitler.                                                                                                                          |
+| Katman | Teknoloji | Ne taşır | Neden |
+| ------ | --------- | -------- | ----- |
+| Saat deposu | SwiftData, AYNI `FokusSchemaV1`, `.local` (App Group) | Saatte yazılan ve telefondan gelen `FocusSession`/`FocusSegment` | watchOS'ta `ubiquityIdentityToken` her zaman `nil` (Apple QA1935): 1.0'daki "iCloud varsa CloudKit" koşulu saatte hiç sağlanmadı, saat oturumları telefona ULAŞMADI (1.0 hatası). Ayrıca saat CloudKit'e de yazsaydı aynı `id`'li iki CloudKit kaydı oluşurdu. |
+| Kayıt eşlemesi | WatchConnectivity (`ios/WatchLink`; saf kurallar `FokusDomain/Calc/FocusLinkSync.swift`, depo `FocusLinkRepository`) | Değişen oturum/segment kayıtlarının TÜM alanları (+ ders adları, yalnızca gösterim önbelleği) | Erişilebilirse `sendMessage` (anında; iPhone uygulamasını arka planda uyandırır), hata/erişilemezse `transferUserInfo` (sistem kuyruğu, garantili teslim). Telefon kaydı kendi deposuna yazar; CloudKit iPad'e taşır. |
 
-Kurallar (`FocusLink`, `FocusLinkCalcTests`):
+Kurallar (`FocusLink`, `FocusLinkSyncTests`, `FocusLinkRepositoryTests`):
 
-- **Bildirim depoya YAZILMAZ.** Aynı `id`'li kayıtlar iki yoldan (WC + CloudKit) girerse açık/kapalı çift kopya oluşurdu
-  (`EntityStore` "en eski `createdAt` kazanır" kuralı açık-kapalı ayrımını bilmez). Bildirim yalnızca alıcının EKRANINDA
-  geçici katmandır: yerel depodaki son değişiklik (`FocusSession`/`FocusSegment` `updatedAt` en büyüğü) ile bildirimin
-  `stamp`'i karşılaştırılır; bildirim yalnızca STRİKT daha yeniyse (ve 12 saatten eski değilse) kazanır, eşitlikte yerel.
-  CloudKit aynı durumu getirince katman kendiliğinden devre dışı kalır.
-- **Bitir yönlendirme:** kullanıcının gördüğü oturum yerel depoda açıksa YEREL bitirilir (repository, soft delete,
-  değişmezler aynen); depoda henüz yoksa (telefonda başlamış, CloudKit gecikmesi) komut karşı cihaza iletilir ve orada uygulanır.
-  Başlatmak her zaman yerel yazmadır.
-  Komut zamanı gönderenin dokunuş anıdır (gelecek/aşırı eski değerler sıkıştırılır).
-- **Çakışma:** mevcut ilkeler aynen geçerli (aynı id'de en eski `createdAt`, yalnızca soft delete, `findActive` en son
-  başlayanı seçer). İki cihazda eşzamanlı başlatma mevcut davranışla çözülür.
-- **Süreler** her zaman zaman damgasından hesaplanır; sayacı sistem sayar (`Text(timerInterval:)`). Saatteki büyük sayaç
-  "son devamdan beri" (`FocusActivityCalc.State.timerStart` = `FocusCalc.currentSegmentElapsedMs`); telefonda duraklatılırsa
-  saat "Mola" sayacını gösterir.
-- **Haptik:** görünen durum GEÇİŞİNDEN türer (`FocusLink.cue`): saatte başlat/bitir de telefondan gelen değişiklik de aynı
-  yoldan titreşir (`WatchHaptics`). Yerel bildirim yok.
-- **Bilinen sınır:** saatte başlayan oturum telefonda CloudKit eşitleyince (genelde saniyeler) görünür; telefon tarafında
-  yazma yapılmadığı için bu bilerek böyledir. Telefonda başlayan oturum bildirimle saate anında yansır.
+- **Her eylem yerel yazmadır** (iki cihazda da `FocusRepository`/`FocusActions`); `ModelContext.didSave` sonrası
+  (300 ms birleştirme) son gönderimden (`fokus.link.lastSent`) sonra değişen kayıtlar karşıya gider. İlk eşlemede son 8 gün.
+  Karşıdan aynen alınan sürüm geri yollanmaz (yankı). 120 kayıtlık parçalar (WC mesaj boyutu).
+- **Upsert `id` ile idempotent:** gönderenin `createdAt`/`updatedAt`'i aynen korunur; aynı `id`'de STRİKT daha yeni
+  `updatedAt` kazanır, eşit/eski yok sayılır (kuyruk tekrarı ve gecikmiş eski küme zararsız; tombstone diriltilmez).
+- **Değişmez onarımı (`FocusLink.repairs`):** birleşmeden sonra birden fazla açık oturum varsa en son başlayan açık kalır,
+  eskisi yenisinin başladığı anda kapanır; oturumda birden fazla açık segment varsa en son başlayan kalır; bitmiş oturumun açık
+  segmenti oturum bitişinde kapanır. Eşit başlangıçta `id` sırası belirleyici; onarım `updatedAt = now` ile karşıya da gider.
+- **Telefon arka plandayken** gelen kayıt ana bağlama yazılır (`@Query` ekranları anında güncellenir) ve Live Activity
+  güncellenir; yeni Live Activity yalnızca uygulama öndeyken başlar (ActivityKit kuralı).
+- **Süreler** her zaman zaman damgasından hesaplanır; sayacı sistem sayar (`Text(timerInterval:)`).
+- **Haptik:** görünen durum GEÇİŞİNDEN türer (`FocusLink.cue`); saatte dokunmak da telefondan gelen değişiklik de aynı yoldan
+  titreşir (`WatchHaptics`).
+- 1.0'ın `FocusLink.Broadcast`/`Command`/`resolve` API'si FokusKit'te durur (public API yalnızca büyür) ama artık kullanılmaz.
 
 FokusKit `Package.swift` platformlarına `.watchOS(.v11)` eklendi; `FokusDomain`, `FokusData`, `FokusDesign` watchOS'a
 derlenir (UIKit'e bağımlı kod yok; `FokusAudio` saate bağlanmaz).

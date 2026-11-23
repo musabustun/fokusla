@@ -4,8 +4,8 @@
 Kullanım:
   python3 appstore/screenshots/build_screenshots.py --raw <ham klasör> --out appstore/screenshots [--only iphone|ipad]
 
-Girdi: <ham klasör>/<aygıt>/<ad>.png  (aygıt: iphone | ipad; ham görüntüler 1320x2868 / 2064x2752)
-Çıktı: appstore/screenshots/iphone-6.9/NN-*.png (1320x2868) ve ipad-13/NN-*.png (2064x2752); alfa kanalı YOK.
+Girdi: <ham klasör>/<aygıt>/<ad>.png  (aygıt: iphone | iphone63 | ipad; ham: 1320x2868 / 1206x2622 / 2064x2752)
+Çıktı: appstore/screenshots/iphone-6.9/ (1320x2868), iphone-6.3/ (1206x2622, ASC'de zorunlu), ipad-13/ (2064x2752); alfa kanalı YOK.
 Yöntem: HTML/CSS şablonu + headless Chrome (dış ağ/indirme yok; fontlar repo içinden).
 """
 import argparse
@@ -27,6 +27,14 @@ DEVICES = {
         "dir": "iphone-6.9", "size": (1320, 2868),
         "css": {"pad": 110, "copyTop": 150, "eyebrow": 38, "h1": 118, "sub": 50, "gap": 34,
                 "devTop": 700, "devW": 930, "bezel": 24, "outerR": 130, "innerR": 106},
+        "panels": json.loads((HERE / "src" / "iphone.json").read_text(encoding="utf-8")),
+    },
+    # iPhone 6.3" (Dynamic Island, orta ekran): ASC'de ZORUNLU yuva, 1206x2622. Şablon yerel boyutunda (6.9" düzeninin
+    # 1206/1320 ölçeği) render edilir; ham girdi varsa `raw/iphone63`, yoksa 6.9" ham görüntüler kullanılır.
+    "iphone63": {
+        "dir": "iphone-6.3", "size": (1206, 2622), "raw": ["iphone63", "iphone"],
+        "css": {"pad": 100, "copyTop": 137, "eyebrow": 35, "h1": 108, "sub": 46, "gap": 31,
+                "devTop": 640, "devW": 850, "bezel": 22, "outerR": 119, "innerR": 97},
         "panels": json.loads((HERE / "src" / "iphone.json").read_text(encoding="utf-8")),
     },
     "ipad": {
@@ -136,7 +144,10 @@ def main() -> int:
             old.unlink()
         with tempfile.TemporaryDirectory() as tmpdir:
             for index, panel in enumerate(cfg["panels"]):
-                raw = args.raw / device / f"{panel['raw']}.png"
+                raw = next(
+                    (args.raw / d / f"{panel['raw']}.png" for d in cfg.get("raw", [device])
+                     if (args.raw / d / f"{panel['raw']}.png").exists()),
+                    args.raw / device / f"{panel['raw']}.png")
                 if not raw.exists():
                     print(f"EKSİK ham görüntü: {raw}", file=sys.stderr)
                     return 1

@@ -8,7 +8,8 @@ Fokus 1.0.0'ın App Store Connect'e girilecek içerikleri. Yalnızca Türkçe (b
 | `metadata/tr/age_rating.md` | Yaş derecelendirmesi anketi için önerilen cevaplar (beklenen 4+) |
 | `privacy.md` | App Privacy ("Data Not Collected") gerekçesi + kod tarama bulguları |
 | `scripts/check_metadata.py` | Karakter/bayt sınırlarını doğrular: `python3 appstore/scripts/check_metadata.py` |
-| `screenshots/iphone-6.9/`, `screenshots/ipad-13/` | Mağaza karuseli (1320×2868 / 2064×2752, alfasız PNG) |
+| `screenshots/iphone-6.3/` | **ASC'de zorunlu** "Dynamic Island (orta ekran)" yuvası: 1206×2622, alfasız PNG (şablon yerel boyutunda render edilir, yeniden örnekleme yok) |
+| `screenshots/iphone-6.9/`, `screenshots/ipad-13/` | 6.9" (1320×2868, isteğe bağlı) ve iPad 13" (2064×2752) karuseli, alfasız PNG |
 | `screenshots/build_screenshots.py`, `screenshots/src/` | Mockup + karusel üretimi (HTML/CSS + headless Chrome; başlıklar `src/*.json`) |
 | `scripts/capture_screenshots.sh` | Ham ekran görüntüleri: `StoreScreenshotsUITests` (demo veri: `-FokusUITestMode -FokusDemoData`) |
 | `header/`, `search-results/` | ASC "Header" (5244×2950, 3840×1646) ve "Arama sonuçları" (5244×2950, 3840×2560) görselleri; `scripts/build_header.py` |
@@ -34,9 +35,10 @@ Gizlilik ve destek sayfaları: [`docs/privacy.md`](../docs/privacy.md), [`docs/s
 ```bash
 cd ios && xcodegen generate && cd ..
 xcrun simctl create "Fokus Shots 6.9" com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max com.apple.CoreSimulator.SimRuntime.iOS-27-2
+xcrun simctl create "Fokus Shots 6.3" com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro com.apple.CoreSimulator.SimRuntime.iOS-27-2   # 1206x2622
 xcrun simctl create "Fokus Shots iPad 13" com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB com.apple.CoreSimulator.SimRuntime.iOS-27-2
-appstore/scripts/capture_screenshots.sh iphone <UDID> /tmp/raw/iphone     # ve ipad
-python3 appstore/screenshots/build_screenshots.py --raw /tmp/raw --out appstore/screenshots
+appstore/scripts/capture_screenshots.sh iphone <UDID> /tmp/raw/iphone      # 6.9"; 6.3" için: iphone63 <UDID> /tmp/raw/iphone63; ve ipad
+python3 appstore/screenshots/build_screenshots.py --raw /tmp/raw --out appstore/screenshots   # iphone-6.9, iphone-6.3 (raw/iphone63 yoksa 6.9" ham görüntülerden), ipad-13
 python3 appstore/scripts/build_header.py
 ```
 

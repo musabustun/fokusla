@@ -1,8 +1,11 @@
 import FokusData
 import FokusDesign
 import FokusDomain
+import OSLog
 import SwiftData
 import SwiftUI
+
+private let logger = Logger(subsystem: "com.musabustun.fokus", category: "books")
 
 /// Kitaplar modülü (web `BooksScreen`): derse göre gruplu liste (devam eden / biten).
 /// iPhone: liste → detay (yığına itilir). iPad (geniş): liste ve detay yan yana.
@@ -33,6 +36,13 @@ struct BooksScreen: View {
     @State private var tab: Tab = .active
     @State private var selectedId: UUID?
     @State private var isAdding = false
+    @State private var isScanning = false
+    /// Tarama sayfası kapandıktan sonra işlenecek sonuç (iki sayfa aynı anda değişemez).
+    @State private var pendingOutcome: BookScanOutcome?
+    @State private var prefill: BookFormPrefill?
+    @State private var existingBookId: UUID?
+    /// iPhone: "Kitaba git" ile itilen detay.
+    @State private var pushedBookId: UUID?
 
     var body: some View {
         let now = Date.now
@@ -58,11 +68,78 @@ struct BooksScreen: View {
                 .toolbarVisibility(.visible, for: .navigationBar)
                 .navigationBarTitleDisplayMode(.inline)
         }
+        .navigationDestination(item: $pushedBookId) { id in
+            BookDetailView(bookId: id, isEmbedded: false, onDeleted: {})
+                .toolbarVisibility(.visible, for: .navigationBar)
+                .navigationBarTitleDisplayMode(.inline)
+        }
         .sheet(isPresented: $isAdding) {
             BookFormView(book: nil, subjectGroups: data.subjectGroups) { selectedId = $0 }
         }
+        .sheet(isPresented: $isScanning, onDismiss: handlePendingOutcome) {
+            let library = Self.loadLibrary()
+            let existing = Self.barcodeIndex(books)
+            BookScanSheet(
+                resolve: { BookScanResolver.resolve($0, library: library, existingBooks: existing) },
+                onOutcome: { outcome in
+                    pendingOutcome = outcome
+                    isScanning = false
+                })
+        }
+        .sheet(item: $prefill) { prefill in
+            BookFormView(book: nil, subjectGroups: data.subjectGroups, prefill: prefill) { selectedId = $0 }
+        }
+        .alert("Bu kitap zaten kitaplığında", isPresented: isShowingExisting) {
+            Button("Kitaba git") { goToExistingBook() }
+                .accessibilityIdentifier("book.scan.goToBook")
+            Button("Tamam", role: .cancel) { existingBookId = nil }
+        }
         .task { BooksUITestSeed.applyIfRequested(context: modelContext) }
         .accessibilityIdentifier("screen.books")
+    }
+
+    // MARK: Barkod akışı
+
+    private var isShowingExisting: Binding<Bool> {
+        Binding(get: { existingBookId != nil }, set: { if !$0 { existingBookId = nil } })
+    }
+
+    private func handlePendingOutcome() {
+        guard let outcome = pendingOutcome else { return }
+        pendingOutcome = nil
+        switch outcome {
+        case .invalid: break
+        case .existing(let bookId): existingBookId = bookId
+        case .found(let resolved): prefill = BookFormPrefill(resolved: resolved)
+        case .notFound(let barcode): prefill = BookFormPrefill(notFoundBarcode: barcode)
+        }
+    }
+
+    private func goToExistingBook() {
+        guard let id = existingBookId else { return }
+        existingBookId = nil
+        if horizontalSizeClass == .regular { selectedId = id } else { pushedBookId = id }
+    }
+
+    /// Normalize barkod → kitap kimliği (aynı barkodda en eski kayıt kazanır).
+    private static func barcodeIndex(_ books: [Book]) -> [String: UUID] {
+        var index: [String: (id: UUID, createdAt: Date)] = [:]
+        for book in BooksData.deduplicated(books) {
+            guard let barcode = book.barcode else { continue }
+            if let current = index[barcode], current.createdAt <= book.createdAt { continue }
+            index[barcode] = (book.id, book.createdAt)
+        }
+        return index.mapValues(\.id)
+    }
+
+    /// Gömülü katalog; okunamazsa kayıt düşülür ve boş katalogla devam edilir (elle ekleme çalışır).
+    private static func loadLibrary() -> BookLibrary {
+        do {
+            return try BookLibrary.bundled()
+        } catch {
+            logger.error("Kitap kütüphanesi okunamadı: \(error.localizedDescription, privacy: .public)")
+            return BookLibrary(version: 0, updatedAt: "", books: [])
+        }
     }
 
     // MARK: Liste
@@ -70,10 +147,19 @@ struct BooksScreen: View {
     private func list(data: BooksData, now: Date, isWide: Bool) -> some View {
         VStack(alignment: .leading, spacing: FokusSpacing.xl) {
             ScreenHeader("Kitaplar", eyebrow: "Soru bankaları ve kaynaklar") {
-                Button { isAdding = true } label: { Label("Ekle", systemImage: "plus") }
-                    .buttonStyle(.fokusPrimary)
-                    .fixedSize()
-                    .accessibilityIdentifier("books.add")
+                Menu {
+                    Button { isAdding = true } label: { Label("Elle ekle", systemImage: "square.and.pencil") }
+                        .accessibilityIdentifier("books.add.manual")
+                    Button { isScanning = true } label: {
+                        Label("Barkod okut", systemImage: "barcode.viewfinder")
+                    }
+                    .accessibilityIdentifier("books.add.scan")
+                } label: {
+                    Label("Ekle", systemImage: "plus")
+                }
+                .buttonStyle(.fokusPrimary)
+                .fixedSize()
+                .accessibilityIdentifier("books.add")
             }
             if data.summaries.isEmpty {
                 EmptyStateView(

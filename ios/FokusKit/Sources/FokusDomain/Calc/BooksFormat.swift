@@ -103,4 +103,19 @@ public enum BooksFormat {
     public static func addDays(_ now: Date, _ days: Int, calendar: Calendar = .current) -> Date {
         calendar.date(byAdding: .day, value: days, to: now) ?? now
     }
+
+    // MARK: - Bölüm aralığı
+
+    /// Bölüm aralığı: "Test 1–12", "Sayfa 10–40"; tek uç ya da başlangıç = bitiş → "Test 5";
+    /// ikisi de yoksa `nil`.
+    public static func sectionRange(_ unit: BookUnit, start: Int?, end: Int?) -> String? {
+        let label = unitLabel(unit)
+        switch (start, end) {
+        case (nil, nil): return nil
+        case (let value?, nil), (nil, let value?): return "\(label) \(number(value))"
+        case (let first?, let last?):
+            if first == last { return "\(label) \(number(first))" }
+            return "\(label) \(number(first))\u{2013}\(number(last))"
+        }
+    }
 }

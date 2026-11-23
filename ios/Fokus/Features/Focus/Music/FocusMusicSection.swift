@@ -111,7 +111,11 @@ private struct MusicConnectView: View {
 
     private var buttonTitle: String {
         if isConnecting { return "Bağlanıyor…" }
-        return failure == nil ? "\(provider.displayName)'a bağlan" : "Tekrar dene"
+        switch failure {
+        case nil: return "\(provider.displayName)'a bağlan"
+        case .connectionLost: return "Yeniden bağlan"
+        default: return "Tekrar dene"
+        }
     }
 }
 

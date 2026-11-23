@@ -130,8 +130,9 @@ eder. "Diğer seslerle karıştır" açıkken (`.mixWithOthers`, varsayılan) Sp
 
 **Müzik sağlayıcıları (isteğe bağlı)** — `MusicProvider` protokolü `FokusAudio/Music/`'tadır; sağlayıcılar
 `MusicProviderRegistry`'ye kaydedilir (kök `FokusApp`, `onOpenURL` ve sahne yaşam döngüsünü iletir).
-Spotify uygulaması `Fokus/Features/Focus/Music/` altındadır (SDK uygulama hedefinin bağımlılığıdır;
-FokusKit SDK'sızdır). Apple Music için yalnızca uzantı noktası vardır (`MusicProviderID.appleMusic`),
+Spotify bağlantı durum makinesi FokusKit'tedir (`SpotifyMusicProvider`, SDK `SpotifyRemoteControlling` arkasında;
+birim testli); gerçek SDK köprüsü (`SpotifyAppRemoteAdapter`) `Fokus/Features/Focus/Music/` altındadır (SDK uygulama
+hedefinin bağımlılığıdır; FokusKit SDK'sızdır). Apple Music için yalnızca uzantı noktası vardır (`MusicProviderID.appleMusic`),
 uygulanmadı: yeni sağlayıcı = `MusicProviderID` + `MusicProvider` uygulaması + `FocusMusicProviders`'a kayıt.
 
 ### Spotify'ı etkinleştirme (kullanıcının yapacakları)
@@ -155,6 +156,18 @@ hesabında hiçbir şey otomatik oluşturulmaz; hepsini sen yaparsın):
 6. Cihazda Spotify uygulaması yüklü ve giriş yapılmış olmalı. İlk "Spotify'a bağlan"da Spotify açılıp izin
    ister, sonra Fokus'a döner. Çalmayı denetlemek çoğunlukla **Premium** gerektirir (Premium yoksa Spotify
    komutu reddeder; uygulama bunu Türkçe bir mesajla gösterir).
+
+**Bağlantı kalıcılığı.** App Remote token'ı (~1 saat ömürlü) ve sona erme zamanı Keychain'de saklanır
+(`KeychainSpotifyTokenStore`: yalnızca bu cihaz, iCloud'a/yedeğe girmez; `UserDefaults` değil). Uygulama öne gelince
+token geçerliyse Spotify'a gitmeden sessizce bağlanılır (soğuk açılış dahil). Arka plana geçişte SDK bağlantısı
+bilerek kesilir ama arayüzde "bağlı" kalır; dönüşte otomatik yeniden bağlanır. Başarısız otomatik denemeler üstel
+beklemeyle (0,5 → 1 → 2 → 4 sn) en fazla 5 kez tekrarlanır, sonra **"Yeniden bağlan"** düğmesi görünür; token süresi
+dolmuşsa da Spotify'a kendiliğinden yönlenilmez, kullanıcı dokununca yetkilendirilir. **Bağlantıyı kes** token'ı siler.
+
+**Gizlilik.** Spotify'dan yalnızca çalma için gerekenler okunur: çalan parça adı, sanatçı, albüm kapağı ve çalma
+durumu. Kullanıcının adı, profil fotoğrafı, e-postası ya da dinleme geçmişi istenmez/okunmaz/saklanmaz; Web API
+çağrısı yoktur. İstenen tek yetki kapsamı `app-remote-control`'dür (SDK varsayılanı; ek kapsam yok). Token yalnızca
+cihazın Keychain'indedir; Client Secret yoktur, sunucuya hiçbir şey gönderilmez.
 
 Simülatörde Spotify uygulaması yoktur; bağlantı akışı yalnızca gerçek cihazda uçtan uca denenebilir
 (arayüz/kontroller `-FokusUITestSpotify connected` sahte sağlayıcısıyla UI testlerinde doğrulanır).
@@ -181,6 +194,13 @@ Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`,
   görevler (medium/large, daire düğmesi `ToggleTaskIntent` ile görevi widget'tan tamamlar). Veri App Group'taki
   SwiftData deposundan okunur; uygulama veri değişince `WidgetCenter.reloadAllTimelines()` çağırır. Odak sürerken
   sayaç sistemce sayılır, halka 5 dk aralıklı girdilerle ilerler. Palet: widget uzantısı varsayılan paleti kullanır.
+- **StandBy** (iPhone şarjda, yatay, kilitli): `systemSmall` widget'ları sistemce ekran boyuna büyütülür ve konteyner
+  arka planı kaldırılır (`showsWidgetContainerBackground == false`). "Bugünkü odak" bu durumda halka + büyük mono
+  sayaç (odak sürerken `Text(timerInterval:)`) + ders adı / hedef satırı düzenine geçer (`FokusWidgets/StandByViews.swift`;
+  saf model `WidgetCalc.standBy`). Yeni **"Odak saati"** widget'ı (`FocusClockWidget`, small): büyük saat + tarih + bugünkü
+  toplam; saat dakika başı girdilerle ilerler (`WidgetCalc.clockTimelinePlan`). Gece modunda (tek renk) renk anlam
+  taşımaz: hedef/durum metin ve simgeyle de söylenir; tek tonda `.accented`/`.vibrant` için `primary`/`secondary` kullanılır.
+  Cihazda: iPhone'u şarja tak, yatay çevir, kilitle → StandBy → widget yığınına dokun/uzun bas → Fokus widget'larını ekle.
 - **App Group deposu:** `group.com.musabustun.fokus`. Depo (`Fokus.store` + `-wal` + `-shm`) ilk açılışta eski
   konumdan App Group kapsayıcısına TAŞINIR (`FokusAppGroup.migrateLegacyStoreIfNeeded`: önce kopyalar, başarılıysa
   eskiyi siler; hedef varsa ezmez; hata olursa eski depoyu olduğu gibi bırakır). CloudKit yapılandırması aynı kalır.

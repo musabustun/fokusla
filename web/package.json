@@ -21,6 +21,7 @@
     "test:coverage": "vitest run --coverage",
     "e2e": "playwright test",
     "export:ios-curriculum": "node scripts/export-ios-curriculum.ts",
+    "export:ios-library": "node scripts/export-ios-library.ts",
     "export:ios-palettes": "node scripts/export-ios-palettes.ts"
   },
   "dependencies": {

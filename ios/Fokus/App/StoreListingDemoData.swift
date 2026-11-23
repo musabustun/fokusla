@@ -15,13 +15,16 @@ private let logger = Logger(subsystem: "com.musabustun.fokus", category: "store-
 /// (`-FokusDemoData` tek başına, UI testi olmadan, `DebugDemoData`'nın hafif widget verisini ekler.)
 enum StoreListingDemoData {
     static let openSessionArgument = "-FokusDemoOpenSession"
+    /// `-FokusUITestMode` OLMADAN (gerçek App Group deposuna) tohumlar: iMessage uzantısı gibi aynı depoyu
+    /// okuyan uzantıların mağaza görüntüleri içindir. Yalnızca simülatörün kendi deposuna yazar.
+    static let persistentArgument = "-FokusDemoPersistent"
 
     @MainActor
     static func seedIfRequested(
         container: ModelContainer, arguments: [String] = ProcessInfo.processInfo.arguments, now: Date = .now
     ) {
         guard arguments.contains(DebugDemoData.launchArgument),
-            arguments.contains(AppEnvironment.uiTestLaunchArgument)
+            arguments.contains(AppEnvironment.uiTestLaunchArgument) || arguments.contains(persistentArgument)
         else { return }
         let context = container.mainContext
         do {

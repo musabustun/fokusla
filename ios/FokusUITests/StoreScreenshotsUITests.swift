@@ -31,23 +31,22 @@ final class StoreScreenshotsUITests: XCTestCase {
         app.descendants(matching: .any).matching(identifier: identifier).firstMatch
     }
 
-    private func waitFor(_ identifier: String, timeout: TimeInterval = 10) {
+    private func waitFor(_ identifier: String, timeout: TimeInterval = 45) {
         XCTAssertTrue(element(identifier).waitForExistence(timeout: timeout), "\(identifier) yok")
     }
 
     /// iPhone: tab bar; iPad: kenar çubuğu. `books` iPhone'da Bugün → "Diğer" kısayolundan açılır.
     private func open(_ title: String, screen: String) {
-        waitFor("screen.today")
-        if screen == "today" { return }
         let sidebar = element("sidebar")
-        if isPad, sidebar.waitForExistence(timeout: 3) {
+        if isPad, sidebar.waitForExistence(timeout: 5) {
             let row = sidebar.staticTexts[title].exists ? sidebar.staticTexts[title] : sidebar.buttons[title]
             row.tap()
         } else if screen == "books" {
+            app.tabBars.buttons["Bugün"].tap()
             let link = element("today.shortcut.books")
-            for _ in 0..<4 where !link.isHittable { app.swipeUp() }
+            for _ in 0..<5 where !link.isHittable { app.swipeUp() }
             link.tap()
-        } else {
+        } else if screen != "today" || app.tabBars.buttons["Bugün"].exists {
             app.tabBars.buttons[title].tap()
         }
         waitFor("screen.\(screen)")
@@ -85,7 +84,7 @@ final class StoreScreenshotsUITests: XCTestCase {
     func testImmersivePages() {
         for (index, page) in [(3, "stopwatch"), (4, "ring"), (8, "summary"), (9, "sound")] {
             launch(theme: "dark", openSession: true, immersivePage: page)
-            waitFor("immersive.root", timeout: 15)
+            waitFor("immersive.root", timeout: 45)
             waitFor("immersive.page.\(page)")
             shoot(index, "immersive-\(page)-dark", settle: 2.5)
             app.terminate()

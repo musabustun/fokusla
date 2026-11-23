@@ -10,6 +10,7 @@ struct FokusWidgetsBundle: WidgetBundle {
 
     var body: some Widget {
         FocusGoalWidget()
+        FocusClockWidget()
         TasksWidget()
         FocusLiveActivityWidget()
     }
@@ -22,6 +23,8 @@ struct FokusEntry: TimelineEntry {
     var focus: WidgetCalc.FocusSummary
     var tasks: WidgetCalc.TaskList
     var isAvailable: Bool
+    /// Odak sürerken ders adı (StandBy görünümü). Ders seçilmediyse ya da durağansa `nil`.
+    var activeSubject: String? = nil
 
     static let unavailable = FokusEntry(
         date: .now,
@@ -82,7 +85,9 @@ struct FokusTimelineProvider: TimelineProvider {
     static func entries(at dates: [Date]) -> [FokusEntry] {
         dates.compactMap { date in
             guard let snapshot = try? FokusSystem.snapshot(now: date) else { return nil }
-            return FokusEntry(date: date, focus: snapshot.focus, tasks: snapshot.tasks, isAvailable: true)
+            return FokusEntry(
+                date: date, focus: snapshot.focus, tasks: snapshot.tasks, isAvailable: true,
+                activeSubject: snapshot.focus.isRunning ? snapshot.activeSubjectLabel : nil)
         }
     }
 }
@@ -141,7 +146,7 @@ struct FocusGoalView: View {
         case .accessoryRectangular: rectangular
         case .accessoryInline: inline
         case .systemMedium: available { medium }
-        default: available { small }
+        default: available { smallOrStandBy }
         }
     }
 
@@ -156,6 +161,17 @@ struct FocusGoalView: View {
     }
 
     private var ratio: Double { entry.focus.ratio }
+
+    /// StandBy'da sistem small widget'ı büyütür ve konteyner arka planını kaldırır; bu durumda sade StandBy düzeni.
+    @Environment(\.showsWidgetContainerBackground) private var showsContainerBackground
+
+    @ViewBuilder private var smallOrStandBy: some View {
+        if showsContainerBackground {
+            small
+        } else {
+            StandByFocusView(display: WidgetCalc.standBy(focus: entry.focus, subject: entry.activeSubject))
+        }
+    }
 
     // MARK: Ana ekran
 

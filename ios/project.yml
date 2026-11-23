@@ -46,6 +46,8 @@ targets:
         INFOPLIST_FILE: Fokus/Info.plist
         CODE_SIGN_ENTITLEMENTS: Fokus/Fokus.entitlements
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Palete göre alternatif ikonlar (FokusDesign `FokusAppIcon`; üretim: scripts/generate_palette_app_icons.py).
+        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: AppIcon-Mono AppIcon-Strawberry AppIcon-Matcha AppIcon-Blueberry AppIcon-Lemonade
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SUPPORTS_MACCATALYST: NO
         SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO

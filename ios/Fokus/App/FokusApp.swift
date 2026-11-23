@@ -26,6 +26,7 @@ struct FokusApp: App {
                 .fokusSystemIntegration()
                 .roomInviteHost()
                 .fokusTheme()
+                .appIconFollowsPalette()
                 .background(.fkBackground)
                 .environment(\.authService, environment.authService)
                 .environment(\.syncService, environment.syncService)

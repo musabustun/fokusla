@@ -39,6 +39,8 @@ targets:
         embed: true
       - target: FokusWatch
         embed: true
+      - target: FokusMessages
+        embed: true
     settings:
       base:
         INFOPLIST_FILE: Fokus/Info.plist
@@ -110,6 +112,28 @@ targets:
         SKIP_INSTALL: YES
         TARGETED_DEVICE_FAMILY: "4"
         WATCHOS_DEPLOYMENT_TARGET: "11.0"
+  # iMessage uzantısı (Messages app extension): "bugün çalıştım" kartı + sunucusuz oda daveti.
+  # Bundle ID: com.musabustun.fokus.messages (yalnızca projede tanımlı; Apple Developer hesabında
+  # kaydedilmesi ve App Group'a eklenmesi gerekir — bkz. ios/README.md). Depoyu yalnızca OKUR.
+  FokusMessages:
+    type: app-extension
+    platform: iOS
+    sources:
+      - path: FokusMessages
+      - path: Shared
+        includes:
+          - FokusSystemStore.swift
+    dependencies:
+      - package: FokusKit
+        products: [FokusDomain, FokusData, FokusDesign]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.musabustun.fokus.messages
+        INFOPLIST_FILE: FokusMessages/Info.plist
+        CODE_SIGN_ENTITLEMENTS: FokusMessages/FokusMessages.entitlements
+        SKIP_INSTALL: YES
+        SUPPORTS_MACCATALYST: NO
+        SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: NO
   FokusUITests:
     type: bundle.ui-testing
     platform: iOS

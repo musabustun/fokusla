@@ -3,13 +3,16 @@ import Foundation
 import WatchConnectivity
 
 /// `WCSession` taşıma katmanı (iPhone uygulaması ve saat uygulaması AYNI dosyayı derler). Yalnızca
-/// `FocusLink` sözlüklerini taşır; karar kuralları `FokusDomain/FocusLink`'te, depo erişimi
-/// `FocusLinkCoordinator`'dadır. Veri CloudKit'ten akar; bu katman yalnızca "şu an durum bu" bildirimi ve
-/// (oturum karşı cihazdayken) uzaktan komut içindir. Telefon yakında değilse hiçbir şey yapmaz.
+/// `FocusLink` sözlüklerini taşır; karar kuralları `FokusDomain` (`FocusLink`), depo erişimi
+/// `FocusLinkCoordinator`'dadır.
+///
+/// Teslimat: karşı taraf erişilebilirse `sendMessage` (anında; saatten gelen mesaj iPhone uygulamasını
+/// arka planda uyandırır), gönderim hata verirse ya da erişilemiyorsa `transferUserInfo` (sistem kuyruğu;
+/// cihazlar yeniden buluşunca GARANTİLİ teslim). Alıcıda yazma `id` ile idempotenttir; aynı küme iki
+/// yoldan da gelse sonuç değişmez.
 final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable {
     /// `activate()` ÖNCESİ atanır, sonra değişmez.
-    var onBroadcast: (@MainActor @Sendable (FocusLink.Broadcast) -> Void)?
-    var onCommand: (@MainActor @Sendable (FocusLink.Command) async -> Bool)?
+    var onRecords: (@MainActor @Sendable (FocusLink.RecordBatch) -> Void)?
     var onActivated: (@MainActor @Sendable () -> Void)?
 
     private var session: WCSession? { WCSession.isSupported() ? WCSession.default : nil }
@@ -21,7 +24,7 @@ final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable
     }
 
     /// Eşleşmiş ve karşı uygulama kurulu mu? (iPhone: saat uygulaması; saat: her zaman.)
-    private var isPeerAvailable: Bool {
+    var isPeerAvailable: Bool {
         guard let session, session.activationState == .activated else { return false }
         #if os(iOS)
         return session.isPaired && session.isWatchAppInstalled
@@ -32,25 +35,19 @@ final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable
 
     // MARK: - Gönderme
 
-    /// Bildirimi yollar: bağlam (en yeni kazanır; karşı uygulama açılınca da ulaşır) + yakındaysa anlık mesaj.
-    func send(_ broadcast: FocusLink.Broadcast) {
-        guard isPeerAvailable, let session, let payload = FocusLink.payload(broadcast) else { return }
-        try? session.updateApplicationContext(payload)
-        if session.isReachable {
-            session.sendMessage(payload, replyHandler: nil, errorHandler: nil)
+    /// Kayıt kümesini yollar. Kuyruğa alındıysa ya da yollandıysa `true` (gönderim damgası ilerleyebilir).
+    @discardableResult
+    func send(_ batch: FocusLink.RecordBatch) -> Bool {
+        guard isPeerAvailable, let session, let payload = FocusLink.payload(batch) else { return false }
+        guard session.isReachable else {
+            session.transferUserInfo(payload)
+            return true
         }
-    }
-
-    /// Komutu karşı cihaza yollar; yanıt gelirse onun sonucu, ulaşılamazsa `false`.
-    func send(_ command: FocusLink.Command) async -> Bool {
-        guard isPeerAvailable, let session, session.isReachable, let payload = FocusLink.payload(command)
-        else { return false }
-        return await withCheckedContinuation { continuation in
-            session.sendMessage(
-                payload,
-                replyHandler: { reply in continuation.resume(returning: reply["ok"] as? Bool ?? false) },
-                errorHandler: { _ in continuation.resume(returning: false) })
-        }
+        nonisolated(unsafe) let fallback = payload
+        session.sendMessage(
+            payload, replyHandler: nil,
+            errorHandler: { _ in WCSession.default.transferUserInfo(fallback) })
+        return true
     }
 
     // MARK: - WCSessionDelegate
@@ -59,15 +56,7 @@ final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable
         _ session: WCSession, activationDidCompleteWith activationState: WCSessionActivationState, error: Error?
     ) {
         guard activationState == .activated else { return }
-        let pending = FocusLink.broadcast(from: session.receivedApplicationContext)
-        Task { @MainActor [onBroadcast, onActivated] in
-            if let pending { onBroadcast?(pending) }
-            onActivated?()
-        }
-    }
-
-    func session(_ session: WCSession, didReceiveApplicationContext applicationContext: [String: Any]) {
-        deliver(applicationContext)
+        Task { @MainActor [onActivated] in onActivated?() }
     }
 
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
@@ -78,21 +67,17 @@ final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable
         _ session: WCSession, didReceiveMessage message: [String: Any],
         replyHandler: @escaping ([String: Any]) -> Void
     ) {
-        guard let command = FocusLink.command(from: message) else {
-            deliver(message)
-            replyHandler(["ok": true])
-            return
-        }
-        nonisolated(unsafe) let reply = replyHandler
-        Task { @MainActor [onCommand] in
-            let handled = await onCommand?(command) ?? false
-            reply(["ok": handled])
-        }
+        deliver(message)
+        replyHandler(["ok": true])
+    }
+
+    func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any] = [:]) {
+        deliver(userInfo)
     }
 
     private func deliver(_ payload: [String: Any]) {
-        guard let broadcast = FocusLink.broadcast(from: payload) else { return }
-        Task { @MainActor [onBroadcast] in onBroadcast?(broadcast) }
+        guard let batch = FocusLink.records(from: payload) else { return }
+        Task { @MainActor [onRecords] in onRecords?(batch) }
     }
 
     #if os(iOS)
@@ -107,4 +92,8 @@ final class FocusLinkTransport: NSObject, WCSessionDelegate, @unchecked Sendable
         Task { @MainActor [onActivated] in onActivated?() }
     }
     #endif
+
+    func sessionReachabilityDidChange(_ session: WCSession) {
+        Task { @MainActor [onActivated] in onActivated?() }
+    }
 }

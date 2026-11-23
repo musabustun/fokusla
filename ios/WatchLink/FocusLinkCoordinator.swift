@@ -4,115 +4,135 @@ import Foundation
 import Observation
 import SwiftData
 
-/// iPhone ↔ saat anlık odak eşitlemesi (iki hedefe de derlenir). Depo tek doğruluk kaynağıdır; bu sınıf
-/// (1) yerel durumu `FocusLink.Broadcast` olarak karşı cihaza yollar, (2) karşıdan gelen bildirimi
-/// `remote` olarak tutar (depoya YAZILMAZ — çift kayıt oluşmasın), (3) oturum karşı cihazdayken
-/// BİTİR komutunu iletir ya da gelen komutu yerel depoda uygular.
-/// Karar kuralları saf ve testlidir: `FokusDomain/FocusLink`.
+/// iPhone ↔ saat odak eşlemesi (iki hedefe de derlenir). Her cihazın deposu kendi doğruluk kaynağıdır;
+/// başlat/mola/devam/bitir HER ZAMAN yerel depoya yazılır (telefon yanında olmasa da), sonra değişen
+/// `FocusSession`/`FocusSegment` kayıtları tam haliyle karşıya gider ve orada `id` ile idempotent yazılır
+/// (`FocusLinkRepository`). Böylece:
+/// - telefonda başlatılan oturum saatte, saatte başlatılan oturum telefonda anında görünür ve iki taraftan
+///   da mola/devam/bitir yapılabilir;
+/// - telefon uzaktayken saatte yapılanlar sistem kuyruğunda bekler, buluşunca telefona işlenir ve oradan
+///   CloudKit ile iPad'e gider (saat deposu CloudKit'e bağlı değildir; bkz. `FocusLinkSync.swift`).
+/// Kurallar saf ve testlidir: `FokusDomain/Calc/FocusLinkSync.swift`.
 @MainActor
 @Observable
 final class FocusLinkCoordinator {
     static let shared = FocusLinkCoordinator()
 
-    /// Karşı cihazın son bildirimi (bellekte; uygulama açılınca bağlamdan yeniden okunur).
-    private(set) var remote: FocusLink.Broadcast?
-    /// Uzak bildirim ya da komut sonucu ekranın yenilenmesi gerektiğinde çağrılır.
+    /// Karşıdan gelen ders adları (saatte ders kaydı yoktur; gösterim önbelleği).
+    private(set) var subjectNames: [UUID: String] = [:]
+    /// Karşıdan kayıt gelip depoya işlendiğinde çağrılır (ekran yenilensin).
     @ObservationIgnored var onChange: (() -> Void)?
+    /// Karşıdan gelen kayıt işlendikten sonra (iPhone: Live Activity + widget eşitlemesi).
+    @ObservationIgnored var onRecordsApplied: (() -> Void)?
 
     @ObservationIgnored private let transport = FocusLinkTransport()
+    @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private var isStarted = false
+    /// Karşıdan aynen alınan sürümler (`id` → `updatedAt`): geri yollanmaz.
+    @ObservationIgnored private var echo: [UUID: Date] = [:]
+    @ObservationIgnored private var pendingPublish: Task<Void, Never>?
+    @ObservationIgnored private var saveObserver: (any NSObjectProtocol)?
 
-    struct LocalView {
-        var live: FocusLink.LiveState?
-        /// Depodaki son odak değişikliği (`updatedAt` en büyüğü); hiç kayıt yoksa `.distantPast`.
-        var stamp: Date
+    private static let lastSentKey = "fokus.link.lastSent"
+    private static let subjectNamesKey = "fokus.link.subjectNames"
+    private static let publishDebounce: Duration = .milliseconds(300)
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        let cached = defaults.dictionary(forKey: Self.subjectNamesKey) as? [String: String] ?? [:]
+        subjectNames = Dictionary(
+            cached.compactMap { key, value in UUID(uuidString: key).map { ($0, value) } },
+            uniquingKeysWith: { first, _ in first })
     }
 
     func start() {
         guard !isStarted else { return }
         isStarted = true
-        transport.onBroadcast = { [weak self] broadcast in
-            self?.remote = broadcast
-            self?.onChange?()
+        transport.onRecords = { [weak self] batch in self?.receive(batch) }
+        transport.onActivated = { [weak self] in self?.peerStateChanged() }
+        // Her yerel kayıt (uygulama, intent, Live Activity düğmesi) karşıya gitsin.
+        saveObserver = NotificationCenter.default.addObserver(
+            forName: ModelContext.didSave, object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.schedulePublish() }
         }
-        transport.onCommand = { [weak self] command in await self?.receive(command) ?? false }
-        transport.onActivated = { [weak self] in self?.publish() }
         transport.activate()
     }
 
     // MARK: - Durum
 
-    func localView(now: Date = .now) throws -> LocalView {
-        let snapshot = try FokusSystem.snapshot(now: now)
-        let live = snapshot.activeSessionId.flatMap { id in
-            snapshot.activity.map {
-                FocusLink.LiveState(sessionId: id, state: $0, subjectName: snapshot.activeSubjectLabel)
-            }
-        }
-        return LocalView(live: live, stamp: try latestChange())
-    }
-
-    /// Ekranda gösterilecek açık oturum: yerel depo ile uzak bildirimden yeni olan.
+    /// Yerel depodaki açık oturum (ekran için).
     func resolvedLive(now: Date = .now) -> FocusLink.LiveState? {
-        guard let view = try? localView(now: now) else { return nil }
-        return FocusLink.resolve(local: view.live, localStamp: view.stamp, remote: remote, now: now)
+        guard let snapshot = try? FokusSystem.snapshot(now: now), let id = snapshot.activeSessionId,
+            let state = snapshot.activity
+        else { return nil }
+        let subject = snapshot.activeSubjectLabel ?? activeSubjectId().flatMap { subjectNames[$0] }
+        return FocusLink.LiveState(sessionId: id, state: state, subjectName: subject)
     }
 
-    private func latestChange() throws -> Date {
-        let context = try FokusSystem.context()
-        var sessions = FetchDescriptor<FocusSession>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
-        sessions.fetchLimit = 1
-        var segments = FetchDescriptor<FocusSegment>(sortBy: [SortDescriptor(\.updatedAt, order: .reverse)])
-        segments.fetchLimit = 1
-        let latest = [try context.fetch(sessions).first?.updatedAt, try context.fetch(segments).first?.updatedAt]
-        return latest.compactMap { $0 }.max() ?? .distantPast
+    private func activeSubjectId() -> UUID? {
+        guard let context = try? FokusSystem.context() else { return nil }
+        return (try? FocusRepository(context: context).findActive())?.subjectId
     }
 
-    // MARK: - Gönderme / komut
+    // MARK: - Gönderme
 
-    /// Yerel durumu karşı cihaza bildirir (yerel her değişiklikten sonra çağrılır).
+    private var lastSent: Date? {
+        get { defaults.object(forKey: Self.lastSentKey) as? Date }
+        set { defaults.set(newValue, forKey: Self.lastSentKey) }
+    }
+
+    /// Kayıt dalgalarını (bir eylem birkaç kayıt yazar) tek gönderime indirir.
+    func schedulePublish() {
+        pendingPublish?.cancel()
+        pendingPublish = Task { [weak self] in
+            try? await Task.sleep(for: Self.publishDebounce)
+            guard !Task.isCancelled else { return }
+            self?.publish()
+        }
+    }
+
+    /// Son gönderimden sonra değişen odak kayıtlarını karşıya yollar.
     func publish(now: Date = .now) {
-        guard let view = try? localView(now: now) else { return }
-        transport.send(FocusLink.Broadcast(stamp: view.stamp, live: view.live))
+        guard transport.isPeerAvailable, let context = try? FokusSystem.context() else { return }
+        guard
+            let batch = try? FocusLinkRepository(context: context).outgoing(
+                lastSent: lastSent, echo: echo, subjectNames: localSubjectNames(context), now: now),
+            let latest = batch.latestUpdate
+        else { return }
+        let sent = FocusLink.chunked(batch).allSatisfy { transport.send($0) }
+        if sent { lastSent = max(lastSent ?? .distantPast, latest) }
     }
 
-    /// Kullanıcının gördüğü oturumu bitirir: yerel depoda açıksa yerelde uygular, değilse karşı cihaza iletir.
-    @discardableResult
-    func finish(now: Date = .now) async -> Bool {
-        guard let view = try? localView(now: now),
-            let live = FocusLink.resolve(local: view.live, localStamp: view.stamp, remote: remote, now: now)
-        else { return false }
-        let command = FocusLink.Command(sessionId: live.sessionId, at: now)
-        let handled: Bool
-        switch FocusLink.route(commandFor: live.sessionId, localActiveSessionId: view.live?.sessionId) {
-        case .applyLocally:
-            handled = apply(command, at: now)
-            publish(now: now)
-        case .forwardToPeer:
-            handled = await transport.send(command)
+    private func localSubjectNames(_ context: ModelContext) -> [UUID: String] {
+        let subjects = (try? context.fetch(FetchDescriptor<Subject>())) ?? []
+        return Dictionary(
+            subjects.filter(\.isLive).map { ($0.id, $0.name) }, uniquingKeysWith: { first, _ in first })
+    }
+
+    private func peerStateChanged() {
+        // iPhone: saat uygulaması kaldırıldıysa bir sonraki kurulumda son 8 gün yeniden gitsin.
+        if !transport.isPeerAvailable { lastSent = nil }
+        publish()
+    }
+
+    // MARK: - Alma
+
+    private func receive(_ batch: FocusLink.RecordBatch) {
+        if !batch.subjectNames.isEmpty {
+            subjectNames.merge(batch.subjectNames) { _, new in new }
+            defaults.set(
+                Dictionary(uniqueKeysWithValues: subjectNames.map { ($0.key.uuidString, $0.value) }),
+                forKey: Self.subjectNamesKey)
         }
+        for record in batch.sessions { echo[record.id] = record.updatedAt }
+        for record in batch.segments { echo[record.id] = record.updatedAt }
+        // Ana bağlama yazılır: `@Query` ekranları (telefonda tam ekran odak) anında güncellenir.
+        guard let context = try? FokusSystem.container().mainContext,
+            let applied = try? FocusLinkRepository(context: context).apply(batch), applied > 0
+        else { return }
+        FokusSystem.reloadWidgets()
+        onRecordsApplied?()
         onChange?()
-        return handled
-    }
-
-    /// Karşı cihazdan gelen komut: oturum burada açıksa uygulanır (başarı yanıtı döner).
-    private func receive(_ command: FocusLink.Command) -> Bool {
-        let now = Date.now
-        guard let view = try? localView(now: now), view.live?.sessionId == command.sessionId else { return false }
-        let handled = apply(command, at: FocusLink.effectiveTime(of: command, received: now))
-        publish(now: now)
-        onChange?()
-        return handled
-    }
-
-    private func apply(_ command: FocusLink.Command, at now: Date) -> Bool {
-        do {
-            let repository = FocusRepository(context: try FokusSystem.context())
-            try repository.finish(sessionId: command.sessionId, now: now)
-            FokusSystem.reloadWidgets()
-            return true
-        } catch {
-            return false
-        }
     }
 }

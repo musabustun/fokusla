@@ -4,8 +4,10 @@ Thank you for reviewing Fokus, a free, ad-free study tracker for Turkish student
 NO ACCOUNT NEEDED. Sign-in is optional. On first launch: tap "Başla" (Get started) -> choose any exam field (e.g. SAY) and tap "Devam" -> keep the default theme and tap "Devam" -> tap "Şimdilik atla" (Skip for now). The app is then fully usable without any login. "Sign in with Apple" is optional and only stores the account identifier on the device (used to detect a revoked Apple ID).
 
 How to try the main features:
-- Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; swipe sideways to switch pages such as stopwatch, clock, goal ring and daily summary; tap the screen for controls, "küçült" to minimize; long-press the screen to open the customize panel for clock style, color and background). Pause/resume/finish are available. On a device, a Live Activity / Dynamic Island appears while a session is running.
+- Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; swipe sideways to switch pages such as stopwatch, clock, goal ring and daily summary; tap the screen for controls, "küçült" to minimize; long-press the screen to open the customize panel for clock style, color and background). Pause/resume/finish are available. On a device, a Live Activity appears while a session runs.
 - Focus sounds are generated on the device (no downloads, no network).
+- Apple Watch app: a single screen with "Başlat" (start a focus session) and, while a session runs, a timer and "Bitir" (finish). It works without the iPhone nearby.
+- iMessage app (Messages extension): open the app drawer in any conversation and pick Fokus. "Bugün" shares a card with today's study time; "Oda" prepares a study-room invitation. Nothing is sent until the user taps Send; no server, no account.
 - Analysis tab: add a test result (correct / wrong / blank); net = correct - wrong/4.
 - Books and Tasks: add a book / a task; mark progress.
 - Settings: daily goal, reminders (local notifications, optional), themes, export (JSON) and "delete all data".
@@ -16,11 +18,11 @@ Privacy: the app collects no data. There is no analytics, tracking, advertising 
 
 Encryption: only standard Apple system encryption/HTTPS; ITSAppUsesNonExemptEncryption = NO.
 
-This release has no social/community features and no user-generated content. The app is open source (MIT): https://github.com/musabustun/fokusla
+This release has no in-app social network, accounts or user-generated content hosted by us; the only sharing is the optional iMessage extension (the user sends the card/invitation). The app is open source (MIT): https://github.com/musabustun/fokusla
 
 [Türkçe]
 Fokus'u incelediğiniz için teşekkürler. Hesap gerekmez; giriş isteğe bağlıdır. İlk açılışta: "Başla" -> bir YKS alanı seç -> "Devam" -> "Devam" -> "Şimdilik atla". Ardından uygulama girişsiz tam çalışır. "Apple ile Giriş" isteğe bağlıdır; hesap kimliği yalnızca cihazda tutulur.
 
 Spotify isteğe bağlıdır ve Spotify'ın "Development mode"unda olduğu için inceleme hesabıyla bağlanamayabilir; bağlanamazsa yalnızca "Spotify'da aç" bağlantısı görünür. Başka hiçbir özellik Spotify'a bağlı değildir.
 
-Veri toplanmaz: analitik, izleme, reklam yok. Veriler cihazdadır; iCloud eşitleme açıksa yalnızca kullanıcının kendi özel CloudKit veritabanı kullanılır (geliştirici erişemez). Bildirimler yalnızca yereldir. Bu sürümde sosyal özellik veya kullanıcı içeriği yoktur.
+Veri toplanmaz: analitik, izleme, reklam yok. Veriler cihazdadır; iCloud eşitleme açıksa yalnızca kullanıcının kendi özel CloudKit veritabanı kullanılır (geliştirici erişemez). Bildirimler yalnızca yereldir. Uygulama içi sosyal ağ, hesap veya bizim barındırdığımız kullanıcı içeriği yoktur; tek paylaşım isteğe bağlı iMessage uzantısıdır (göndermeyi kullanıcı yapar). Apple Watch uygulaması yalnızca odak başlat/bitir içerir.

@@ -10,6 +10,7 @@ Fokus 1.0.0'ın App Store Connect'e girilecek içerikleri. Yalnızca Türkçe (b
 | `scripts/check_metadata.py` | Karakter/bayt sınırlarını doğrular: `python3 appstore/scripts/check_metadata.py` |
 | `screenshots/iphone-6.3/` | **ASC'de zorunlu** "Dynamic Island (orta ekran)" yuvası: 1206×2622, alfasız PNG (şablon yerel boyutunda render edilir, yeniden örnekleme yok) |
 | `screenshots/iphone-6.9/`, `screenshots/ipad-13/` | 6.9" (1320×2868, isteğe bağlı) ve iPad 13" (2064×2752) karuseli, alfasız PNG |
+| `screenshots/watch/` | Apple Watch yuvası: 422×514 (Ultra 3, 49 mm), alfasız PNG; simülatör ekran görüntüsü olduğu gibi (`01-baslat`, `02-sayac`) |
 | `screenshots/build_screenshots.py`, `screenshots/src/` | Mockup + karusel üretimi (HTML/CSS + headless Chrome; başlıklar `src/*.json`) |
 | `scripts/capture_screenshots.sh` | Ham ekran görüntüleri: `StoreScreenshotsUITests` (demo veri: `-FokusUITestMode -FokusDemoData`) |
 | `header/`, `search-results/` | ASC "Header" (5244×2950, 3840×1646) ve "Arama sonuçları" (5244×2950, 3840×2560) görselleri; `scripts/build_header.py` |
@@ -39,6 +40,12 @@ xcrun simctl create "Fokus Shots 6.3" com.apple.CoreSimulator.SimDeviceType.iPho
 xcrun simctl create "Fokus Shots iPad 13" com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB com.apple.CoreSimulator.SimRuntime.iOS-27-2
 appstore/scripts/capture_screenshots.sh iphone <UDID> /tmp/raw/iphone      # 6.9"; 6.3" için: iphone63 <UDID> /tmp/raw/iphone63; ve ipad
 python3 appstore/screenshots/build_screenshots.py --raw /tmp/raw --out appstore/screenshots   # iphone-6.9, iphone-6.3 (raw/iphone63 yoksa 6.9" ham görüntülerden), ipad-13
+# Apple Watch (simülatör: Apple Watch Ultra 3 49mm, watchOS 27.2; saat saati override edilemez)
+#   xcodebuild build -project ios/Fokus.xcodeproj -scheme FokusWatch -destination 'platform=watchOS Simulator,id=<UDID>' -derivedDataPath ios/build/DerivedDataShots CODE_SIGNING_ALLOWED=NO
+#   xcrun simctl install <UDID> <...>/Debug-watchsimulator/FokusWatch.app
+#   xcrun simctl launch <UDID> com.musabustun.fokus.watchkitapp                           # 01-baslat
+#   xcrun simctl launch <UDID> com.musabustun.fokus.watchkitapp -FokusWatchDemoSession    # 02-sayac (23 dk'lık açık oturum, DEBUG)
+#   xcrun simctl io <UDID> screenshot 01-baslat.png
 python3 appstore/scripts/build_header.py
 ```
 

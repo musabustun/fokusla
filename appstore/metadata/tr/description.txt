@@ -1,0 +1,41 @@
+Fokus, YKS'ye hazırlanan öğrenciler için sade bir çalışma takip uygulaması. Ücretsiz, reklamsız ve premium'suz; verilerin cihazında durur. Giriş yapmak zorunda değilsin.
+
+BUGÜN
+Günün özeti tek ekranda: bugünkü odak süren ve günlük hedefin, bekleyen görevlerin, son denemelerin, zayıf konuların ve kitaplardaki ilerlemen.
+
+ODAK
+• Kronometreyi başlat, istediğin an duraklat ve devam et. Ders seçmek isteğe bağlı.
+• Oturum süresi, günlük toplam, ortalama kesintisiz odak ve ortalama mola otomatik hesaplanır.
+• Tam ekran odak: ekranı açık tutan, StandBy tarzı büyük sayaç; saat, ilerleme halkası ve saf siyah "gece" görünümü arasında kaydır.
+• Odak sesleri: beyaz, pembe ve kahverengi gürültü, yağmur ve yumuşak melodi. Sesler cihazda üretilir; indirme ve internet gerekmez.
+• İstersen Spotify ile müziği Fokus içinden denetle. Spotify tamamen isteğe bağlıdır; bağlamadan da her şey çalışır.
+
+KONU VE TEST ANALİZİ
+• Ders ve konulara göre kitap, test, doğru / yanlış / boş sonuçlarını kaydet.
+• Net, YKS'deki gibi hesaplanır: net = doğru − yanlış / 4.
+• Net grafiği ve zayıf konular, neye çalışman gerektiğini gösterir.
+• TYT ve AYT müfredatı hazır gelir; kendi ders ve konularını da ekleyebilirsin.
+
+KİTAPLAR
+Her kitapta nereye kadar geldiğini kaydet; ilerleme yüzdesi otomatik hesaplanır.
+
+GÖREVLER
+Günlük rutinler ve son tarihli ödevler. Bugünün görevlerini işaretle, geciken ödevleri gör.
+
+HEDEF VE HATIRLATMALAR
+Günlük odak hedefini belirle, ilerlemeni halkada izle. İstersen günlük hatırlatma al.
+
+SİSTEMLE BÜTÜNLEŞİK
+• Widget'lar: bugünkü odak ve hedef halkası, bugünün görevleri (ana ekran ve kilit ekranı).
+• Live Activity ve Dynamic Island: kilit ekranından sayacı gör, mola ver ya da bitir.
+• Siri ve Kestirmeler: "Odak başlat", "Odağı bitir", "Bugün ne kadar çalıştım?", "Görev ekle".
+• iPhone ve iPad için tasarlandı; açık ve koyu tema, altı renk paleti.
+
+VERİN SENİN
+• Reklam, izleme ve analiz yok; hiçbir veri toplanmaz.
+• Veriler cihazında saklanır. İstersen iCloud ile kendi iPhone ve iPad'in arasında eşitlenir; bu veriye geliştirici de erişemez.
+• Verilerini istediğin zaman JSON olarak dışa aktarabilir ya da tamamen silebilirsin.
+• Apple ile Giriş isteğe bağlıdır; "Şimdilik atla" ile girişsiz kullanabilirsin.
+• Açık kaynak (MIT): github.com/musabustun/fokusla
+
+Fokus, sakin ve dürüst bir çalışma aracı olmak için yapıldı. Başarılar!

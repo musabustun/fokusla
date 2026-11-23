@@ -1,0 +1,6 @@
+Fokus'un ilk sürümü! YKS çalışmanı tek yerden takip et:
+• Kronometreyle odak oturumları, tam ekran odak ve cihazda üretilen odak sesleri
+• Konu ve deneme analizi (net = doğru − yanlış/4)
+• Kitap ve görev takibi, günlük hedef ve hatırlatmalar
+• Widget'lar, Live Activity / Dynamic Island ve Siri Kestirmeleri
+• iCloud ile iPhone ve iPad arasında eşitleme (isteğe bağlı)

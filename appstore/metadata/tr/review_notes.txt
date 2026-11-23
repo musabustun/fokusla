@@ -1,0 +1,26 @@
+[English]
+Thank you for reviewing Fokus, a free, ad-free study tracker for Turkish students preparing for the national university entrance exam (YKS). The UI is Turkish.
+
+NO ACCOUNT NEEDED. Sign-in is optional. On first launch: tap "Başla" (Get started) -> choose any exam field (e.g. SAY) and tap "Devam" -> keep the default theme and tap "Devam" -> tap "Şimdilik atla" (Skip for now). The app is then fully usable without any login. "Sign in with Apple" is optional and only stores the account identifier on the device (used to detect a revoked Apple ID).
+
+How to try the main features:
+- Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; tap the screen for controls, "küçült" to minimize). Pause/resume/finish are available. On a device, a Live Activity / Dynamic Island appears while a session is running.
+- Focus sounds are generated on the device (no downloads, no network).
+- Analysis tab: add a test result (correct / wrong / blank); net = correct - wrong/4.
+- Books and Tasks: add a book / a task; mark progress.
+- Settings: daily goal, reminders (local notifications, optional), themes, export (JSON) and "delete all data".
+
+Spotify is OPTIONAL. The Spotify integration uses Spotify's iOS App Remote only to control playback in the user's Spotify app; Fokus receives no profile data. Our Spotify developer app is in Spotify's Development mode, so it may not be possible to connect with the review device's Spotify account; if it cannot connect, Fokus shows a plain "Spotify'da aç" (Open in Spotify) link instead. Nothing else depends on Spotify.
+
+Privacy: the app collects no data. There is no analytics, tracking, advertising or third-party service of ours; the app contains no network code of its own. Data lives on the device (SwiftData). If the user is signed in to iCloud and sync is enabled in Settings, data syncs only through the user's own private CloudKit database (iCloud.com.musabustun.fokus), which the developer cannot access. Notifications are local only. No in-app purchases, no subscriptions.
+
+Encryption: only standard Apple system encryption/HTTPS; ITSAppUsesNonExemptEncryption = NO.
+
+This release has no social/community features and no user-generated content. The app is open source (MIT): https://github.com/musabustun/fokusla
+
+[Türkçe]
+Fokus'u incelediğiniz için teşekkürler. Hesap gerekmez; giriş isteğe bağlıdır. İlk açılışta: "Başla" -> bir YKS alanı seç -> "Devam" -> "Devam" -> "Şimdilik atla". Ardından uygulama girişsiz tam çalışır. "Apple ile Giriş" isteğe bağlıdır; hesap kimliği yalnızca cihazda tutulur.
+
+Spotify isteğe bağlıdır ve Spotify'ın "Development mode"unda olduğu için inceleme hesabıyla bağlanamayabilir; bağlanamazsa yalnızca "Spotify'da aç" bağlantısı görünür. Başka hiçbir özellik Spotify'a bağlı değildir.
+
+Veri toplanmaz: analitik, izleme, reklam yok. Veriler cihazdadır; iCloud eşitleme açıksa yalnızca kullanıcının kendi özel CloudKit veritabanı kullanılır (geliştirici erişemez). Bildirimler yalnızca yereldir. Bu sürümde sosyal özellik veya kullanıcı içeriği yoktur.

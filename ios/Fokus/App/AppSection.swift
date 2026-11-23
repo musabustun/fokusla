@@ -39,5 +39,18 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    static var tabBarSections: [AppSection] { allCases.filter(\.inTabBar) }
+    /// Bu derlemede kullanıcıya gösterilir mi? Sosyal henüz sahte (mock) arkadaş verisiyle çalıştığı için
+    /// yalnızca DEBUG derlemelerinde (ve UI testlerinde) görünür; Release'te giriş noktaları gizlenir.
+    var isAvailable: Bool {
+        #if DEBUG
+        true
+        #else
+        self != .social
+        #endif
+    }
+
+    /// Kenar çubuğu, "Diğer" listeleri ve tab bar için kullanılacak bölümler (`isAvailable` süzgeci).
+    static var availableSections: [AppSection] { allCases.filter(\.isAvailable) }
+
+    static var tabBarSections: [AppSection] { availableSections.filter(\.inTabBar) }
 }

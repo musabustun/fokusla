@@ -13,7 +13,9 @@ struct StandByEditorPagesTab: View {
                 row(page)
                     .moveDisabled(!preferences.isEnabled(page))
                     .listRowBackground(Color.clear)
+                    #if !os(watchOS)
                     .listRowSeparatorTint(Color.clear)
+                    #endif
             }
             .onMove { source, destination in
                 preferences = StandByEditorPanel.movingEnabled(

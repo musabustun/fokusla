@@ -287,6 +287,14 @@ struct ImmersiveFocusView: View {
             .scrollTargetBehavior(.paging)
             .scrollPosition(id: $scrolledPage)
             .scrollIndicators(.hidden)
+            // Kullanıcı kaydırmaya başladıysa bekleyen yeniden oturtma iptal edilir ve izleme hemen açılır.
+            // Aksi halde açılıştan/boyut değişiminden hemen sonraki (yüklü cihazda uzayan) oturma penceresinde
+            // yapılan kaydırma görmezden gelinir ve gecikmeli `scrollTo` sayfayı eski yerine geri atardı.
+            .onScrollPhaseChange { _, phase in
+                guard phase == .interacting, !tracksScroll else { return }
+                reanchorTask?.cancel()
+                tracksScroll = true
+            }
             .ignoresSafeArea()
             .simultaneousGesture(
                 LongPressGesture(minimumDuration: 0.5).onEnded { _ in enterEditing() })

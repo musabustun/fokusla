@@ -203,6 +203,8 @@ final class ImmersiveFocusUITests: FocusUITestCase {
     private enum SwipeDirection { case left, right }
 
     private func swipePage(_ direction: SwipeDirection) {
+        // Sunum geçişi sürerken kaydırma yok sayılır (açılıştan hemen sonraki ilk kaydırma kayboluyordu).
+        waitForImmersivePresented()
         // Orta yükseklikten kaydır: kenar hareketlerine (geri/ana ekran) takılmaz.
         let root = element("immersive.root")
         let start = root.coordinate(withNormalizedOffset: CGVector(dx: direction == .left ? 0.85 : 0.15, dy: 0.4))

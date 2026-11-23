@@ -8,7 +8,10 @@ Fokus 1.0.0'ın App Store Connect'e girilecek içerikleri. Yalnızca Türkçe (b
 | `metadata/tr/age_rating.md` | Yaş derecelendirmesi anketi için önerilen cevaplar (beklenen 4+) |
 | `privacy.md` | App Privacy ("Data Not Collected") gerekçesi + kod tarama bulguları |
 | `scripts/check_metadata.py` | Karakter/bayt sınırlarını doğrular: `python3 appstore/scripts/check_metadata.py` |
-| `screenshots/` | (Aşama 2) iPhone 6.9" ve iPad 13" mağaza görselleri |
+| `screenshots/iphone-6.9/`, `screenshots/ipad-13/` | Mağaza karuseli (1320×2868 / 2064×2752, alfasız PNG) |
+| `screenshots/build_screenshots.py`, `screenshots/src/` | Mockup + karusel üretimi (HTML/CSS + headless Chrome; başlıklar `src/*.json`) |
+| `scripts/capture_screenshots.sh` | Ham ekran görüntüleri: `StoreScreenshotsUITests` (demo veri: `-FokusUITestMode -FokusDemoData`) |
+| `header/`, `search-results/` | ASC "Header" (5244×2950, 3840×1646) ve "Arama sonuçları" (5244×2950, 3840×2560) görselleri; `scripts/build_header.py` |
 
 Gizlilik ve destek sayfaları: [`docs/privacy.md`](../docs/privacy.md), [`docs/support.md`](../docs/support.md).
 
@@ -25,3 +28,16 @@ Gizlilik ve destek sayfaları: [`docs/privacy.md`](../docs/privacy.md), [`docs/s
 2. Release arşivi (cihaz imzalı) → ASC; Spotify Client ID `ios/Config/Local.xcconfig`'tedir (git dışı). Boşsa Spotify yalnızca "Spotify'da aç" bağlantısı gösterir.
 3. ASC: App Privacy = Veri toplanmıyor; Export Compliance sorusu çıkmaz; Yaş derecelendirmesi `age_rating.md`; kategori `category.txt`.
 4. İnceleme notları `review_notes.txt`; demo hesap gerekmez.
+
+## Ekran görüntülerini yeniden üretme
+
+```bash
+cd ios && xcodegen generate && cd ..
+xcrun simctl create "Fokus Shots 6.9" com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro-Max com.apple.CoreSimulator.SimRuntime.iOS-27-2
+xcrun simctl create "Fokus Shots iPad 13" com.apple.CoreSimulator.SimDeviceType.iPad-Pro-13-inch-M5-12GB com.apple.CoreSimulator.SimRuntime.iOS-27-2
+appstore/scripts/capture_screenshots.sh iphone <UDID> /tmp/raw/iphone     # ve ipad
+python3 appstore/screenshots/build_screenshots.py --raw /tmp/raw --out appstore/screenshots
+python3 appstore/scripts/build_header.py
+```
+
+Demo veri yalnızca DEBUG'da ve `-FokusUITestMode` ile birlikte çalışır (bellek içi depo); `-FokusDemoOpenSession` açık bir odak oturumu başlatır. `-FokusDemoData` açıkken Sosyal gizlenir (Release ile aynı görünüm).

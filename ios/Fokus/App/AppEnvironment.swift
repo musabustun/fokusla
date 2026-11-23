@@ -51,6 +51,9 @@ struct AppEnvironment {
         } catch {
             logger.error("Müfredat tohumlanamadı: \(error.localizedDescription, privacy: .public)")
         }
+        #if DEBUG
+        StoreListingDemoData.seedIfRequested(container: container)
+        #endif
 
         return AppEnvironment(
             container: container,

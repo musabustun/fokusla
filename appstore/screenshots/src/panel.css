@@ -1,0 +1,33 @@
+/* Fokus mağaza görselleri — "Gece mesaisi": sıcak koyu zemin, tek kehribar vurgu. */
+@font-face { font-family: "Bricolage"; font-weight: 800; src: url("../../../ios/FokusKit/Sources/FokusDesign/Resources/Fonts/BricolageGrotesque-ExtraBold.ttf"); }
+@font-face { font-family: "Bricolage"; font-weight: 500; src: url("../../../ios/FokusKit/Sources/FokusDesign/Resources/Fonts/BricolageGrotesque-Medium.ttf"); }
+@font-face { font-family: "JBMono"; font-weight: 400; src: url("../../../ios/FokusKit/Sources/FokusDesign/Resources/Fonts/JetBrainsMono-Regular.ttf"); }
+@font-face { font-family: "JBMono"; font-weight: 500; src: url("../../../ios/FokusKit/Sources/FokusDesign/Resources/Fonts/JetBrainsMono-Medium.ttf"); }
+
+:root {
+  --bg: #0E0F0C;
+  --amber: #FFB547;
+  --cream: #EDEAE2;
+  --muted: #8E8B80;
+  --line: rgba(237, 234, 226, 0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: var(--W); height: var(--H); background: var(--bg); overflow: hidden; }
+.panel { position: relative; width: var(--W); height: var(--H); overflow: hidden; background: var(--bg); }
+
+/* Kesintisiz akan arka plan: tüm şerit (N × W) tek parça çizilir, panel kendi dilimini gösterir. */
+.flow { position: absolute; top: 0; left: calc(var(--i) * var(--W) * -1); width: calc(var(--N) * var(--W)); height: var(--H); }
+.flow svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+.copy { position: absolute; left: var(--pad); right: var(--pad); top: var(--copyTop); }
+.eyebrow { font: 500 var(--eyebrow) "JBMono", monospace; letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); display: flex; align-items: center; gap: 0.9em; }
+.eyebrow::before { content: ""; width: 2.2em; height: 3px; background: var(--amber); border-radius: 3px; }
+h1 { font: 800 var(--h1) / 1.02 "Bricolage", sans-serif; letter-spacing: -0.02em; color: var(--cream); margin-top: var(--gap); max-width: 100%; }
+p.sub { font: 500 var(--sub) / 1.35 "Bricolage", sans-serif; color: var(--muted); margin-top: calc(var(--gap) * 0.7); max-width: 92%; }
+
+/* Sade cihaz çerçevesi (kendi çizimimiz; Apple görseli kullanılmaz). */
+.device { position: absolute; left: 50%; top: var(--devTop); width: var(--devW); transform: translateX(-50%); padding: var(--bezel); border-radius: var(--outerR); background: #171814; box-shadow: 0 0 0 3px #2A2B25, 0 0 0 5px #0A0A08, 0 60px 140px rgba(0,0,0,.65), 0 0 220px rgba(255,181,71,.10); }
+.device .screen { position: relative; width: 100%; border-radius: var(--innerR); overflow: hidden; background: #000; }
+.device .screen img { display: block; width: 100%; height: auto; }
+.device.phone::after { content: ""; position: absolute; top: calc(var(--bezel) + 26px); left: 50%; width: 31%; height: 3.3%; transform: translateX(-50%); border-radius: 999px; background: #000; opacity: 0; }
+.device .screen .cover { position: absolute; left: 0; right: 0; bottom: 0; height: 2.1%; }

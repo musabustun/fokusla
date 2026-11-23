@@ -1,0 +1,8 @@
+[
+  {"raw": "ipad-01-today-dark", "slug": "bugun", "eyebrow": "Bugün", "title": "Günün özeti tek bakışta.", "sub": "Odak süren, görevlerin, son denemelerin ve kitapların bir arada."},
+  {"raw": "ipad-03-immersive-stopwatch-dark", "slug": "tam-ekran-odak", "eyebrow": "Tam ekran odak", "title": "Ekran açık kalır, sen çalışırsın.", "sub": "StandBy tarzı büyük sayaç; dikey ya da yatay."},
+  {"raw": "ipad-05-analysis-dark", "slug": "analiz", "eyebrow": "Konu ve test analizi", "title": "Netini konu konu gör.", "sub": "net = doğru − yanlış / 4. Zayıf konuların öne çıkar."},
+  {"raw": "ipad-06-books-dark", "slug": "kitaplar", "eyebrow": "Kitaplar", "title": "Kitapta nereye geldin?", "sub": "Her kitabın ilerlemesi sayfa ya da test sayısıyla."},
+  {"raw": "ipad-07-tasks-dark", "slug": "gorevler", "eyebrow": "Görevler", "title": "Rutinler ve ödevler.", "sub": "Günlük rutinlerin, son tarihli ödevlerin tek listede."},
+  {"raw": "ipad-21-today-light", "slug": "ucretsiz-reklamsiz", "eyebrow": "Açık ve koyu tema", "title": "Ücretsiz. Reklamsız. Verin cihazında.", "sub": "Giriş şart değil; iCloud ile iPhone ve iPad arasında eşitlenir."}
+]

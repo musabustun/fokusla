@@ -112,7 +112,7 @@ extension View {
 }
 
 /// UI testlerinde son seçilen sayfa ve StandBy tercihleri testler arasında sızmasın: `-FokusUITestMode` ile
-/// başlarken saklanan sayfa silinir ve tercihler varsayılana (gece kırmızısı kapalı: saatten bağımsız) döner.
+/// başlarken saklanan sayfa silinir ve tercihler varsayılana (gece kırmızısı varsayılan kapalı: saatten bağımsız) döner.
 /// Yeniden başlatmada hatırlamayı sınayan test `-FokusUITestKeepImmersivePage` verir.
 /// `-FokusUITestStandBy <json>` tercihleri açıkça verir (eksik anahtarlar varsayılan).
 enum ImmersiveUITestSupport {
@@ -123,12 +123,10 @@ enum ImmersiveUITestSupport {
         guard arguments.contains("-FokusUITestMode") else { return }
         if !arguments.contains("-FokusUITestKeepImmersivePage") {
             defaults.removeObject(forKey: ImmersiveStorage.pageKey)
-            let reset = StandByPreferences.default.with(\.nightMode, .off)
-            preferencesDefaults.set(reset.encoded(), forKey: StandByPreferences.storageKey)
+            preferencesDefaults.set(StandByPreferences.default.encoded(), forKey: StandByPreferences.storageKey)
         }
         if let json = value(after: "-FokusUITestStandBy", in: arguments), let data = json.data(using: .utf8) {
-            let base = StandByPreferences.default.with(\.nightMode, .off)
-            preferencesDefaults.set(overlay(json: data, on: base).encoded(), forKey: StandByPreferences.storageKey)
+            preferencesDefaults.set(overlay(json: data, on: .default).encoded(), forKey: StandByPreferences.storageKey)
         }
         // Başlangıç sayfası `-FokusUITestImmersivePage <raw>` ile verilir. `-fokus.focus.immersivePage`
         // KULLANILMAZ: UserDefaults argüman alanı uygulamanın yazdığı değeri ezer, sayfa hiç değişmezdi.

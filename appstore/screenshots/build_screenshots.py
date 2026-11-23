@@ -75,6 +75,16 @@ def flow_svg(w: int, h: int, n: int, device: str) -> str:
 </svg>'''
 
 
+def cover_html(panel: dict, raw_path: Path) -> str:
+    """Tab bar'ın altındaki, ekranın en alt şeridinde görünen kısmi satırı (taşma gibi görünür) uygulamanın
+    kendi zemin rengiyle örter. Renk, ham görüntünün sol kenarından (tab bar ve satırın dışından) örneklenir."""
+    if not panel.get("tabbar"):
+        return ""
+    with Image.open(raw_path) as im:
+        r, g, b = im.convert("RGB").getpixel((14, im.height - 90))
+    return f'<div class="cover" style="background: rgb({r},{g},{b})"></div>'
+
+
 def page_html(device: str, cfg: dict, index: int, panel: dict, raw_path: Path) -> str:
     w, h = cfg["size"]
     css_vars = "".join(f"--{k}: {v}px;" for k, v in cfg["css"].items())
@@ -86,7 +96,7 @@ def page_html(device: str, cfg: dict, index: int, panel: dict, raw_path: Path) -
   <div class="flow">{flow_svg(w, h, n, device)}</div>
   <div class="copy"><div class="eyebrow">{html.escape(panel["eyebrow"])}</div>
     <h1>{html.escape(panel["title"])}</h1><p class="sub">{html.escape(panel["sub"])}</p></div>
-  <div class="device {'phone' if device == 'iphone' else 'pad'}"><div class="screen"><img src="{raw_path.as_uri()}"></div></div>
+  <div class="device {'phone' if device == 'iphone' else 'pad'}"><div class="screen"><img src="{raw_path.as_uri()}">{cover_html(panel, raw_path)}</div></div>
 </div></body></html>'''
 
 

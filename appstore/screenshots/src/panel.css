@@ -30,3 +30,4 @@ p.sub { font: 500 var(--sub) / 1.35 "Bricolage", sans-serif; color: var(--muted)
 .device .screen { position: relative; width: 100%; border-radius: var(--innerR); overflow: hidden; background: #000; }
 .device .screen img { display: block; width: 100%; height: auto; }
 .device.phone::after { content: ""; position: absolute; top: calc(var(--bezel) + 26px); left: 50%; width: 31%; height: 3.3%; transform: translateX(-50%); border-radius: 999px; background: #000; opacity: 0; }
+.device .screen .cover { position: absolute; left: 0; right: 0; bottom: 0; height: 2.1%; }

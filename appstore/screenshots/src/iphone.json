@@ -1,10 +1,64 @@
 [
-  {"raw": "iphone-01-today-dark", "slug": "bugun", "eyebrow": "Bugün", "title": "Günün özeti tek bakışta.", "sub": "Odak süren, görevlerin, son denemelerin ve kitapların bir arada."},
-  {"raw": "iphone-02-focus-dark", "slug": "odak", "eyebrow": "Odak", "title": "Kronometreyi başlat, odaklan.", "sub": "Duraklat, devam et. Ortalama kesintisiz odağın otomatik hesaplanır."},
-  {"raw": "iphone-03-immersive-stopwatch-dark", "slug": "tam-ekran-odak", "eyebrow": "Tam ekran odak", "title": "Ekran açık kalır, sen çalışırsın.", "sub": "StandBy tarzı büyük sayaç; dikey ya da yatay."},
-  {"raw": "iphone-09-immersive-sound-dark", "slug": "odak-sesleri", "eyebrow": "Odak sesleri", "title": "Sesler cihazında üretilir.", "sub": "Beyaz gürültü, yağmur, melodi. İndirme ve internet yok."},
-  {"raw": "iphone-05-analysis-dark", "slug": "analiz", "eyebrow": "Konu ve test analizi", "title": "Netini konu konu gör.", "sub": "net = doğru − yanlış / 4. Zayıf konuların öne çıkar."},
-  {"raw": "iphone-06-books-dark", "slug": "kitaplar", "eyebrow": "Kitaplar", "title": "Kitapta nereye geldin?", "sub": "Her kitabın ilerlemesi sayfa ya da test sayısıyla."},
-  {"raw": "iphone-07-tasks-dark", "slug": "gorevler", "eyebrow": "Görevler", "title": "Rutinler ve ödevler.", "sub": "Günlük rutinlerin, son tarihli ödevlerin tek listede."},
-  {"raw": "iphone-21-today-light", "slug": "ucretsiz-reklamsiz", "eyebrow": "Açık ve koyu tema", "title": "Ücretsiz. Reklamsız. Verin cihazında.", "sub": "Giriş şart değil; iCloud ile iPhone ve iPad arasında eşitlenir."}
+  {
+    "raw": "iphone-01-today-dark",
+    "slug": "bugun",
+    "eyebrow": "Bugün",
+    "title": "Günün özeti tek bakışta.",
+    "sub": "Odak süren, görevlerin, son denemelerin ve kitapların bir arada.",
+    "tabbar": true
+  },
+  {
+    "raw": "iphone-02-focus-dark",
+    "slug": "odak",
+    "eyebrow": "Odak",
+    "title": "Kronometreyi başlat, odaklan.",
+    "sub": "Duraklat, devam et. Ortalama kesintisiz odağın otomatik hesaplanır.",
+    "tabbar": true
+  },
+  {
+    "raw": "iphone-03-immersive-stopwatch-dark",
+    "slug": "tam-ekran-odak",
+    "eyebrow": "Tam ekran odak",
+    "title": "Ekran açık kalır, sen çalışırsın.",
+    "sub": "StandBy tarzı büyük sayaç; dikey ya da yatay."
+  },
+  {
+    "raw": "iphone-09-immersive-sound-dark",
+    "slug": "odak-sesleri",
+    "eyebrow": "Odak sesleri",
+    "title": "Sesler cihazında üretilir.",
+    "sub": "Beyaz gürültü, yağmur, melodi. İndirme ve internet yok."
+  },
+  {
+    "raw": "iphone-05-analysis-dark",
+    "slug": "analiz",
+    "eyebrow": "Konu ve test analizi",
+    "title": "Netini konu konu gör.",
+    "sub": "net = doğru − yanlış / 4. Zayıf konuların öne çıkar.",
+    "tabbar": true
+  },
+  {
+    "raw": "iphone-06-books-dark",
+    "slug": "kitaplar",
+    "eyebrow": "Kitaplar",
+    "title": "Kitapta nereye geldin?",
+    "sub": "Her kitabın ilerlemesi sayfa ya da test sayısıyla.",
+    "tabbar": true
+  },
+  {
+    "raw": "iphone-07-tasks-dark",
+    "slug": "gorevler",
+    "eyebrow": "Görevler",
+    "title": "Rutinler ve ödevler.",
+    "sub": "Günlük rutinlerin, son tarihli ödevlerin tek listede.",
+    "tabbar": true
+  },
+  {
+    "raw": "iphone-21-today-light",
+    "slug": "ucretsiz-reklamsiz",
+    "eyebrow": "Açık ve koyu tema",
+    "title": "Ücretsiz. Reklamsız. Verin cihazında.",
+    "sub": "Giriş şart değil; iCloud ile iPhone ve iPad arasında eşitlenir.",
+    "tabbar": true
+  }
 ]

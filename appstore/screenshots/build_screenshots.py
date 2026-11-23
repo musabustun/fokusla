@@ -31,8 +31,8 @@ DEVICES = {
     },
     "ipad": {
         "dir": "ipad-13", "size": (2064, 2752),
-        "css": {"pad": 150, "copyTop": 150, "eyebrow": 44, "h1": 150, "sub": 62, "gap": 38,
-                "devTop": 640, "devW": 1400, "bezel": 32, "outerR": 120, "innerR": 90},
+        "css": {"pad": 150, "copyTop": 150, "eyebrow": 44, "h1": 136, "sub": 58, "gap": 36,
+                "devTop": 740, "devW": 1340, "bezel": 30, "outerR": 120, "innerR": 90},
         "panels": json.loads((HERE / "src" / "ipad.json").read_text(encoding="utf-8")),
     },
 }

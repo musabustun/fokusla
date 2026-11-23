@@ -80,3 +80,22 @@ test('toplama ulaşan kitap tamamlandı olur ve bitenlere geçer', async ({ page
   await page.getByRole('radio', { name: /Biten/ }).click()
   await expect(page.getByRole('link', { name: /Paragraf Soru Bankası/ })).toBeVisible()
 })
+
+test('elle barkod gir → kütüphanede yok → kaydet → detayda barkod görünür', async ({ page }) => {
+  await skipOnboarding(page)
+  await page.goto('/kitaplar')
+  await page.getByRole('button', { name: 'Kitap ekle' }).click()
+
+  const sheet = page.getByRole('dialog', { name: 'Kitap ekle' })
+  await sheet.getByLabel('Barkod').fill('978-0-306-40615-7')
+  await sheet.getByRole('button', { name: 'Kütüphanede ara' }).click()
+  await expect(sheet.getByText('Bu kitap kütüphanede yok. Bilgileri elle gir.')).toBeVisible()
+
+  await sheet.getByLabel('Kitap adı').fill('Barkodlu Deneme Kitabı')
+  await sheet.getByRole('button', { name: 'Kaydet' }).click()
+
+  await expect(page).toHaveURL(/\/kitaplar\/[0-9a-f-]{36}$/)
+  await expect(page.getByRole('heading', { name: 'Barkodlu Deneme Kitabı' })).toBeVisible()
+  await expect(page.getByText('Barkod', { exact: true })).toBeVisible()
+  await expect(page.getByText('9780306406157')).toBeVisible()
+})

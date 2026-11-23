@@ -3,7 +3,7 @@
  * burada yalnızca repository okumaları ve `now` sağlanır.
  */
 import { useServices, useLiveData } from '@/data'
-import type { BookProgress, Subject, UUID } from '@/domain'
+import type { BookProgress, BookSection, Subject, UUID } from '@/domain'
 import { sortProgressHistory, summarizeBooks, type BookSummary } from '@/domain/calc/books'
 
 export interface BooksData {
@@ -44,4 +44,23 @@ export function useBookHistory(bookId: UUID): BookProgress[] | undefined {
     async () => sortProgressHistory(await repositories.bookProgress.findByBook(bookId)),
     [repositories, bookId],
   )
+}
+
+export interface BookSectionsData {
+  /** `order`'a göre artan bölümler. */
+  sections: BookSection[]
+  /** topicId → konu adı (bölümün eşlendiği konular). */
+  topicNames: ReadonlyMap<UUID, string>
+}
+
+/** Bir kitabın bölümleri ve konu adları; yüklenirken undefined. */
+export function useBookSections(bookId: UUID): BookSectionsData | undefined {
+  const { repositories } = useServices()
+  return useLiveData(async () => {
+    const [sections, topics] = await Promise.all([
+      repositories.bookSections.findByBook(bookId),
+      repositories.topics.findAll(),
+    ])
+    return { sections, topicNames: new Map(topics.map((topic) => [topic.id, topic.name])) }
+  }, [repositories, bookId])
 }

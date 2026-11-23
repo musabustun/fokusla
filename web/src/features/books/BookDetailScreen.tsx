@@ -12,6 +12,7 @@ import type { BookSummary } from '@/domain/calc/books'
 import { Button, buttonStyles, cx, EmptyState } from '@/ui'
 import { BookDetailActions } from './BookDetailActions'
 import { BookFormSheet } from './BookFormSheet'
+import { BookSections } from './BookSections'
 import { BookProgressCard, BookStatsSection } from './BookStats'
 import { deleteBook, deleteProgress, setBookArchived } from './bookActions'
 import { BOOK_KIND_LABELS } from './bookLabels'
@@ -150,6 +151,7 @@ function BookDetail({ summary, subjects, subjectsById }: BookDetailProps) {
         </div>
       )}
       <BookStatsSection summary={summary} now={now} />
+      <BookSections book={book} />
       <ProgressHistory entries={history} unit={book.unit} now={now} onDelete={handleDeleteEntry} />
       <BookDetailActions
         isArchived={isArchived}

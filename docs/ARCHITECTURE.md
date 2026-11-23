@@ -392,6 +392,12 @@ Kurallar (`FocusLink`, `FocusLinkSyncTests`, `FocusLinkRepositoryTests`):
   `Text(timerInterval:)`. `HKWorkoutSession` YOK (inceleme riski); gerekçe `appstore/metadata/tr/review_notes.txt`.
 - **Tema:** telefon `fokus.palette` değişince `FocusLink.Preferences` uygulama bağlamıyla gider; saat aynı anahtara yazar,
   `.fokusTheme()` anında yeni paleti uygular. Saat her zaman koyudur.
+- **İstatistik (oturum yokken):** Başlat + bugünkü toplam ve hedef halkası, son 7 günün çubukları, son 5 oturum (ders,
+  süre). Derleme saf: `FokusDomain/Calc/WatchStatsCalc` (`FocusCalc.dailyFocusTotals`/`historyEntries` üstüne). Kaynak saatin
+  deposu (kayıt eşlemesi telefonun son 8 gününü de getirir). Günlük hedef `FocusLink.Preferences.dailyGoalMinutes` ile gelir
+  (0 = kapalı) ve saatin YEREL profiline yazılır (saat profili hiçbir yere eşlenmez); kadranlar ve komplikasyon aynı değeri okur.
+- **Komplikasyon/Smart Stack:** değişmedi. Komplikasyon zaten "başlat / süren sayaç" gösterir; telefondaki Live Activity
+  watchOS 11'de saatin Smart Stack'inde kendiliğinden görünür.
 
 FokusKit `Package.swift` platformlarına `.watchOS(.v11)` eklendi; `FokusDomain`, `FokusData`, `FokusDesign` watchOS'a
 derlenir (UIKit'e bağımlı kod yok; `FokusAudio` saate bağlanmaz).

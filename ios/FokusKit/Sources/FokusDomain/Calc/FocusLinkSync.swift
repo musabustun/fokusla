@@ -247,9 +247,18 @@ extension FocusLink {
     public struct Preferences: Codable, Sendable, Equatable {
         /// `FokusPalette` raw value'su (`fokus.palette`); bilinmiyorsa `nil`.
         public var palette: String?
+        /// Günlük odak hedefi (dakika). `0` = hedef kapalı; `nil` = bilinmiyor (dokunma).
+        public var dailyGoalMinutes: Int?
 
-        public init(palette: String?) {
+        public init(palette: String?, dailyGoalMinutes: Int? = nil) {
             self.palette = palette
+            self.dailyGoalMinutes = dailyGoalMinutes
+        }
+
+        /// Alıcının profiline yazılacak hedef: `nil` → değiştirme; `.some(nil)` → kapat; `.some(n)` → `n` dk.
+        public var goalUpdate: Int?? {
+            guard let dailyGoalMinutes else { return nil }
+            return .some(dailyGoalMinutes > 0 ? dailyGoalMinutes : nil)
         }
     }
 

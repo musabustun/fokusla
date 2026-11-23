@@ -38,11 +38,32 @@ struct FokusWatchApp: App {
     /// oturumu başlatır (yalnızca DEBUG; simülatörün kendi deposuna yazar, üretimi etkilemez).
     private static func seedStoreListingDemoIfRequested(now: Date = .now) {
         let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-FokusWatchDemoStats") { seedStatsDemo(now: now) }
         guard arguments.contains("-FokusWatchDemoSession") else { return }
         _ = try? FocusActions.start(subjectId: nil, now: now.addingTimeInterval(-23 * 60 - 14))
         // `-FokusWatchDemoBreak`: aynı oturum 4 dk 40 sn'dir molada (mola ekranı görüntüsü için).
         if arguments.contains("-FokusWatchDemoBreak") {
             _ = try? FocusActions.togglePause(now: now.addingTimeInterval(-4 * 60 - 40))
+        }
+    }
+
+    /// `-FokusWatchDemoStats`: son 7 günde bitmiş oturumlar + 3 saatlik hedef (istatistik ekranı için).
+    private static func seedStatsDemo(now: Date) {
+        guard let context = try? FokusSystem.context() else { return }
+        let profiles = ProfileRepository(context: context)
+        _ = try? profiles.completeOnboarding(field: .say, appleUserId: nil, displayName: nil, now: now)
+        try? profiles.setDailyFocusGoal(minutes: 180, now: now)
+        let repository = FocusRepository(context: context)
+        let minutesPerDay: [Double] = [95, 140, 60, 185, 120, 30, 0]
+        for (index, minutes) in minutesPerDay.enumerated() where minutes > 0 {
+            let start = now.addingTimeInterval(-Double(6 - index) * 86_400 - 5 * 3600)
+            guard let session = try? repository.start(now: start) else { continue }
+            _ = try? repository.finish(sessionId: session.id, now: start.addingTimeInterval(minutes * 60))
+        }
+        for (hoursAgo, minutes) in [(1.4, 40.0), (0.6, 25.0)] {
+            let start = now.addingTimeInterval(-hoursAgo * 3600)
+            guard let session = try? repository.start(now: start) else { continue }
+            _ = try? repository.finish(sessionId: session.id, now: start.addingTimeInterval(minutes * 60))
         }
     }
     #endif

@@ -33,7 +33,7 @@ final class FocusLinkCoordinator {
     @ObservationIgnored private var pendingPublish: Task<Void, Never>?
     @ObservationIgnored private var saveObserver: (any NSObjectProtocol)?
     @ObservationIgnored private var defaultsObserver: (any NSObjectProtocol)?
-    @ObservationIgnored private var sentPalette: String?
+    @ObservationIgnored private var sentPreferences: FocusLink.Preferences?
 
     private static let lastSentKey = "fokus.link.lastSent"
     /// `FokusThemeKeys.palette` (FokusDesign'a bağlanmamak için aynı anahtar burada da yazılı).
@@ -102,6 +102,7 @@ final class FocusLinkCoordinator {
             try? await Task.sleep(for: Self.publishDebounce)
             guard !Task.isCancelled else { return }
             self?.publish()
+            self?.publishPreferences()
         }
     }
 
@@ -127,7 +128,7 @@ final class FocusLinkCoordinator {
         // iPhone: saat uygulaması kaldırıldıysa bir sonraki kurulumda son 8 gün yeniden gitsin.
         if !transport.isPeerAvailable {
             lastSent = nil
-            sentPalette = nil
+            sentPreferences = nil
         }
         publish()
         publishPreferences()
@@ -136,21 +137,48 @@ final class FocusLinkCoordinator {
     /// iPhone: seçili paleti saate bildirir (değiştiyse). Saatte tercih kaynağı telefondur; no-op.
     func publishPreferences() {
         #if os(iOS)
-        let palette = defaults.string(forKey: Self.paletteKey)
-        guard transport.isPeerAvailable, palette != sentPalette else { return }
-        transport.send(FocusLink.Preferences(palette: palette))
-        sentPalette = palette
+        let preferences = FocusLink.Preferences(
+            palette: defaults.string(forKey: Self.paletteKey), dailyGoalMinutes: localGoalMinutes())
+        guard transport.isPeerAvailable, preferences != sentPreferences else { return }
+        transport.send(preferences)
+        sentPreferences = preferences
         #endif
+    }
+
+    /// Telefondaki günlük hedef (0 = kapalı); profil okunamazsa `nil` (saat dokunmaz).
+    private func localGoalMinutes() -> Int? {
+        guard let context = try? FokusSystem.context(), let profile = try? ProfileRepository(context: context).current()
+        else { return nil }
+        return profile.dailyFocusGoalMinutes ?? 0
     }
 
     private func receive(_ preferences: FocusLink.Preferences) {
         #if os(watchOS)
-        guard let palette = preferences.palette, defaults.string(forKey: Self.paletteKey) != palette else { return }
-        defaults.set(palette, forKey: Self.paletteKey)
+        if let palette = preferences.palette, defaults.string(forKey: Self.paletteKey) != palette {
+            defaults.set(palette, forKey: Self.paletteKey)
+        }
+        if let goal = preferences.goalUpdate { applyGoal(goal) }
         #endif
     }
 
     // MARK: - Alma
+
+    #if os(watchOS)
+    /// Saatin YEREL profiline günlük hedefi yazar (saat profili hiçbir yere eşlenmez; yalnızca kadran,
+    /// istatistik ve komplikasyon hesapları için). Profil yoksa yer tutucu alanla oluşturulur.
+    private func applyGoal(_ minutes: Int?) {
+        guard let context = try? FokusSystem.container().mainContext else { return }
+        let profiles = ProfileRepository(context: context)
+        let profile = (try? profiles.current()) ?? nil
+        if let profile, profile.dailyFocusGoalMinutes == minutes { return }
+        if profile == nil {
+            _ = try? profiles.completeOnboarding(field: .say, appleUserId: nil, displayName: nil)
+        }
+        try? profiles.setDailyFocusGoal(minutes: minutes)
+        FokusSystem.reloadWidgets()
+        onChange?()
+    }
+    #endif
 
     private func receive(_ batch: FocusLink.RecordBatch) {
         if !batch.subjectNames.isEmpty {

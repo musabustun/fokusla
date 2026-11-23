@@ -80,6 +80,11 @@ burada uydurma.
 3. `python3 ios/scripts/generate_palette_assets.py` → `Resources/Colors.xcassets/<Palet>/`
    (Any/Dark, 21 token; kaynakta olmayan eski klasörler silinir). Üretilenleri commit'le.
 4. Yeni paletse `Theme/FokusPalette.swift`'e case + `displayName` satırı ekle (raw value = web adı).
+5. Uygulama ikonu palete uyar (`Theme/FokusAppIcon.swift`; `Fokus/App/AppIconSync.swift`
+   `setAlternateIconName` çağırır). Yeni palette ya da vurgu rengi değişince
+   `scripts/generate_palette_app_icons.py`'deki listeyi güncelle, `python3 ios/scripts/generate_palette_app_icons.py`
+   çalıştır ve `project.yml` `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`'e adı ekle
+   (`FokusAppIconTests` üçünün eşitliğini denetler).
 
 `FokusDesignTests` sırayı, adları, anahtarları ve her token'ın açık/koyu RGBA'sını JSON'la
 karşılaştırır; web tarafında `src/ui/iosPalettes.test.ts` JSON'un güncel olduğunu denetler.

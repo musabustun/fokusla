@@ -10,7 +10,7 @@ Fokus'un App Store Connect'e girilecek içerikleri. Yalnızca Türkçe (birincil
 | `scripts/check_metadata.py` | Karakter/bayt sınırlarını (inceleme notları bayt) ve yaratıcı varlıklarda fiyat göndermesi olmadığını doğrular: `python3 appstore/scripts/check_metadata.py` |
 | `screenshots/iphone-6.3/` | **ASC'de zorunlu** "Dynamic Island (orta ekran)" yuvası: 1206×2622, alfasız PNG (şablon yerel boyutunda render edilir, yeniden örnekleme yok) |
 | `screenshots/iphone-6.9/`, `screenshots/ipad-13/` | 6.9" (1320×2868, isteğe bağlı) ve iPad 13" (2064×2752) karuseli, alfasız PNG. Son panel: `iphone-6.9/08-verin-cihazinda.png`, `iphone-6.3/08-verin-cihazinda.png`, `ipad-13/06-verin-cihazinda.png` ("Verin cihazında kalır.") |
-| `screenshots/watch/` | Apple Watch yuvası: 422×514 (Ultra 3, 49 mm), alfasız PNG; simülatör ekran görüntüsü olduğu gibi (`01-baslat`, `02-sayac`) |
+| `screenshots/watch/` | Apple Watch yuvası: 422×514 (Ultra 3, 49 mm), alfasız PNG; simülatör ekran görüntüsü olduğu gibi (`01-baslat`, `02-sayac`, `03-analog`) |
 | `screenshots/imessage-iphone/`, `screenshots/imessage-ipad/` | ASC "iMessage App" sekmesi: uzantının Mesajlar içinde ham ekran görüntüleri (iPhone 1206×2622 ×3, iPad 2064×2752 ×2; iPad'de küçük görünüm ayrı çekilmez, açılan çekmece zaten kartı gösterir) |
 | `screenshots/build_screenshots.py`, `screenshots/src/` | Mockup + karusel üretimi (HTML/CSS + headless Chrome; başlıklar `src/*.json`) |
 | `scripts/capture_screenshots.sh` | Ham ekran görüntüleri: `StoreScreenshotsUITests` (demo veri: `-FokusUITestMode -FokusDemoData`) |

@@ -18,7 +18,7 @@ Privacy: the app collects no data. No analytics, tracking, ads or server of ours
 
 Encryption: only standard Apple system encryption/HTTPS; ITSAppUsesNonExemptEncryption = NO.
 
-This release has no in-app social network, accounts or user-generated content hosted by us; the only sharing is the optional iMessage extension (the user sends the card/invitation). The app is open source (MIT): https://github.com/musabustun/fokusla
+No in-app social network, accounts or user content hosted by us; the only sharing is the optional iMessage extension. The app is open source (MIT): https://github.com/musabustun/fokusla
 
 [Türkçe]
 Fokus'u incelediğiniz için teşekkürler. Hesap gerekmez; giriş isteğe bağlıdır. İlk açılışta: "Başla" -> bir YKS alanı seç -> "Devam" -> "Devam" -> "Şimdilik atla". Ardından uygulama girişsiz tam çalışır. "Apple ile Giriş" isteğe bağlıdır; hesap kimliği yalnızca cihazda tutulur.

@@ -1,9 +1,9 @@
 # Fokus destek sitesi. Coolify: Base Directory /web/site, Build Pack = Dockerfile, Port 80.
-# Zorunlu build argümanı: SUPPORT_EMAIL (boşsa derleme kasıtlı olarak başarısız olur).
+# Build argümanı: SUPPORT_EMAIL (varsayılan destek@musabustun.dev; boş string verilirse derleme kasıtlı olarak başarısız olur).
 
 # 1) Derleme: __SUPPORT_EMAIL__ yer tutucusunu doldurur ve yayınlanacak dosyaları /out'a toplar.
 FROM alpine:3.20 AS build
-ARG SUPPORT_EMAIL
+ARG SUPPORT_EMAIL=destek@musabustun.dev
 WORKDIR /src
 COPY . .
 RUN SUPPORT_EMAIL="${SUPPORT_EMAIL}" sh build.sh /out

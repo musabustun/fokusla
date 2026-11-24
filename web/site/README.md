@@ -16,7 +16,7 @@
 
 ## E-posta adresi (`SUPPORT_EMAIL`)
 
-Depoda e-posta adresi **tutulmaz**. HTML kaynaklarında `__SUPPORT_EMAIL__` yer tutucusu vardır; `build.sh` derleme sırasında bunu `SUPPORT_EMAIL` değeriyle değiştirir. Değer boşsa, geçerli bir e-posta biçiminde değilse ya da derlemeden sonra yer tutucu kalırsa derleme **hata verir**.
+HTML kaynaklarında adres yazılı değildir; `__SUPPORT_EMAIL__` yer tutucusu vardır ve `build.sh` derleme sırasında bunu `SUPPORT_EMAIL` değeriyle değiştirir. Docker imajında `SUPPORT_EMAIL` build argümanının **varsayılanı `destek@musabustun.dev`**'dir; başka bir adres için `--build-arg` (Coolify'da Build Variable) verilir. Değer **boş string** ise, geçerli bir e-posta biçiminde değilse ya da derlemeden sonra yer tutucu kalırsa derleme **hata verir**. Docker'sız yerel `sh build.sh` çağrısında varsayılan yoktur; değişken verilmelidir.
 
 Yerel deneme (Docker olmadan):
 
@@ -33,24 +33,24 @@ docker build --build-arg SUPPORT_EMAIL=ornek@example.com -t fokus-site .
 docker run --rm -p 8080:80 fokus-site                # http://localhost:8080
 ```
 
-İmaj `nginx:1.27-alpine` üzerine kuruludur ve 80 numaralı portu dinler. `SUPPORT_EMAIL` verilmezse `docker build` şu hatayla durur: `HATA: SUPPORT_EMAIL boş`.
+İmaj `nginx:1.27-alpine` üzerine kuruludur ve 80 numaralı portu dinler. `--build-arg` verilmezse varsayılan `destek@musabustun.dev` kullanılır; `--build-arg SUPPORT_EMAIL=` (boş) verilirse `docker build` şu hatayla durur: `HATA: SUPPORT_EMAIL boş`.
 
 ## Coolify ayarları
 
-| Ayar            | Değer                                                                          |
-| --------------- | ------------------------------------------------------------------------------ |
-| Kaynak          | GitHub deposu `musabustun/fokusla` (herkese açık)                              |
-| Branch          | `main`                                                                         |
-| Base Directory  | `/web/site`                                                                    |
-| Build Pack      | **Dockerfile** (Dockerfile Location: `/Dockerfile`)                            |
-| Ports Exposes   | `80`                                                                           |
-| Domains         | `https://fokus.musabustun.dev`                                                 |
-| Build Variable  | `SUPPORT_EMAIL` = destek e-posta adresi (**"Build Variable" kutusu işaretli**) |
-| Sağlık denetimi | Yol `/healthz`, port `80` (imajda `HEALTHCHECK` de var)                        |
+| Ayar            | Değer                                                                                                                                     |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Kaynak          | GitHub deposu `musabustun/fokusla` (herkese açık)                                                                                         |
+| Branch          | `main`                                                                                                                                    |
+| Base Directory  | `/web/site`                                                                                                                               |
+| Build Pack      | **Dockerfile** (Dockerfile Location: `/Dockerfile`)                                                                                       |
+| Ports Exposes   | `80`                                                                                                                                      |
+| Domains         | `https://fokus.musabustun.dev`                                                                                                            |
+| Build Variable  | `SUPPORT_EMAIL` (isteğe bağlı; varsayılan `destek@musabustun.dev`). Değiştirirsen **"Build Variable" kutusu işaretli** olsun; boş bırakma |
+| Sağlık denetimi | Yol `/healthz`, port `80` (imajda `HEALTHCHECK` de var)                                                                                   |
 
 Notlar:
 
-- `SUPPORT_EMAIL` bir **build argümanı** olduğu için Coolify'da ortam değişkeni olarak "Build Variable"/"Build Time" seçeneğiyle eklenmelidir; yalnızca çalışma zamanı değişkeni olarak eklenirse derleme boş değerle başarısız olur.
+- `SUPPORT_EMAIL` bir **build argümanı** olduğu için Coolify'da ortam değişkeni olarak "Build Variable"/"Build Time" seçeneğiyle eklenmelidir; yalnızca çalışma zamanı değişkeni olarak eklenirse derleme etkilenmez ve varsayılan adres kullanılır. Değişkeni boş değerle eklemek derlemeyi başarısız kılar.
 - E-posta adresini değiştirmek için değişkeni güncelleyip yeniden dağıt (redeploy) yeterlidir.
 - TLS'i Coolify'ın vekili (Traefik) sonlandırır; nginx yalnızca HTTP konuşur. Yönlendirmeler göreli olduğu için vekil arkasında doğru çalışır.
 

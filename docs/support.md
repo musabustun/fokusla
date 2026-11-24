@@ -2,6 +2,8 @@
 
 Fokus ücretsiz ve açık kaynaklı bir YKS çalışma takip uygulamasıdır. Bir sorunun, önerin ya da sorun varsa buradan ulaşabilirsin.
 
+Destek sayfası: [fokus.musabustun.dev/destek](https://fokus.musabustun.dev/destek/) (bu sayfanın web hâli; kaynak `web/site/`).
+
 ## Sorun bildirme ve öneri
 
 [GitHub Issues](https://github.com/musabustun/fokusla/issues) üzerinden yeni bir kayıt aç. Mümkünse şunları yaz:
@@ -39,4 +41,4 @@ Kaynak kod MIT lisanslıdır: [github.com/musabustun/fokusla](https://github.com
 
 - **Engelle:** İsteğin ya da arkadaşın yanındaki "…" menüsünden "Engelle". Arkadaşlık silinir, yeni istekleri sana ulaşmaz.
 - **Gizlen:** Sosyal → Profil → "Sosyalde görün"ü kapat: durumun paylaşılmaz, adına istek gelmez.
-- **Bildir:** Uygunsuz bir kullanıcı adı ya da oda adı için GitHub üzerinden [bize yaz](https://github.com/musabustun/fokusla/issues). Herkese açık bir yere kişisel bilgi (gerçek ad, okul, ekran görüntüsündeki adlar) ekleme; yalnızca ne olduğunu ve yaklaşık zamanını anlat.
+- **Bildir:** Uygunsuz bir kullanıcı adı ya da oda adı için [destek sayfasından](https://fokus.musabustun.dev/destek/#sosyal) e-postayla bize yaz. GitHub gibi herkese açık bir yere kişisel bilgi (gerçek ad, okul, ekran görüntüsündeki adlar) ekleme; yalnızca ne olduğunu ve yaklaşık zamanını anlat.

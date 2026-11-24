@@ -1,0 +1,301 @@
+<!doctype html>
+<!--
+  Gizlilik politikası. Kaynak metin: docs/privacy.md (tek doğruluk kaynağı).
+  Anlamı değiştirmeden buraya HTML olarak taşındı; docs/privacy.md güncellenince bu dosya da güncellenmeli.
+  Tek fark: İletişim bölümünde Destek sayfasındaki e-posta yolu da anılır.
+-->
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Gizlilik Politikası — Fokus</title>
+    <meta
+      name="description"
+      content="Fokus gizlilik politikası: Fokus senden hiçbir veri toplamaz. Verilerin cihazında kalır; iCloud eşitleme, Spotify ve iMessage isteğe bağlıdır."
+    />
+    <link rel="canonical" href="https://fokus.musabustun.dev/gizlilik/" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f5f2ea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e0f0c" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:site_name" content="Fokus" />
+    <meta property="og:title" content="Gizlilik Politikası — Fokus" />
+    <meta
+      property="og:description"
+      content="Fokus senden hiçbir veri toplamaz. Verilerin cihazında kalır."
+    />
+    <meta property="og:url" content="https://fokus.musabustun.dev/gizlilik/" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+    <link
+      rel="preload"
+      href="/assets/fonts/BricolageGrotesque-Medium.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/assets/fonts/BricolageGrotesque-ExtraBold.ttf"
+      as="font"
+      type="font/ttf"
+      crossorigin
+    />
+    <link rel="stylesheet" href="/assets/style.css" />
+  </head>
+  <body>
+    <a class="skip" href="#icerik">İçeriğe geç</a>
+
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/" aria-label="Fokus, ana sayfa">
+          <svg class="mark" viewBox="0 0 256 256" aria-hidden="true" focusable="false">
+            <rect class="tile" width="256" height="256" rx="57" />
+            <path
+              class="ring"
+              d="M128 44 A84 84 0 1 1 44 128"
+              transform="translate(128 128) scale(1.1) translate(-128 -128)"
+            />
+            <circle class="dot" cx="128" cy="128" r="27" />
+          </svg>
+          <span>Fokus</span>
+        </a>
+        <nav class="nav" aria-label="Ana gezinme">
+          <a href="/destek/">Destek</a>
+          <a href="/gizlilik/" aria-current="page">Gizlilik</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="icerik">
+      <div class="page-head">
+        <div class="wrap">
+          <p class="eyebrow">Gizlilik</p>
+          <h1>Fokus — Gizlilik Politikası</h1>
+          <p class="meta">
+            Son güncelleme: <time datetime="2026-11-24">24 Kasım 2026</time> · Sürüm: 1.0.2
+          </p>
+          <p class="lead measure">
+            Fokus, YKS'ye hazırlanan öğrenciler için ücretsiz, reklamsız ve açık kaynaklı (MIT) bir
+            çalışma takip uygulamasıdır. Kısaca: çalışma verilerin <strong>senindir</strong>; onlara
+            erişemeyiz, satmayız, reklam ya da izleme için kullanmayız. Cihazından dışarı yalnızca
+            senin açtığın özellikler (iCloud eşitleme, Sosyal, Spotify, iMessage) için aşağıda
+            yazanlar çıkar.
+          </p>
+        </div>
+      </div>
+
+      <div class="wrap prose">
+        <section aria-labelledby="hangi-veriler">
+          <h2 id="hangi-veriler">Hangi veriler var ve nerede duruyor?</h2>
+          <p>
+            Uygulamada girdiğin her şey (odak oturumların, ders/konu ve test sonuçların, kitaplar,
+            görevler, günlük hedefin, tercihlerin) <strong>yalnızca cihazında</strong>, uygulamanın
+            kendi veri deposunda saklanır. Fokus'un kendi sunucusu yoktur ve uygulamada analitik,
+            reklam, izleme ya da çökme raporlama gibi üçüncü taraf bir hizmet yoktur.
+          </p>
+        </section>
+
+        <section aria-labelledby="icloud">
+          <h2 id="icloud">iCloud eşitleme (isteğe bağlı)</h2>
+          <p>
+            Cihazında iCloud'a giriş yapılmışsa ve Ayarlar'da eşitleme kapalı değilse verilerin,
+            <strong>yalnızca senin iCloud hesabına ait özel (private) CloudKit veritabanı</strong>
+            üzerinden iPhone ve iPad cihazların arasında eşitlenir. Bu veritabanı Apple tarafından
+            şifreli saklanır; Fokus geliştiricisi dahil kimse bu verilere erişemez. Eşitlemeyi
+            Ayarlar'dan kapatabilirsin. Verilerin Apple'ın iCloud'unda nasıl işlendiği
+            <a href="https://www.apple.com/legal/privacy/tr/">Apple'ın gizlilik politikasına</a>
+            tabidir.
+          </p>
+        </section>
+
+        <section aria-labelledby="apple-giris">
+          <h2 id="apple-giris">Apple ile Giriş (isteğe bağlı)</h2>
+          <p>
+            Giriş zorunlu değildir; “Şimdilik atla” ile uygulama girişsiz tam çalışır. Apple ile
+            Giriş yaparsan Apple'ın verdiği hesap tanımlayıcısı (ve paylaşmayı seçersen adın)
+            yalnızca cihazında saklanır; Apple ID'nin iptal edilip edilmediğini denetlemek için
+            kullanılır. Hiçbir sunucuya gönderilmez. (Sosyal'i kullanırsan aşağıdaki bölüm
+            geçerlidir.)
+          </p>
+        </section>
+
+        <section aria-labelledby="sosyal">
+          <h2 id="sosyal">Sosyal (isteğe bağlı)</h2>
+          <p>
+            Sosyal'i kullanmazsan bu bölümdeki hiçbir şey gerçekleşmez. Kullanmak için Apple ile
+            Giriş ve cihazında iCloud gerekir; eşleşme yalnızca Apple'ın CloudKit'i üzerinden
+            yapılır, bizim bir sunucumuz yoktur.
+          </p>
+          <ul>
+            <li>
+              <strong>Kim ne görür:</strong> Yalnızca kabul ettiğin arkadaşların ve girdiğin odadaki
+              kişiler kullanıcı adını, odakta/molada olup olmadığını, oturum süreni, bugünkü toplam
+              çalışma süreni ve (ev sahibiysen) açık odanı görür. Ders, konu, test, kitap ve
+              görevlerin, gerçek adın ve e-postan Fokus tarafından
+              <strong>asla</strong> paylaşılmaz.
+            </li>
+            <li>
+              <strong>Nerede durur:</strong> Arkadaşlık ve oda bilgileri, daveti açan kişinin kendi
+              iCloud alanında durur ve yalnızca katılanlarla paylaşılır; geliştirici erişemez.
+            </li>
+            <li>
+              <strong>Kullanıcı adı:</strong> Kimse adları arayamaz ya da listeleyemez. Uygulamanın
+              ortak CloudKit alanında kullanıcı adının yalnızca özeti (hash), bir şifreleme
+              anahtarı, rastgele bir posta kutusu numarası ve Apple'ın uygulamaya özel hesap
+              tanımlayıcısı tutulur; amaç yalnızca sana istek ulaştırabilmektir. İsteklerin içeriği
+              uçtan uca şifrelidir; yalnız alıcı açabilir.
+            </li>
+            <li>
+              <strong>iCloud adın:</strong> Davet bağlantısını açan kişiye iOS'un kendi davet
+              ekranı, daveti oluşturan kişinin iCloud adını gösterebilir. Bağlantını yalnızca
+              tanıdıklarınla paylaş.
+            </li>
+            <li>
+              <strong>Denetim sende:</strong> “Sosyalde görün”ü kapatınca durumun paylaşılmaz ve
+              adına istek gelmez. Arkadaşlıktan çıkabilir, birini engelleyebilir, odadan
+              ayrılabilirsin. “Sosyal profilimi sil” kullanıcı adını, isteklerini, arkadaşlıklarını
+              ve odanı kalıcı olarak siler.
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="spotify">
+          <h2 id="spotify">Spotify (isteğe bağlı)</h2>
+          <p>
+            Odak ekranında istersen Spotify'ı bağlayıp çalan müziği denetleyebilirsin. Bu özellik
+            çalmayı cihazındaki Spotify uygulaması üzerinden denetler ve yalnızca çalma kontrolü
+            (oynat/duraklat/sonraki, çalan parçanın adı) için kullanılır. Fokus Spotify hesabının
+            profil bilgilerini, çalma geçmişini ya da kütüphaneni almaz ve saklamaz.
+          </p>
+          <p>
+            İlk bağlanışta Spotify uygulamasına geçilir ve Spotify kendi izin ekranını gösterir
+            (yalnızca “uygulamadan çalmayı denetleme” izni istenir; şifren Fokus'a gelmez). Her saat
+            yeniden izin istememek için Spotify'ın verdiği erişim ve yenileme anahtarları
+            <strong>yalnızca cihazının Keychain'inde</strong> saklanır (iCloud'a ve yedeğe girmez).
+            Fokus bu anahtarları yalnızca Spotify'ın hesap sunucusuna
+            (<code>accounts.spotify.com</code>) göndererek yeniler; iCloud dışında Fokus'un kendi
+            yaptığı tek ağ isteği budur ve Spotify'ı bağlamadıysan hiç yapılmaz. Bizim bir sunucumuz
+            yoktur. “Bağlantıyı kes” anahtarları cihazdan siler; Spotify'daki uygulama erişimini
+            Spotify hesap ayarlarından kaldırabilirsin. Spotify'ın kendi veri işlemesi
+            <a href="https://www.spotify.com/tr/legal/privacy-policy/"
+              >Spotify gizlilik politikasına</a
+            >
+            tabidir. Bağlantıyı istediğin an Spotify'dan veya Fokus'tan kesebilirsin.
+          </p>
+        </section>
+
+        <section aria-labelledby="imessage">
+          <h2 id="imessage">iMessage uygulaması (isteğe bağlı)</h2>
+          <p>
+            Fokus'un Mesajlar (iMessage) uzantısı, istersen “bugün şu kadar çalıştım” kartını ya da
+            ortak odak davetini bir sohbete göndermeni sağlar. Uzantı verini cihazındaki Fokus
+            deposundan <strong>yalnızca okur</strong>. Kart ya da davet,
+            <strong>sen Mesajlar'da gönder düğmesine bastığında</strong> yalnızca o sohbete,
+            Apple'ın iMessage'ı üzerinden gider; ondan önce hiçbir şey cihazdan çıkmaz ve Fokus'un
+            kendi sunucusu yoktur. Kartta yalnızca senin seçtiğin alanlar (toplam süre, hedef
+            durumu, isteğe bağlı ders dağılımı ve seri) ile profil adın bulunur. Oda davetinde ortak
+            odanın saati, süresi ve katılanların adları mesajın içinde taşınır; katılan herkesin
+            uygulaması o mesajı kendi cihazında açar. Bu bilgiler sohbetin diğer üyelerine görünür;
+            göndermeden önce kartı önizleyip neyin gideceğini görürsün.
+          </p>
+        </section>
+
+        <section aria-labelledby="watch">
+          <h2 id="watch">Apple Watch uygulaması (isteğe bağlı)</h2>
+          <p>
+            Saatteki Fokus verisini saatin kendi deposunda tutar; saat iCloud eşitlemesi yapmaz.
+            Odak kayıtların ile tema, hedef ve ders adı gibi tercihlerin yalnızca eşleştirilmiş
+            saatinle iPhone'un arasında, Apple'ın WatchConnectivity bağlantısı üzerinden eşlenir;
+            bizim bir sunucumuza uğramaz. Sağlık (HealthKit) verisine erişilmez.
+          </p>
+        </section>
+
+        <section aria-labelledby="bildirimler">
+          <h2 id="bildirimler">Bildirimler</h2>
+          <p>
+            Günlük hatırlatma ve hedef bildirimleri <strong>yalnızca cihazında yerel olarak</strong>
+            planlanır; bir sunucu veya push servisi kullanılmaz. İzin isteğe bağlıdır ve iOS
+            Ayarları'ndan geri alınabilir.
+          </p>
+        </section>
+
+        <section aria-labelledby="sesler">
+          <h2 id="sesler">Odak sesleri</h2>
+          <p>
+            Beyaz/pembe/kahverengi gürültü, yağmur ve melodi sesleri cihazında üretilir; indirme
+            veya ağ erişimi gerektirmez. Mikrofon, konum, kişiler veya fotoğraflarına erişmeyiz.
+            Kamera yalnızca bir kitabın barkodunu okutmak istediğinde, izninle açılır; görüntü
+            cihazında işlenir, kaydedilmez ve hiçbir yere gönderilmez.
+          </p>
+        </section>
+
+        <section aria-labelledby="widgetlar">
+          <h2 id="widgetlar">Widget'lar, Live Activity ve Siri/Kestirmeler</h2>
+          <p>
+            Widget'lar ve Live Activity (Dynamic Island) aynı cihazdaki uygulama verisini gösterir;
+            veri cihazdan çıkmaz. Siri ve Kestirmeler komutları da cihaz üzerinde çalışır.
+          </p>
+        </section>
+
+        <section aria-labelledby="yonetme">
+          <h2 id="yonetme">Verilerini yönetme</h2>
+          <ul>
+            <li>
+              <strong>Dışa aktar:</strong> Ayarlar → Veri → “Verileri dışa aktar” ile tüm verini
+              JSON dosyası olarak alabilirsin. Dosya yalnızca cihazında oluşturulur; nereye
+              paylaşacağını sen seçersin.
+            </li>
+            <li>
+              <strong>Sil:</strong> Ayarlar → Veri → “Tüm verileri sil” ile uygulamadaki tüm verini
+              (Sosyal profilin dahil) silebilirsin (iCloud eşitleme açıksa silme senin diğer
+              cihazlarına da yansır). Uygulamayı kaldırmak yerel verileri siler.
+            </li>
+          </ul>
+        </section>
+
+        <section aria-labelledby="cocuklar">
+          <h2 id="cocuklar">Çocuklar</h2>
+          <p>
+            Hesap oluşturmak zorunlu değildir; Sosyal'i kullanmayan hiç kimseden veri alınmaz.
+            Sosyal'de arama, keşfet ya da mesajlaşma yoktur; kimse kabul etmediğin sürece seni
+            göremez. Kullanıcı adında gerçek adını ya da okulunu kullanma.
+          </p>
+        </section>
+
+        <section aria-labelledby="degisiklikler">
+          <h2 id="degisiklikler">Değişiklikler</h2>
+          <p>
+            Politika değişirse bu sayfa güncellenir ve üstteki tarih değişir. Uygulamanın kaynak
+            kodu herkese açıktır; yaptığımız söylenenleri kodda doğrulayabilirsin:
+            <a href="https://github.com/musabustun/fokusla">github.com/musabustun/fokusla</a>.
+          </p>
+        </section>
+
+        <section aria-labelledby="iletisim">
+          <h2 id="iletisim">İletişim</h2>
+          <p>
+            Sorular için GitHub'da
+            <a href="https://github.com/musabustun/fokusla/issues">issue aç</a> ya da
+            <a href="/destek/">Destek</a> sayfasındaki e-posta adresine yaz.
+          </p>
+          <p>Geliştirici: Musab Yusuf Üstün</p>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>Fokus · Geliştirici: Musab Yusuf Üstün · MIT lisanslı açık kaynak</p>
+        <ul>
+          <li><a href="/destek/">Destek</a></li>
+          <li><a href="/gizlilik/">Gizlilik</a></li>
+          <li><a href="https://github.com/musabustun/fokusla">GitHub</a></li>
+        </ul>
+      </div>
+    </footer>
+  </body>
+</html>

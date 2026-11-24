@@ -1,4 +1,4 @@
-Fokus, YKS'ye hazırlanan öğrenciler için sade bir çalışma takip uygulaması. Ücretsiz, reklamsız ve premium'suz; verilerin cihazında durur. Giriş yapmak zorunda değilsin.
+Fokus, YKS'ye hazırlanan öğrenciler için sade bir çalışma takip uygulaması. Reklam ve izleme yok; verilerin cihazında durur. Giriş yapmak zorunda değilsin.
 
 BUGÜN
 Günün özeti tek ekranda: bugünkü odak süren ve günlük hedefin, bekleyen görevlerin, son denemelerin, zayıf konuların ve kitaplardaki ilerlemen.
@@ -22,6 +22,11 @@ Her kitapta nereye kadar geldiğini kaydet; ilerleme yüzdesi otomatik hesaplan�
 GÖREVLER
 Günlük rutinler ve son tarihli ödevler. Bugünün görevlerini işaretle, geciken ödevleri gör.
 
+SOSYAL (İSTEĞE BAĞLI)
+• Arkadaşlarını davet bağlantısıyla ya da kullanıcı adıyla ekle; kabul edince birbirinizin odakta mı, molada mı olduğunu görürsünüz.
+• Paralel odak odalarında aynı anda çalışın.
+• Arama, keşfet ve mesajlaşma yok; engelleyebilir, bildirebilir ya da gizlenebilirsin. Apple ile Giriş ve iCloud gerekir.
+
 HEDEF VE HATIRLATMALAR
 Günlük odak hedefini belirle, ilerlemeni halkada izle. İstersen günlük hatırlatma al.
 
@@ -34,8 +39,8 @@ SİSTEMLE BÜTÜNLEŞİK
 • iPhone ve iPad için tasarlandı; açık ve koyu tema, altı renk paleti.
 
 VERİN SENİN
-• Reklam, izleme ve analiz yok; hiçbir veri toplanmaz.
-• Veriler cihazında saklanır. İstersen iCloud ile kendi iPhone ve iPad'in arasında eşitlenir; bu veriye geliştirici de erişemez.
+• Reklam, izleme ve analiz yok.
+• Çalışma verilerin cihazında saklanır. İstersen iCloud ile kendi iPhone ve iPad'in arasında eşitlenir; bu veriye geliştirici de erişemez. Sosyal'i açmadıkça kimseyle bir şey paylaşılmaz.
 • Verilerini istediğin zaman JSON olarak dışa aktarabilir ya da tamamen silebilirsin.
 • Apple ile Giriş isteğe bağlıdır; "Şimdilik atla" ile girişsiz kullanabilirsin.
 • Açık kaynak (MIT): github.com/musabustun/fokusla

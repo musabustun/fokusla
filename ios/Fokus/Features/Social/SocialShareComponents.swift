@@ -107,7 +107,7 @@ struct SocialPasteInviteForm: View {
 
 /// Engelle / bildir menüsü (App Store 1.2).
 struct SocialSafetyMenu: View {
-    private static let reportURL = URL(string: "https://github.com/musabustun/fokusla/blob/main/docs/support.md")!
+    private static let reportURL = URL(string: "https://fokus.musabustun.dev/destek/#sosyal")!
 
     let username: String
     let onBlock: () -> Void

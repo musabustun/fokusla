@@ -25,8 +25,8 @@ CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 TARGETS = [
     ("header/header-5244x2950.png", 5244, 2950, "Fokus", "YKS çalışma ve odak takibi"),
     ("header/header-3840x1646.png", 3840, 1646, "Fokus", "YKS çalışma ve odak takibi"),
-    ("search-results/search-5244x2950.png", 5244, 2950, "Fokus", "Ücretsiz. Reklamsız. Odak."),
-    ("search-results/search-3840x2560.png", 3840, 2560, "Fokus", "Ücretsiz. Reklamsız. Odak."),
+    ("search-results/search-5244x2950.png", 5244, 2950, "Fokus", "Odaklan. Çöz. Takip et."),
+    ("search-results/search-3840x2560.png", 3840, 2560, "Fokus", "Odaklan. Çöz. Takip et."),
 ]
 
 SYMBOL = '<path d="M128 44 A84 84 0 1 1 44 128" fill="none" stroke="#FFB547" stroke-width="30" stroke-linecap="round"/><circle cx="128" cy="128" r="25" fill="#EDEAE2"/>'

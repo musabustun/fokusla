@@ -10,14 +10,14 @@ Apple'a göre "toplamak", verinin cihazdan çıkıp geliştiricinin (ya da üç�
 
 | Konu | Bulgu |
 | --- | --- |
-| Ağ kodu | `URLSession`, `URLRequest`, `WKWebView`, soket kullanımı **yok** (`ios/Fokus`, `ios/Shared`, `ios/FokusWidgets`, `ios/FokusKit/Sources`). Dış HTTP(S) çağrısı yok; yalnızca `Link(destination:)` ile GitHub/Spotify bağlantıları sistemde açılır. |
+| Ağ kodu | Tek dış çağrı Spotify'ın hesap sunucusudur (`accounts.spotify.com`): izin sonrası kod değişimi (Spotify SDK'sı, PKCE) ve erişim anahtarı yenileme (`SpotifyTokenService`, yalnızca `client_id` + yenileme anahtarı). Spotify bağlanmadıkça hiç yapılmaz. `WKWebView`/soket yok; kendi sunucumuz yok. |
 | Analitik / izleme / reklam / çökme raporu SDK'sı | **Yok.** Üçüncü taraf bağımlılık yalnızca `SpotifyiOS` (aşağıda). `project.yml` `packages:` → `FokusKit` (yerel) + `SpotifyiOS`. |
 | Kimlik | IDFA / `ASIdentifierManager` / `AppTrackingTransparency` yok → `NSUserTrackingUsageDescription` gerekmez. |
-| Cihaz izinleri | Mikrofon, kamera, konum, kişiler, fotoğraflar, Bluetooth izni **yok** (`Info.plist`'te `NS*UsageDescription` yok). Yalnızca yerel bildirim izni (çalışma anında istenir). |
+| Cihaz izinleri | Kamera (1.0.1'den itibaren, `NSCameraUsageDescription`): yalnızca kitap barkodunu okutmak için, çalışma anında istenir; görüntü cihazda işlenir, kaydedilmez ve gönderilmez. Mikrofon, konum, kişiler, fotoğraflar, Bluetooth izni **yok**. Yerel bildirim izni (çalışma anında istenir). |
 | Veri deposu | SwiftData (cihaz). CloudKit yapılandırması yalnızca `.private("iCloud.com.musabustun.fokus")` — kullanıcının kendi özel veritabanı; geliştirici (public/shared DB yok) erişemez. |
 | Apple ile Giriş | `AppleAuthService`: `credential.user` ve (varsa) `fullName` yalnızca profildeki `appleUserId`/`displayName` alanlarına yerel yazılır; sunucuya gönderilmez. |
-| Spotify | `SpotifyMusicProvider`: Spotify iOS App Remote; cihazdaki Spotify uygulamasıyla konuşur. Erişim belirteci yalnızca bellekte tutulur, çalma kontrolü için kullanılır; profil/geçmiş/kitaplık verisi okunmaz. `SPOTIFY_CLIENT_ID` boşken entegrasyon kapalıdır. |
-| Şifreleme | Yalnızca Apple sistem şifrelemesi (CloudKit/HTTPS). `CryptoKit` yalnızca `Identifiers.swift`'te UUID v5 için SHA-1 özeti (şifreleme değil). `ITSAppUsesNonExemptEncryption = NO`. |
+| Spotify | `SpotifyMusicProvider`: Spotify iOS App Remote; cihazdaki Spotify uygulamasıyla konuşur. Erişim ve yenileme anahtarları yalnızca cihazın Keychain'inde durur (`ThisDeviceOnly`), çalma kontrolü için kullanılır; profil/geçmiş/kitaplık verisi okunmaz. `SPOTIFY_CLIENT_ID` boşken entegrasyon kapalıdır. |
+| Şifreleme | Yalnızca Apple sistem şifrelemesi (CloudKit/HTTPS). `CryptoKit` yalnızca özet için: `Identifiers.swift`'te UUID v5 (SHA-1) ve `SpotifyPKCE.swift`'te PKCE (SHA-256); şifreleme değil. `ITSAppUsesNonExemptEncryption = NO`. |
 | Bildirimler | Yalnızca yerel (`UNUserNotificationCenter`); `remote-notification` arka plan modu CloudKit sessiz bildirimi içindir, push sunucumuz yok. |
 | Odak sesleri | AVAudioEngine ile cihazda sentez; dosya/ağ yok. |
 | Gizlilik manifesti | `ios/Fokus/Resources/PrivacyInfo.xcprivacy`: izleme yok, toplanan veri türü yok, required-reason API: UserDefaults (`CA92.1` uygulamanın kendi tercihleri, `1C8F.1` App Group). `ios/FokusWidgets/PrivacyInfo.xcprivacy`: boş beyan. |

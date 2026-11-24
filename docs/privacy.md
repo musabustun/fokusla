@@ -1,6 +1,6 @@
 # Fokus — Gizlilik Politikası
 
-Son güncelleme: 24 Kasım 2026 · Sürüm: 1.0.0 (Spotify anahtar yenileme 1.0.1; Sosyal ve iMessage bölümleri yayınlandıkları sürümle geçerli olur)
+Son güncelleme: 24 Kasım 2026 · Sürüm: 1.0.2
 
 Fokus, YKS'ye hazırlanan öğrenciler için ücretsiz, reklamsız ve açık kaynaklı (MIT) bir çalışma takip uygulamasıdır. Kısaca: çalışma verilerin **senindir**; onlara erişemeyiz, satmayız, reklam ya da izleme için kullanmayız. Cihazından dışarı yalnızca senin açtığın özellikler (iCloud eşitleme, Sosyal, Spotify, iMessage) için aşağıda yazanlar çıkar.
 
@@ -36,13 +36,17 @@ Odak ekranında istersen Spotify'ı bağlayıp çalan müziği denetleyebilirsin
 
 Fokus'un Mesajlar (iMessage) uzantısı, istersen "bugün şu kadar çalıştım" kartını ya da ortak odak davetini bir sohbete göndermeni sağlar. Uzantı verini cihazındaki Fokus deposundan **yalnızca okur**. Kart ya da davet, **sen Mesajlar'da gönder düğmesine bastığında** yalnızca o sohbete, Apple'ın iMessage'ı üzerinden gider; ondan önce hiçbir şey cihazdan çıkmaz ve Fokus'un kendi sunucusu yoktur. Kartta yalnızca senin seçtiğin alanlar (toplam süre, hedef durumu, isteğe bağlı ders dağılımı ve seri) ile profil adın bulunur. Oda davetinde ortak odanın saati, süresi ve katılanların adları mesajın içinde taşınır; katılan herkesin uygulaması o mesajı kendi cihazında açar. Bu bilgiler sohbetin diğer üyelerine görünür; göndermeden önce kartı önizleyip neyin gideceğini görürsün.
 
+## Apple Watch uygulaması (isteğe bağlı)
+
+Saatteki Fokus verisini saatin kendi deposunda tutar; saat iCloud eşitlemesi yapmaz. Odak kayıtların ile tema, hedef ve ders adı gibi tercihlerin yalnızca eşleştirilmiş saatinle iPhone'un arasında, Apple'ın WatchConnectivity bağlantısı üzerinden eşlenir; bizim bir sunucumuza uğramaz. Sağlık (HealthKit) verisine erişilmez.
+
 ## Bildirimler
 
 Günlük hatırlatma ve hedef bildirimleri **yalnızca cihazında yerel olarak** planlanır; bir sunucu veya push servisi kullanılmaz. İzin isteğe bağlıdır ve iOS Ayarları'ndan geri alınabilir.
 
 ## Odak sesleri
 
-Beyaz/pembe/kahverengi gürültü, yağmur ve melodi sesleri cihazında üretilir; indirme veya ağ erişimi gerektirmez. Mikrofon, kamera, konum, kişiler veya fotoğraflarına erişmeyiz.
+Beyaz/pembe/kahverengi gürültü, yağmur ve melodi sesleri cihazında üretilir; indirme veya ağ erişimi gerektirmez. Mikrofon, konum, kişiler veya fotoğraflarına erişmeyiz. Kamera yalnızca bir kitabın barkodunu okutmak istediğinde, izninle açılır; görüntü cihazında işlenir, kaydedilmez ve hiçbir yere gönderilmez.
 
 ## Widget'lar, Live Activity ve Siri/Kestirmeler
 

@@ -337,8 +337,9 @@ Kurallar (`FocusLink`, `FocusLinkSyncTests`, `FocusLinkRepositoryTests`):
   hızlı; Ayarlar modülüne dokunmamak için).
 - **Hep açık:** odak sürerken `WKExtendedRuntimeSession` (Info.plist `WKBackgroundModes` = `mindfulness`, ön planda,
   en çok 1 saat; uygulama yeniden etkin olunca yenilenir, oturum bitince kapanır). Bilek inince uygulama kadranda kalır;
-  `isLuminanceReduced` ile kontroller gizlenir, renkler kısılır, analog/halka `TimelineView` dakikada bir çizilir, sayaçlar
-  `Text(timerInterval:)`. `HKWorkoutSession` YOK (inceleme riski); gerekçe `appstore/metadata/tr/review_notes.txt`.
+  `isLuminanceReduced` ile kontroller gizlenir, renkler kısılır, kadranlar `TimelineView(.periodic…)` ile dakikada bir
+  çizilir ve sayaç dakikalık metindir (`WatchFaceCalc.minuteText`); uyanıkken sayaçlar `Text(timerInterval:)`.
+  Mola/Devam + Bitir ekrana dokununca belirir, 4 sn sonra gizlenir (VoiceOver'da hep görünür). `HKWorkoutSession` YOK (inceleme riski); gerekçe `appstore/metadata/tr/review_notes.txt`.
 - **Tema:** telefon `fokus.palette` değişince `FocusLink.Preferences` uygulama bağlamıyla gider; saat aynı anahtara yazar,
   `.fokusTheme()` anında yeni paleti uygular. Saat her zaman koyudur.
 - **İstatistik (oturum yokken):** Başlat + bugünkü toplam ve hedef halkası, son 7 günün çubukları, son 5 oturum (ders,

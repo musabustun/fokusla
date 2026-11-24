@@ -8,7 +8,8 @@ Beklenen sonuç: **4+** (her soruya "Yok / Hayır"). App Store Connect → Uygul
 | Tıbbi/tedavi bilgisi, yetişkinlere yönelik/müstehcen tema | Yok | Yok |
 | Rekabetçi oyun / simüle kumar | Yok | Oyun değil |
 | Sınırsız web erişimi | Hayır | Uygulama bir tarayıcı değil; yalnızca GitHub ve Spotify bağlantıları sistem tarayıcısında/Spotify'da açılır |
-| Kullanıcı tarafından oluşturulan içerik / sohbet / mesajlaşma | Hayır | Sosyal sekmesi bu sürümde (Release) gizlidir; yalnızca kullanıcının kendi verisi vardır |
+| Kullanıcı tarafından oluşturulan içerik | Evet (1.0.2, Sosyal) | Yalnız kullanıcı adı ve oda adı; süzgeç, engelle, bildir var |
+| Sohbet / mesajlaşma | Hayır | Sosyal'de mesajlaşma yok; iMessage paylaşımı Apple'ın uygulamasında |
 | Yapay zekâ ile üretilen içerik | Hayır | Yok |
 | Uygulama içi satın alma / abonelik | Hayır | Ücretsiz, premium yok |
 | Reklam | Hayır | Reklam SDK'sı yok |

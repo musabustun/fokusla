@@ -1,6 +1,6 @@
 # App Store hazırlığı
 
-Fokus 1.0.0'ın App Store Connect'e girilecek içerikleri. Yalnızca Türkçe (birincil dil `tr`).
+Fokus'un App Store Connect'e girilecek içerikleri. Yalnızca Türkçe (birincil dil `tr`).
 
 | Yol | İçerik |
 | --- | --- |
@@ -22,7 +22,7 @@ Gizlilik ve destek sayfaları (ASC URL'leri `metadata/tr/*_url.txt`: destek `htt
 
 ## Sürüm yapılandırması
 
-- `ios/Config/Fokus.xcconfig`: `MARKETING_VERSION = 1.0.0`, `CURRENT_PROJECT_VERSION = 2` (uygulama ve widget uzantısı aynı değeri kullanır; her ASC yüklemesinde build numarası artırılır).
+- `ios/Config/Fokus.xcconfig`: `MARKETING_VERSION = 1.0.1`, `CURRENT_PROJECT_VERSION = 9` (uygulama ve widget uzantısı aynı değeri kullanır; her ASC yüklemesinde build numarası artırılır).
 - `ITSAppUsesNonExemptEncryption = NO` (`ios/Fokus/Info.plist`): yalnızca Apple sistem şifrelemesi.
 - `PrivacyInfo.xcprivacy` (uygulama + widget): izleme yok, toplanan veri yok, UserDefaults required-reason beyanı.
 - **Sosyal sekmesi Release'te gizli:** `AppSection.isAvailable` (`#if DEBUG`). Kenar çubuğu, Bugün "Diğer" ve Ayarlar "Daha fazla" listeleri bunu kullanır. Debug ve UI testlerinde Sosyal aynen görünür.

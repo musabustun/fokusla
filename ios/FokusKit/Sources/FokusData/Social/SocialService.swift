@@ -2,16 +2,17 @@ import FokusDomain
 import Foundation
 
 // Sosyal sözleşmesi (web `data/social/SocialService.ts`): profil, arkadaşlık istekleri, arkadaş listesi
-// ve paralel odak odaları. Native'de gerçek senkron CloudKit ile yapılacak (docs/social-cloudkit.md);
-// şimdilik `MockSocialService` kullanılır ve HİÇBİR AĞ G/Ç'si YOKTUR.
+// ve paralel odak odaları. Uygulama `CloudSocialService` + `CloudKitSocialCloud` kullanır
+// (docs/social-cloudkit.md). `MockSocialService` web prototipinin karşılığıdır; uygulamada kullanılmaz.
 //
 // Gizlilik (çoğu kullanıcı 18 yaş altı): başkalarına YALNIZCA kullanıcı adı ve odak durumu/süreleri
 // (`SocialPresence`) gider. Apple kimliği, ad, e-posta ve çalışma içeriği paylaşılmaz.
 
 /// - loading: henüz `refresh()` çalışmadı. signedOut: giriş yok → Sosyal kapalı.
 /// - needsUsername: giriş var, kullanıcı adı seçilmemiş. ready: profil hazır.
+/// - iCloudUnavailable: cihazda iCloud hesabı yok/kısıtlı. unreachable: hiç yüklenemedi (ağ vb.).
 public enum SocialStatus: Sendable, Hashable {
-    case loading, signedOut, needsUsername, ready
+    case loading, signedOut, needsUsername, ready, iCloudUnavailable, unreachable
 }
 
 /// Başka kullanıcıların görebildiği TEK kimlik bilgisi.
@@ -111,10 +112,12 @@ public struct SocialRoom: Sendable, Hashable, Identifiable {
     /// Sıra: ev sahibi, sonra katılma zamanına göre.
     public var members: [RoomMember]
     public var createdAt: Date
+    /// Bağlantısı olan herkesin katılabildiği davet adresi (CloudKit paylaşımı).
+    public var inviteURL: URL?
 
     public init(
         id: String, name: String, hostUserId: String, inviteCode: String,
-        members: [RoomMember], createdAt: Date
+        members: [RoomMember], createdAt: Date, inviteURL: URL? = nil
     ) {
         self.id = id
         self.name = name
@@ -122,6 +125,7 @@ public struct SocialRoom: Sendable, Hashable, Identifiable {
         self.inviteCode = inviteCode
         self.members = members
         self.createdAt = createdAt
+        self.inviteURL = inviteURL
     }
 }
 
@@ -153,10 +157,15 @@ public struct SocialSnapshot: Sendable, Hashable {
     public var requests: [FriendRequest]
     public var room: SocialRoom?
     public var friendRooms: [RoomSummary]
+    /// Henüz kullanılmamış, tek kullanımlık davet bağlantılarım (yeniden eskiye).
+    public var pendingInvites: [FriendInvite]
+    /// Son yenileme başarısız oldu; gösterilenler son bilinen değerlerdir.
+    public var isOffline: Bool
 
     public init(
         status: SocialStatus, profile: SocialProfile? = nil, friends: [SocialFriend] = [],
-        requests: [FriendRequest] = [], room: SocialRoom? = nil, friendRooms: [RoomSummary] = []
+        requests: [FriendRequest] = [], room: SocialRoom? = nil, friendRooms: [RoomSummary] = [],
+        pendingInvites: [FriendInvite] = [], isOffline: Bool = false
     ) {
         self.status = status
         self.profile = profile
@@ -164,6 +173,8 @@ public struct SocialSnapshot: Sendable, Hashable {
         self.requests = requests
         self.room = room
         self.friendRooms = friendRooms
+        self.pendingInvites = pendingInvites
+        self.isOffline = isOffline
     }
 
     public static func empty(_ status: SocialStatus) -> SocialSnapshot { SocialSnapshot(status: status) }
@@ -190,6 +201,7 @@ public enum SocialErrorCode: String, Sendable, Hashable, CaseIterable {
     case notSignedIn, noProfile, invalidUsername, usernameTaken, invalidInviteCode, userNotFound
     case cannotAddSelf = "self"
     case alreadyFriends, requestExists, requestNotFound, friendNotFound, roomNotFound, invalidRoomName
+    case iCloudUnavailable, network, inviteInvalid, roomFull, tooManyRequests, inappropriateText, unknown
 }
 
 /// Sosyal işlemlerin beklenen hataları. UI `code`'a göre Türkçe mesaj gösterir.
@@ -216,8 +228,34 @@ public struct SocialError: Error, Sendable, Hashable {
         case .friendNotFound: "Bu kişi artık arkadaş listende değil."
         case .roomNotFound: "Oda bulunamadı ya da kapanmış."
         case .invalidRoomName: "Oda adı 1–40 karakter olmalı."
+        case .iCloudUnavailable: "Sosyal için bu cihazda iCloud'a giriş yapmalısın."
+        case .network: "Bağlantı kurulamadı. İnternetini kontrol edip tekrar dene."
+        case .inviteInvalid: "Bu davet bağlantısı geçersiz ya da daha önce kullanılmış."
+        case .roomFull: "Bu oda dolu."
+        case .tooManyRequests: "Çok fazla bekleyen davetin var. Önce bazılarını geri çek."
+        case .inappropriateText: "Bu ad uygun değil. Başka bir ad dene."
+        case .unknown: "Bir şeyler ters gitti. Lütfen tekrar dene."
         }
     }
+}
+
+/// Tek kullanımlık arkadaşlık daveti.
+public struct FriendInvite: Sendable, Hashable, Identifiable {
+    public var id: String
+    public var url: URL
+    public var createdAt: Date
+
+    public init(id: String, url: URL, createdAt: Date) {
+        self.id = id
+        self.url = url
+        self.createdAt = createdAt
+    }
+}
+
+/// Kabul edilen davetin sonucu.
+public enum SocialInviteOutcome: Sendable, Hashable {
+    case friend(username: String)
+    case room(name: String)
 }
 
 /// Oda adı üst sınırı (karakter).
@@ -265,4 +303,33 @@ public protocol SocialService: AnyObject {
     /// Kendi durumumu yayınlar (`SocialCalc.ownPresenceFromFocus` ile üretilir). `isDiscoverable`
     /// false ise hiçbir şey paylaşılmaz. Native: ~60 sn kalp atışı + durum değişiminde.
     func publishPresence(_ presence: SocialPresence) async throws
+
+    /// Örnek dünyayı gezme (önizleme oturumu) destekleniyor mu?
+    var supportsPreview: Bool { get }
+    /// Tek kullanımlık arkadaşlık bağlantısı üretir. Hata: tooManyRequests, network.
+    func createFriendInvite() async throws -> FriendInvite
+    /// Kullanılmamış bağlantıyı geçersiz kılar. Hata: requestNotFound.
+    func cancelInvite(id: String) async throws
+    /// Arkadaşlık ya da oda davetini kabul eder. Hata: inviteInvalid, self, alreadyFriends, roomFull.
+    @discardableResult func acceptInvite(_ invite: SocialInvite) async throws -> SocialInviteOutcome
+    /// Arkadaşı siler ve engeller. Hata: friendNotFound.
+    func blockFriend(userId: String) async throws
+    /// Gelen isteği reddeder ve göndereni engeller. Hata: requestNotFound.
+    func blockRequest(id: String) async throws
+    /// Sosyal profilini, arkadaşlıkları ve kullanıcı adını kalıcı olarak siler.
+    func deleteAccount() async throws
+}
+
+/// Davet bağlantısı bilmeyen servisler (`MockSocialService`) için varsayılanlar.
+extension SocialService {
+    public var supportsPreview: Bool { false }
+    public func createFriendInvite() async throws -> FriendInvite { throw SocialError(.unknown) }
+    public func cancelInvite(id: String) async throws { throw SocialError(.requestNotFound) }
+    @discardableResult
+    public func acceptInvite(_ invite: SocialInvite) async throws -> SocialInviteOutcome {
+        throw SocialError(.inviteInvalid)
+    }
+    public func blockFriend(userId: String) async throws { try await removeFriend(userId: userId) }
+    public func blockRequest(id: String) async throws { try await respondToRequest(id: id, accept: false) }
+    public func deleteAccount() async throws { throw SocialError(.unknown) }
 }

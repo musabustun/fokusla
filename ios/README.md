@@ -62,7 +62,7 @@ uygulama hedefi dışında kimse ona bağlanmaz.
 
 ## Veri
 
-- **Modeller:** `FokusData/Models/` — `docs/ARCHITECTURE.md` 4.3 tablosundaki 12 varlık. CloudKit
+- **Modeller:** `FokusData/Models/` — `docs/ARCHITECTURE.md` 4.3 tablosundaki 13 varlık. CloudKit
   kuralları: `@Attribute(.unique)` yok, tüm özellikler opsiyonel ya da varsayılanlı, ilişki yok
   (düz `UUID?` yabancı anahtar), `id: UUID`, `createdAt/updatedAt/deletedAt`. Enum'lar raw string
   saklanır (`fieldRaw`), hesaplanan özellikle sunulur. Model adları CloudKit kayıt tipini belirler
@@ -333,16 +333,17 @@ oluşturan tek seferlik bir yol içerir (`FokusCloudKitSchemaInitializer`, Apple
 
    Uygulama normal açılır; şema başlatma arka planda sürer (ağ; ~10–60 sn). Sonucu `Logger` yazar
    (subsystem `com.musabustun.fokus`, category `cloudkit-schema`): başarıda
-   `CloudKit şeması başlatıldı: 12 kayıt tipi — …`, hatada `CloudKit şeması başlatılamadı: …`. Cihaz
+   `CloudKit şeması başlatıldı: 13 kayıt tipi — …`, hatada `CloudKit şeması başlatılamadı: …`. Cihaz
    günlüğü için Xcode → Devices and Simulators → Open Console, ya da `--console` bayrağını ekle.
    Gerçek `Fokus.store`'a dokunmaz: geçici ayrı bir depo kullanır ve siler. Development'a örnek kayıtlar
    yazılıp silinir (normal).
 3. **Doğrula:** [CloudKit Console](https://icloud.developer.apple.com/dashboard) → `iCloud.com.musabustun.fokus`
-   → **Development** → Schema → Record Types: 12 tipin hepsi (`CD_UserProfile`, `CD_Subject`, `CD_Topic`, `CD_Book`,
-   `CD_BookProgress`, `CD_TestResult`, `CD_FocusSession`, `CD_FocusSegment`, `CD_StudyTask`, `CD_TaskCompletion`,
+   → **Development** → Schema → Record Types: 13 tipin hepsi (`CD_UserProfile`, `CD_Subject`, `CD_Topic`, `CD_Book`,
+   `CD_BookProgress`, `CD_BookSection`, `CD_TestResult`, `CD_FocusSession`, `CD_FocusSegment`, `CD_StudyTask`, `CD_TaskCompletion`,
    `CD_Friend`, `CD_Room`) ve alanları görünmeli.
 4. **Production'a gönder:** Console'da **Deploy Schema Changes…** → onayla. Sonra Production ortamında tipleri
-   yeniden kontrol et.
+   yeniden kontrol et. (24.11.2026: `CD_BookSection` ve `CD_Book.CD_barcode`/`CD_libraryKey` alanları cihaz olmadan,
+   Console'da elle eklenip deploy edildi; tek alan indeksleri eklenmedi.)
 
 **Şema yalnızca büyür:** Production'a deploy edilen kayıt tipi/alan silinemez ve yeniden adlandırılamaz.
 Yeni alan/model eklediğinde (opsiyonel/varsayılanlı) adımları tekrarla ve yeniden deploy et; deploy etmeden

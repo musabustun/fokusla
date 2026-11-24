@@ -32,7 +32,7 @@ Günlük hatırlatma ve hedef bildirimleri **yalnızca cihazında yerel olarak**
 
 ## Odak sesleri
 
-Beyaz/pembe/kahverengi gürültü, yağmur ve melodi sesleri cihazında üretilir; indirme veya ağ erişimi gerektirmez. Mikrofon, kamera, konum, kişiler veya fotoğraflarına erişmeyiz.
+Beyaz/pembe/kahverengi gürültü, yağmur ve melodi sesleri cihazında üretilir; indirme veya ağ erişimi gerektirmez. Mikrofon, konum, kişiler veya fotoğraflarına erişmeyiz. Kamera (1.0.1'den itibaren) yalnızca bir kitabın barkodunu okutmak istediğinde, izninle açılır; görüntü cihazında işlenir, kaydedilmez ve hiçbir yere gönderilmez.
 
 ## Widget'lar, Live Activity ve Siri/Kestirmeler
 

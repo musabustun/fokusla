@@ -17,6 +17,12 @@ struct StatsView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
+                // Başlık içerikte: watchOS gezinme başlığı uygulamanın sabit vurgu rengini kullanır, temayı
+                // (telefondan gelen palet) izlemez.
+                Text("Fokus")
+                    .font(.title3.weight(.semibold))
+                    .foregroundStyle(.fkAccentInk)
+                    .accessibilityAddTraits(.isHeader)
                 Button {
                     model.start()
                 } label: {
@@ -36,7 +42,6 @@ struct StatsView: View {
             .padding(.horizontal, 4)
         }
         .defaultScrollAnchor(Self.startsAtBottom ? .bottom : .top)
-        .navigationTitle("Fokus")
     }
 }
 

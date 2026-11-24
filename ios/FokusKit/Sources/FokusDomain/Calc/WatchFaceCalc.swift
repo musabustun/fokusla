@@ -42,6 +42,21 @@ public enum WatchFaceCalc {
         return max(0, end.timeIntervalSince(start))
     }
 
+    /// Always On (bilek inik) sayaç metni: sistem ekranı dakikada bir günceller, saniye gösterilmez.
+    /// Geçen dakikalar aşağı yuvarlanır: "23 dk", saat varsa "1 sa 05 dk".
+    public static func minuteText(elapsed: TimeInterval) -> String {
+        let minutes = Int(max(0, elapsed) / 60)
+        let hours = minutes / 60
+        guard hours > 0 else { return "\(minutes) dk" }
+        let rest = minutes % 60
+        return "\(hours) sa \(rest < 10 ? "0" : "")\(rest) dk"
+    }
+
+    /// Always On'da "Bugün" satırı (hedef kapalıysa `nil`; molada durur).
+    public static func dayMinuteText(_ state: FocusActivityCalc.State, now: Date) -> String? {
+        dayFocusSeconds(state, now: now).map(minuteText(elapsed:))
+    }
+
     /// Halka kadranın doluluğu (0...1). Hedef varsa bugünkü toplam / hedef; yoksa geçerli saatin
     /// dolan kısmı (dakika ibresiyle aynı tur).
     public static func ringProgress(_ state: FocusActivityCalc.State, now: Date) -> Double {

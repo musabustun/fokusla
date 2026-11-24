@@ -14,14 +14,22 @@ struct RingFace: View {
     var body: some View {
         VStack(spacing: 2) {
             FaceHeader(live: live)
-            TimelineView(.animation(minimumInterval: isLuminanceReduced ? 60 : 1, paused: false)) { context in
+            // `.periodic` Always On'da da işler (dakikada bir); `.animation` orada durur ve ekran donardı.
+            TimelineView(.periodic(from: state.timerStart, by: isLuminanceReduced ? 60 : 1)) { context in
                 let progress = WatchFaceCalc.ringProgress(state, now: context.date)
                 ProgressRing(progress: progress, lineWidth: 10, tone: isFocus ? .accent : .success) {
                     VStack(spacing: 0) {
-                        Text(timerInterval: state.timerStart...Date.distantFuture, countsDown: false)
-                            .font(WatchFont.numeral(26))
-                            .foregroundStyle(isLuminanceReduced ? FokusColor(.secondaryLabel) : FokusColor(.label))
-                            .minimumScaleFactor(0.5).lineLimit(1)
+                        Group {
+                            if isLuminanceReduced {
+                                Text(WatchFaceCalc.minuteText(elapsed: WatchFaceCalc.elapsed(state, now: context.date)))
+                                    .foregroundStyle(FokusColor(.secondaryLabel))
+                            } else {
+                                Text(timerInterval: state.timerStart...Date.distantFuture, countsDown: false)
+                                    .foregroundStyle(FokusColor(.label))
+                            }
+                        }
+                        .font(WatchFont.numeral(26))
+                        .minimumScaleFactor(0.5).lineLimit(1)
                         Text(caption(progress: progress))
                             .font(.caption2).foregroundStyle(.fkSecondaryLabel)
                             .lineLimit(1).minimumScaleFactor(0.7)

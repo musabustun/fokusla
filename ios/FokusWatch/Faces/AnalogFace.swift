@@ -4,7 +4,8 @@ import SwiftUI
 
 /// Analog kadran: 60 dakikalık kronometre kadranı. Dakika ibresi oturumun (son devamdan beri) dakikasını,
 /// ince ibre saniyeyi gösterir; her tam saat ortadaki rozette sayılır. Always On'da saniye ibresi gizlenir
-/// ve dakikada bir çizilir. Açılar `WatchFaceCalc`'ten.
+/// ve dakikada bir çizilir (`.periodic`; `.animation` zamanlaması Always On'da durur). Açılar `WatchFaceCalc`'ten.
+/// Kontroller dokununca göründüğü için kadran ekranın neredeyse tamamını kullanır.
 struct AnalogFace: View {
     let live: FocusLink.LiveState
     @Environment(\.isLuminanceReduced) private var isLuminanceReduced
@@ -14,7 +15,7 @@ struct AnalogFace: View {
     var body: some View {
         VStack(spacing: 2) {
             FaceHeader(live: live)
-            TimelineView(.animation(minimumInterval: isLuminanceReduced ? 60 : 1, paused: false)) { context in
+            TimelineView(.periodic(from: state.timerStart, by: isLuminanceReduced ? 60 : 1)) { context in
                 let elapsed = WatchFaceCalc.elapsed(state, now: context.date)
                 Dial(
                     elapsed: elapsed, isFocus: state.phase == .focus, showsSeconds: !isLuminanceReduced,

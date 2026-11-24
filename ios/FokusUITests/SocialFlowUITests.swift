@@ -1,9 +1,11 @@
 import XCTest
 
-/// Sosyal modülü duman testleri (sahte servis, `-FokusUITestMode`): önizleme girişi → kullanıcı adı →
-/// oda oluştur / katıl / ayrıl; arkadaş isteği; geçersiz kod; açık/koyu ekran görüntüleri.
+/// Sosyal duman testleri: GERÇEK `CloudSocialService` + bellek içi sahte sunucu (`SocialDemoWorld`). Örnek kişiler:
+/// `zeynep2027` bana istek gönderir, `elif.say` isteğimi kabul eder ve "Sabah kampı" odasının sahibidir.
 @MainActor
 final class SocialFlowUITests: XCTestCase {
+    private static let demoTimeout: TimeInterval = 15
+
     private var app: XCUIApplication!
 
     override func setUpWithError() throws {
@@ -12,9 +14,10 @@ final class SocialFlowUITests: XCTestCase {
 
     // MARK: Yardımcılar
 
-    private func launch(theme: String? = nil) {
+    private func launch(signedIn: Bool = true, theme: String? = nil) {
         app = XCUIApplication()
         var arguments = ["-FokusUITestMode"]
+        if signedIn { arguments.append("-FokusUITestSocialSignedIn") }
         if let theme { arguments += ["-fokus.theme", theme] }
         app.launchArguments = arguments
         app.launch()
@@ -43,14 +46,20 @@ final class SocialFlowUITests: XCTestCase {
             let row = sidebar.staticTexts["Sosyal"].exists ? sidebar.staticTexts["Sosyal"] : sidebar.buttons["Sosyal"]
             row.tap()
         } else {
+            scrollTo("today.shortcut.social")
             tap("today.shortcut.social")
         }
         XCTAssertTrue(element("screen.social").waitForExistence(timeout: 5))
     }
 
-    private func tap(_ identifier: String, file: StaticString = #filePath, line: UInt = #line) {
+    private func scrollTo(_ identifier: String) {
+        for _ in 0..<6 where !element(identifier).isHittable { app.swipeUp() }
+    }
+
+    private func tap(_ identifier: String, timeout: TimeInterval = 5, file: StaticString = #filePath, line: UInt = #line) {
         let target = element(identifier)
-        XCTAssertTrue(target.waitForExistence(timeout: 5), "\(identifier) yok", file: file, line: line)
+        XCTAssertTrue(target.waitForExistence(timeout: timeout), "\(identifier) yok", file: file, line: line)
+        if !target.isHittable { scrollTo(identifier) }
         target.tap()
     }
 
@@ -58,10 +67,8 @@ final class SocialFlowUITests: XCTestCase {
         XCTAssertTrue(element(identifier).waitForExistence(timeout: timeout), "\(identifier) yok", file: file, line: line)
     }
 
-    private func waitForAbsence(_ identifier: String, timeout: TimeInterval = 5, file: StaticString = #filePath, line: UInt = #line) {
-        let gone = NSPredicate(format: "exists == false")
-        let result = XCTWaiter().wait(for: [expectation(for: gone, evaluatedWith: element(identifier))], timeout: timeout)
-        XCTAssertEqual(result, .completed, "\(identifier) hâlâ var", file: file, line: line)
+    private func waitForAbsence(_ identifier: String, timeout: TimeInterval = 10, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(element(identifier).waitForNonExistence(timeout: timeout), "\(identifier) hâlâ var", file: file, line: line)
     }
 
     /// Alanı doldurur ve klavyede "Git"e basarak formu gönderir.
@@ -80,27 +87,33 @@ final class SocialFlowUITests: XCTestCase {
         add(attachment)
     }
 
-    /// Önizleme oturumu aç → kullanıcı adı seç → hazır ekran.
-    private func signInToPreview(username: String = "ben.yks") {
-        waitFor("social.gate")
-        tap("social.gate.preview")
-        waitFor("social.username")
+    private func chooseUsername(_ username: String = "ben.yks") {
+        waitFor("social.username", timeout: 10)
         typeAndSubmit(username, into: "social.username.field")
-        waitFor("social.home")
+        waitFor("social.home", timeout: 10)
+    }
+
+    private func befriendElif() {
+        tap("social.friends.add")
+        waitFor("social.addFriend")
+        typeAndSubmit("elif.say", into: "social.addFriend.field")
+        waitForAbsence("social.addFriend")
+        waitFor("social.friend.elif.say", timeout: Self.demoTimeout)
     }
 
     // MARK: Testler
 
-    func testGateExplainsAndPreviewLeadsToUsernameThenHome() {
-        launch()
+    func testGateExplainsSignIn() {
+        launch(signedIn: false)
         waitFor("social.gate.signIn")
-        waitFor("social.gate.preview")
         XCTAssertTrue(app.staticTexts["Birlikte çalışmak için giriş yap"].exists)
+        XCTAssertFalse(element("social.gate.preview").exists)
         attachScreenshot("social-gate")
+    }
 
-        tap("social.gate.preview")
-        waitFor("social.username")
-        // Geçersiz ad: hata görünür, ilerlemez.
+    func testUsernameValidationThenHomeAndIncomingRequest() {
+        launch()
+        waitFor("social.username", timeout: 10)
         typeAndSubmit("1ab", into: "social.username.field")
         waitFor("social.username.field.error")
         XCTAssertFalse(element("social.home").exists)
@@ -110,124 +123,92 @@ final class SocialFlowUITests: XCTestCase {
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 3))
         field.typeText("elif.say\n")
         waitFor("social.username.field.error")
+        XCTAssertFalse(element("social.home").exists)
         field.tap()
         field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 8))
         field.typeText("ben.yks\n")
-        waitFor("social.home")
-        waitFor("social.friend.elif.say")
-        waitFor("social.friend.mert_ayt")
-        waitFor("social.request.accept.zeynep2027")
-    }
-
-    func testCreateRoomThenFriendJoinsThenLeave() {
-        launch()
-        signInToPreview()
-        waitFor("social.lobby")
-
-        tap("social.room.create")
-        waitFor("social.createRoom")
-        tap("social.room.submit")
-        waitForAbsence("social.createRoom")
-
-        waitFor("social.room")
-        XCTAssertEqual(element("social.room.title").label, "Birlikte çalışalım")
-        waitFor("social.member.ben.yks")
-        // İlk çevrimiçi arkadaş kısa süre sonra odaya katılır.
-        waitFor("social.member.elif.say", timeout: 10)
-        XCTAssertTrue(element("social.member.ben.yks").label.contains("ev sahibi"))
-        attachScreenshot("social-room-host")
-
-        tap("social.room.leave")
-        waitFor("social.lobby")
-        XCTAssertFalse(element("social.room").exists)
-    }
-
-    func testJoinFriendRoomAndLeave() {
-        launch()
-        signInToPreview()
-
-        tap("social.room.join.mock-room-sabah")
-        waitFor("social.room")
-        XCTAssertEqual(element("social.room.title").label, "Sabah kampı")
-        waitFor("social.member.elif.say")
-        waitFor("social.member.mert_ayt")
-        waitFor("social.member.ben.yks")
-        XCTAssertTrue(element("social.member.ben.yks").label.contains("(sen)"))
-        XCTAssertTrue(element("social.member.elif.say").label.contains("ev sahibi"))
-
-        tap("social.room.leave")
-        waitFor("social.lobby")
-        waitFor("social.room.join.mock-room-sabah")
-    }
-
-    func testJoinByCodeShowsErrorForUnknownCodeThenJoins() {
-        launch()
-        signInToPreview()
-
-        tap("social.room.join")
-        waitFor("social.joinRoom")
-        typeAndSubmit("XXXXXX", into: "social.joinCode.field")
-        waitFor("social.joinCode.field.error")
-        XCTAssertTrue(element("social.joinRoom").exists)
-
-        let field = element("social.joinCode.field")
-        field.tap()
-        field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 6))
-        field.typeText("tytmat\n")
-        waitForAbsence("social.joinRoom")
-        waitFor("social.room")
-        XCTAssertEqual(element("social.room.title").label, "TYT Matematik")
-        tap("social.room.leave")
-        waitFor("social.lobby")
-    }
-
-    func testAcceptRequestAddFriendAndRemoveFriend() {
-        launch()
-        signInToPreview()
+        waitFor("social.home", timeout: 10)
 
         // Gelen isteği kabul et → arkadaş listesine girer.
-        tap("social.request.accept.zeynep2027")
-        waitFor("social.friend.zeynep2027")
+        tap("social.request.accept.zeynep2027", timeout: Self.demoTimeout)
+        waitFor("social.friend.zeynep2027", timeout: Self.demoTimeout)
         waitForAbsence("social.request.accept.zeynep2027")
-
-        // Kullanıcı adıyla istek gönder → "Yanıt bekleniyor", kısa süre sonra kabul edilir.
-        tap("social.friends.add")
-        waitFor("social.addFriend")
-        typeAndSubmit("deniz_ea", into: "social.addFriend.field")
-        waitForAbsence("social.addFriend")
-        waitFor("social.friend.deniz_ea", timeout: 10)
-
-        // Arkadaşlıktan çıkar.
-        tap("social.friend.deniz_ea")
-        waitFor("social.friendSheet")
-        tap("social.friendSheet.remove")
-        waitForAbsence("social.friend.deniz_ea")
+        attachScreenshot("social-home")
     }
 
-    func testAddFriendRejectsUnknownAndSelfUsernames() {
+    func testRequestByUsernameThenJoinFriendRoomAndLeaveThenRemove() {
         launch()
-        signInToPreview()
+        chooseUsername()
+        befriendElif()
 
+        // Arkadaşın odasına katıl ve çık.
+        XCTAssertTrue(app.staticTexts["Sabah kampı"].waitForExistence(timeout: Self.demoTimeout))
+        let join = app.buttons["Sabah kampı odasına katıl"]
+        XCTAssertTrue(join.waitForExistence(timeout: 5))
+        join.tap()
+        waitFor("social.room", timeout: 10)
+        XCTAssertEqual(element("social.room.title").label, "Sabah kampı")
+        waitFor("social.member.elif.say")
+        waitFor("social.member.ben.yks")
+        XCTAssertTrue(element("social.member.elif.say").label.contains("ev sahibi"))
+        XCTAssertTrue(element("social.member.ben.yks").label.contains("(sen)"))
+        attachScreenshot("social-room")
+        tap("social.room.leave")
+        waitFor("social.lobby", timeout: 10)
+
+        tap("social.friend.elif.say")
+        waitFor("social.friendSheet")
+        tap("social.friendSheet.remove")
+        waitForAbsence("social.friend.elif.say")
+    }
+
+    func testUnknownUsernameAndInviteLink() {
+        launch()
+        chooseUsername()
         tap("social.friends.add")
         waitFor("social.addFriend")
         typeAndSubmit("kimse_yok", into: "social.addFriend.field")
         waitFor("social.addFriend.field.error")
-        XCTAssertTrue(element("social.addFriend").exists)
+
+        app.buttons["Bağlantı"].tap()
+        tap("social.addFriend.createInvite")
+        waitFor("social.addFriend.invite.share", timeout: 10)
+        attachScreenshot("social-invite-link")
+
+        app.buttons["Davetim var"].tap()
+        typeAndSubmit("https://example.com/share/x", into: "social.pasteInvite.field")
+        waitFor("social.pasteInvite.field.error")
+        tap("social.addFriend.cancel")
+
+        // Kullanılmamış bağlantı geri çekilebilir.
+        tap("social.invite.cancel", timeout: 10)
+        waitForAbsence("social.invite.cancel")
     }
 
-    func testScreenshotRoomDark() {
+    func testCreateRoomShareAndClose() {
         launch(theme: "dark")
-        signInToPreview()
-        tap("social.room.join.mock-room-sabah")
+        chooseUsername()
+        tap("social.room.create")
+        waitFor("social.createRoom")
+        tap("social.room.submit")
+        waitForAbsence("social.createRoom")
         waitFor("social.room")
-        attachScreenshot("social-room-dark")
+        XCTAssertEqual(element("social.room.title").label, "Birlikte çalışalım")
+        tap("social.room.share")
+        waitFor("social.room.invite.share")
+        attachScreenshot("social-room-share-dark")
+        tap("social.roomShare.cancel")
+        tap("social.room.leave")
+        waitFor("social.lobby", timeout: 10)
+    }
 
-        // iPad: yatayda iki sütun düzeni.
-        if element("sidebar").exists {
-            XCUIDevice.shared.orientation = .landscapeLeft
-            waitFor("social.room")
-            attachScreenshot("social-room-landscape")
-            XCUIDevice.shared.orientation = .portrait
-        }
+    func testDeleteSocialProfileReturnsToUsername() {
+        launch()
+        chooseUsername()
+        tap("social.profile.delete")
+        let confirm = app.buttons["Kalıcı olarak sil"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        confirm.tap()
+        waitFor("social.username", timeout: 10)
     }
 }

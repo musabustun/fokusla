@@ -2,61 +2,91 @@ import FokusData
 import FokusDesign
 import SwiftUI
 
-/// Arkadaş ekle: kullanıcı adıyla ya da davet koduyla istek gönderir (web `AddFriendSheet`).
+/// Arkadaş ekle: tam kullanıcı adına istek, tek kullanımlık davet bağlantısı/QR ya da gelen bağlantıyı yapıştırma.
 struct SocialAddFriendSheet: View {
     let social: any SocialService
 
+    private enum Mode: String, CaseIterable, Identifiable {
+        case username, link, paste
+        var id: String { rawValue }
+        var title: String {
+            switch self {
+            case .username: "Kullanıcı adı"
+            case .link: "Bağlantı"
+            case .paste: "Davetim var"
+            }
+        }
+    }
+
     @Environment(\.dismiss) private var dismiss
-    @State private var byUsername = true
+    @State private var mode: Mode = .username
     @State private var value = ""
     @State private var isBusy = false
     @State private var errorMessage: String?
+    @State private var invite: FriendInvite?
 
     var body: some View {
-        SocialSheetScaffold(
-            title: "Arkadaş ekle",
-            description: "Arkadaşının kullanıcı adını ya da davet kodunu gir. İsteği kabul edince birbirinizin durumunu görürsünüz.",
-            identifier: "social.addFriend"
-        ) {
-            Picker("Arama yöntemi", selection: $byUsername) {
-                Text("Kullanıcı adı").tag(true)
-                Text("Davet kodu").tag(false)
+        SocialSheetScaffold(title: "Arkadaş ekle", description: nil, identifier: "social.addFriend") {
+            Picker("Ekleme yöntemi", selection: $mode) {
+                ForEach(Mode.allCases) { Text($0.title).tag($0) }
             }
             .pickerStyle(.segmented)
             .accessibilityIdentifier("social.addFriend.mode")
-            .onChange(of: byUsername) { _, _ in
-                value = ""
-                errorMessage = nil
+            switch mode {
+            case .username: usernameForm
+            case .link: linkForm
+            case .paste: SocialPasteInviteForm(social: social) { dismiss() }
             }
-            SocialTextField(
-                label: byUsername ? "Kullanıcı adı" : "Davet kodu",
-                prefix: byUsername ? "@" : nil, text: $value,
-                placeholder: byUsername ? "kullanici_adi" : "K7M2QX",
-                hint: byUsername ? nil : "6 karakter, ör. K7M2QX", error: errorMessage,
-                capitalization: byUsername ? .never : .characters, identifier: "social.addFriend.field",
-                onSubmit: { if !value.trimmingCharacters(in: .whitespaces).isEmpty { submit() } })
-            Button("İstek gönder", action: submit)
-                .buttonStyle(.fokusPrimary)
-                .disabled(isBusy || value.trimmingCharacters(in: .whitespaces).isEmpty)
-                .accessibilityIdentifier("social.addFriend.submit")
         }
         .onChange(of: value) { _, _ in errorMessage = nil }
+        .onChange(of: mode) { _, _ in errorMessage = nil }
     }
 
-    private func submit() {
+    @ViewBuilder private var usernameForm: some View {
+        Text("Arkadaşının kullanıcı adını tam olarak yaz. Böyle biri varsa isteğin ona gider; kabul edene kadar birbirinizi görmezsiniz.")
+            .fokusTextStyle(.callout).foregroundStyle(.fkSecondaryLabel)
+        SocialTextField(
+            label: "Kullanıcı adı", prefix: "@", text: $value, placeholder: "kullanici_adi", error: errorMessage,
+            identifier: "social.addFriend.field", onSubmit: { if !isEmpty { sendRequest() } })
+        Button("İstek gönder", action: sendRequest)
+            .buttonStyle(.fokusPrimary)
+            .disabled(isBusy || isEmpty)
+            .accessibilityIdentifier("social.addFriend.submit")
+    }
+
+    @ViewBuilder private var linkForm: some View {
+        Text("Bağlantıyı ya da QR kodu arkadaşınla paylaş. Her bağlantı tek kişiliktir ve 30 gün geçerlidir. Açan kişi iOS'un davet ekranında iCloud adını görebilir.")
+            .fokusTextStyle(.callout).foregroundStyle(.fkSecondaryLabel)
+        if let invite {
+            SocialShareBlock(
+                url: invite.url, message: "Fokus'ta birlikte çalışalım", identifier: "social.addFriend.invite")
+        }
+        if let errorMessage { SocialErrorText(message: errorMessage, identifier: "social.addFriend.error") }
+        Button(invite == nil ? "Davet bağlantısı oluştur" : "Başkası için yeni bağlantı", action: createInvite)
+            .buttonStyle(.fokusSecondary)
+            .disabled(isBusy)
+            .accessibilityIdentifier("social.addFriend.createInvite")
+    }
+
+    private var isEmpty: Bool { value.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    private func sendRequest() {
+        run {
+            try await social.sendFriendRequest(.username(value))
+            dismiss()
+        }
+    }
+
+    private func createInvite() {
+        run { invite = try await social.createFriendInvite() }
+    }
+
+    private func run(_ action: @escaping () async throws -> Void) {
         isBusy = true
         errorMessage = nil
-        let lookup: FriendLookup = byUsername ? .username(value) : .inviteCode(value)
         Task {
             defer { isBusy = false }
-            do {
-                try await social.sendFriendRequest(lookup)
-                dismiss()
-            } catch let error as SocialError {
-                errorMessage = error.userMessage
-            } catch {
-                errorMessage = "Bir şeyler ters gitti. Lütfen tekrar dene."
-            }
+            do { try await action() } catch { errorMessage = SocialError.message(for: error) }
         }
     }
 }

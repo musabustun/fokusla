@@ -22,6 +22,7 @@ struct DangerFlowSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.syncService) private var syncService
     @Environment(\.notificationService) private var notificationService
+    @Environment(\.socialService) private var socialService
 
     @State private var step: Step
     @State private var outcome: AccountDeletionOutcome?
@@ -67,13 +68,13 @@ struct DangerFlowSheet: View {
         case .deleteConfirm:
             paragraphs([
                 "Hesabını silersen Apple ile giriş bağlantın kalkar ve iCloud eşitlemesi kapanır. Bu cihazdaki verilerine ne olacağını bir sonraki adımda ayrıca soracağız.",
-                "Fokus kendi sunucusunda veri tutmaz; silinecek bir sunucu verisi yoktur.",
+                "Sosyal profilin (kullanıcı adın, arkadaşlıkların, odan) iCloud'dan silinir. Fokus'un kendi sunucusu yoktur.",
             ])
         case .localDataQuestion:
             paragraphs(localDataParagraphs)
         case .wipeWarn:
             paragraphs([
-                "Odak oturumların, test sonuçların, kitapların, görevlerin, profilin ve girişin silinir. Uygulama ilk açılış ekranına döner.",
+                "Odak oturumların, test sonuçların, kitapların, görevlerin, profilin, sosyal profilin ve girişin silinir. Uygulama ilk açılış ekranına döner.",
                 "Silmeden önce \"Verileri dışa aktar\" ile bir yedek almanı öneririz.",
                 "iCloud eşitlemesi açıksa silme diğer cihazlarına da yansıyabilir.",
             ])
@@ -138,8 +139,11 @@ struct DangerFlowSheet: View {
         Task {
             defer { isWorking = false }
             do {
+                try await deleteSocialProfile()
                 outcome = try await service.deleteAccount()
                 step = .localDataQuestion
+            } catch let error as SocialError {
+                errorMessage = "Sosyal profilin silinemedi. \(error.userMessage)"
             } catch {
                 logger.error("Hesap silinemedi: \(error.localizedDescription, privacy: .public)")
                 errorMessage = "Hesap silinemedi. Lütfen tekrar dene."
@@ -147,23 +151,40 @@ struct DangerFlowSheet: View {
         }
     }
 
+    /// Sosyal'i bu cihazda hiç kullanmamış kişide (ör. çevrimdışı ya da iCloud'suz) silme engellenmez.
+    private func deleteSocialProfile() async throws {
+        guard let socialService else { return }
+        do {
+            try await socialService.deleteAccount()
+        } catch {
+            logger.error("Sosyal profil silinemedi: \(String(describing: error), privacy: .public)")
+            if socialService.mayHaveProfile { throw error }
+        }
+    }
+
     private func wipe() {
         isWorking = true
         errorMessage = nil
-        do {
-            try LocalDataService(context: modelContext).deleteAll()
-            try CurriculumSeeder.ensureSeeded(context: modelContext)
-            syncService?.setEnabled(false)
-            ReminderPreferences().reset()
-            let service = notificationService
-            Task {
-                if let service { await ReminderScheduler(service: service).cancelAll() }
+        Task {
+            defer { isWorking = false }
+            do {
+                try await deleteSocialProfile()
+                try wipeLocalData()
+                if let notificationService { await ReminderScheduler(service: notificationService).cancelAll() }
+                onClose()
+            } catch let error as SocialError {
+                errorMessage = "Sosyal profilin silinemedi. \(error.userMessage)"
+            } catch {
+                logger.error("Veriler silinemedi: \(error.localizedDescription, privacy: .public)")
+                errorMessage = "Veriler silinemedi. Lütfen tekrar dene."
             }
-            onClose()
-        } catch {
-            isWorking = false
-            logger.error("Veriler silinemedi: \(error.localizedDescription, privacy: .public)")
-            errorMessage = "Veriler silinemedi. Lütfen tekrar dene."
         }
+    }
+
+    private func wipeLocalData() throws {
+        try LocalDataService(context: modelContext).deleteAll()
+        try CurriculumSeeder.ensureSeeded(context: modelContext)
+        syncService?.setEnabled(false)
+        ReminderPreferences().reset()
     }
 }

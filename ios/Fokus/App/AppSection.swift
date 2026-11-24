@@ -39,16 +39,8 @@ enum AppSection: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    /// Bu derlemede kullanıcıya gösterilir mi? Sosyal henüz sahte (mock) arkadaş verisiyle çalıştığı için
-    /// yalnızca DEBUG derlemelerinde (ve UI testlerinde) görünür; Release'te giriş noktaları gizlenir.
-    var isAvailable: Bool {
-        #if DEBUG
-        // Mağaza ekran görüntüleri (`-FokusDemoData`) Release görünümüyle aynı olsun: Sosyal gizli.
-        self != .social || !ProcessInfo.processInfo.arguments.contains("-FokusDemoData")
-        #else
-        self != .social
-        #endif
-    }
+    /// Bu derlemede kullanıcıya gösterilir mi? Bugün hepsi açık; yarım bir bölümü gizlemek için tek nokta.
+    var isAvailable: Bool { true }
 
     /// Kenar çubuğu, "Diğer" listeleri ve tab bar için kullanılacak bölümler (`isAvailable` süzgeci).
     static var availableSections: [AppSection] { allCases.filter(\.isAvailable) }

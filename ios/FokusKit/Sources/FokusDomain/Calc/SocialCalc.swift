@@ -11,6 +11,8 @@ public enum SocialCalc {
     /// Durum bu süreden eskiyse (yayınlayan cihaz kapanmış olabilir) çevrimdışı sayılır.
     /// CloudKit gerçek zamanlı değildir; kalp atışı ~60 sn'de bir gelir (ARCHITECTURE 4.7).
     public static let presenceStaleAfterMs: Double = 10 * 60 * 1000
+    /// Odakta/molada yayınlanan durumun geçerlilik süresi: uygulama arka planda askıdayken kalp atışı gelmez.
+    public static let activePresenceLifetimeMs: Double = 3 * 60 * 60 * 1000
 
     private static let turkish = Locale(identifier: "tr_TR")
 
@@ -82,11 +84,16 @@ public enum SocialCalc {
         return Swift.max(0, msSince(date, now))
     }
 
-    /// Gösterilecek durum: presence yok → offline; `now − updatedAt > presenceStaleAfterMs` → offline;
+    /// Gösterilecek durum: presence yok → offline; `expiresAt` varsa ve geçtiyse → offline; `expiresAt` yoksa
+    /// `now − updatedAt > presenceStaleAfterMs` → offline;
     /// aksi halde `presence.state`.
     public static func effectivePresenceState(_ presence: SocialPresence?, now: Date) -> PresenceState {
         guard let presence else { return .offline }
-        if msSince(presence.updatedAt, now) > presenceStaleAfterMs { return .offline }
+        if let expiresAt = presence.expiresAt {
+            if msSince(expiresAt, now) > 0 { return .offline }
+        } else if msSince(presence.updatedAt, now) > presenceStaleAfterMs {
+            return .offline
+        }
         return presence.state
     }
 
@@ -108,6 +115,32 @@ public enum SocialCalc {
     public static func liveStateMs(_ presence: SocialPresence?, now: Date) -> Double {
         if effectivePresenceState(presence, now: now) == .offline { return 0 }
         return elapsedMs(since: presence?.stateSince, now)
+    }
+
+    // MARK: - Yayın ve okuma
+
+    /// Yayınlanacak durum: odakta/molada `expiresAt` ileri alınır, çevrimdışıyken boş bırakılır.
+    public static func presenceForPublishing(_ presence: SocialPresence) -> SocialPresence {
+        var next = presence
+        next.expiresAt = presence.state == .offline
+            ? nil : presence.updatedAt.addingTimeInterval(activePresenceLifetimeMs / 1000)
+        return next
+    }
+
+    /// Başkasından okunan durum: önceki bir yerel günde yayınlandıysa dünkü toplam bugüne sayılmaz; hâlâ
+    /// odaktaysa bugünkü süre gece yarısından itibaren ilerler.
+    public static func presenceForToday(
+        _ presence: SocialPresence, now: Date, calendar: Calendar = .current
+    ) -> SocialPresence {
+        let dayStart = calendar.startOfDay(for: now)
+        guard presence.updatedAt < dayStart else { return presence }
+        var next = presence
+        next.todayFocusMs = 0
+        guard presence.state == .focusing else { return next }
+        next.expiresAt = presence.expiresAt
+            ?? presence.updatedAt.addingTimeInterval(presenceStaleAfterMs / 1000)
+        next.updatedAt = dayStart
+        return next
     }
 
     // MARK: - Kendi durumum (focus verisinden YALNIZCA OKUNARAK)

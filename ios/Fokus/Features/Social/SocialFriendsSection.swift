@@ -51,7 +51,7 @@ struct SocialFriendsSection: View {
             }
             Text(
                 friends.isEmpty
-                    ? "Henüz arkadaşın yok. Kullanıcı adı ya da davet koduyla ekleyebilirsin."
+                    ? "Henüz arkadaşın yok. Kullanıcı adıyla istek gönderebilir ya da davet bağlantısı paylaşabilirsin."
                     : "\(focusingCount) arkadaşın şu an odakta. Sağdaki süre bugünkü toplam odak süresidir."
             )
             .fokusTextStyle(.footnote)
@@ -128,10 +128,21 @@ private struct SocialFriendSheet: View {
                     }
                 }
                 if let errorMessage { SocialErrorText(message: errorMessage, identifier: "social.friendSheet.error") }
-                Button("Arkadaşlıktan çıkar") { remove(friend.userId) }
-                    .buttonStyle(.fokusDestructive)
+                Button("Arkadaşlıktan çıkar") {
+                    run { try await social.removeFriend(userId: friend.userId) }
+                }
+                .buttonStyle(.fokusDestructive)
+                .disabled(isBusy)
+                .accessibilityIdentifier("social.friendSheet.remove")
+                HStack {
+                    Text("Engellediğin kişinin istekleri sana ulaşmaz.")
+                        .fokusTextStyle(.footnote).foregroundStyle(.fkSecondaryLabel)
+                    Spacer(minLength: FokusSpacing.sm)
+                    SocialSafetyMenu(username: friend.username) {
+                        run { try await social.blockFriend(userId: friend.userId) }
+                    }
                     .disabled(isBusy)
-                    .accessibilityIdentifier("social.friendSheet.remove")
+                }
             }
         }
         .onChange(of: friend == nil) { _, isGone in if isGone { dismiss() } }
@@ -149,18 +160,16 @@ private struct SocialFriendSheet: View {
         }
     }
 
-    private func remove(_ userId: String) {
+    private func run(_ action: @escaping () async throws -> Void) {
         isBusy = true
         errorMessage = nil
         Task {
             defer { isBusy = false }
             do {
-                try await social.removeFriend(userId: userId)
+                try await action()
                 dismiss()
-            } catch let error as SocialError {
-                errorMessage = error.userMessage
             } catch {
-                errorMessage = "Bir şeyler ters gitti. Lütfen tekrar dene."
+                errorMessage = SocialError.message(for: error)
             }
         }
     }

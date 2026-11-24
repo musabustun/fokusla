@@ -1,6 +1,8 @@
 # App Privacy — gerekçe ve App Store Connect cevapları
 
-**Cevap: "Data Not Collected" (Veri Toplanmıyor).** App Store Connect → Uygulama Gizliliği → "Veri toplamıyoruz". Tracking: **Hayır**.
+> **Sosyal (CloudKit) ile yayınlanan ilk sürümden itibaren** cevap değişir: **"User ID" — App Functionality, kullanıcıya bağlı, izleme yok.** Aşağıdaki "Data Not Collected" gerekçesi Sosyal'in gizli olduğu sürümler (1.0.x) içindir. Bkz. "Sosyal" bölümü.
+
+**Cevap (Sosyal'siz sürümler): "Data Not Collected" (Veri Toplanmıyor).** App Store Connect → Uygulama Gizliliği → "Veri toplamıyoruz". Tracking: **Hayır**.
 
 Apple'a göre "toplamak", verinin cihazdan çıkıp geliştiricinin (ya da üçüncü taraf ortağın) erişebileceği biçimde iletilmesidir. Aşağıdaki kod taraması bunun olmadığını gösterir (23 Kasım 2026, `main` @ ee283eb).
 
@@ -19,6 +21,18 @@ Apple'a göre "toplamak", verinin cihazdan çıkıp geliştiricinin (ya da üç�
 | Bildirimler | Yalnızca yerel (`UNUserNotificationCenter`); `remote-notification` arka plan modu CloudKit sessiz bildirimi içindir, push sunucumuz yok. |
 | Odak sesleri | AVAudioEngine ile cihazda sentez; dosya/ağ yok. |
 | Gizlilik manifesti | `ios/Fokus/Resources/PrivacyInfo.xcprivacy`: izleme yok, toplanan veri türü yok, required-reason API: UserDefaults (`CA92.1` uygulamanın kendi tercihleri, `1C8F.1` App Group). `ios/FokusWidgets/PrivacyInfo.xcprivacy`: boş beyan. |
+
+## Sosyal (CloudKit)
+
+| Konu | Bulgu |
+| --- | --- |
+| Arkadaşlık, oda, odak durumu | Kullanıcıların private veritabanında, `CKShare` ile yalnız katılanlara açık; geliştirici erişemez → "collected" değildir. |
+| Kullanıcı adı dizini (public) | `SocialClaim`: adın SHA-256 özeti, açık anahtar, rastgele posta kutusu; kaydı oluşturanın uygulamaya özel CloudKit kullanıcı kimliği. Geliştirici Console'dan görebilir → **Identifiers › User ID, App Functionality, Linked: Yes, Tracking: No**. |
+| İstekler (public) | `SocialMail`: HPKE ile şifreli; geliştirici içeriği açamaz. |
+| Manifest | `ios/Fokus/Resources/PrivacyInfo.xcprivacy` → `NSPrivacyCollectedDataTypeUserID`. |
+| Hesap silme (5.1.1(v)) | Sosyal → "Sosyal profilimi sil"; Ayarlar → "Hesabı sil" / "Tüm verileri sil" de siler. |
+| Kullanıcı içeriği (1.2) | Serbest metin yalnız kullanıcı adı ve oda adı (süzgeçli); arama/keşif/mesaj yok; engelle ve bildir var. |
+| Şifreleme | Yalnızca Apple CryptoKit (HPKE) → `ITSAppUsesNonExemptEncryption = NO` yükleyen tarafından yeniden değerlendirilir. |
 
 ## iMessage uzantısı (1.1)
 

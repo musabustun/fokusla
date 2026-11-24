@@ -20,16 +20,20 @@ public struct SocialPresence: Codable, Sendable, Hashable {
     /// `updatedAt` anına kadar bugün biriken odak süresi (ms).
     public var todayFocusMs: Double
     public var updatedAt: Date
+    /// Durumun geçerli sayılacağı son an. Telefon kilitliyken kalp atışı durduğu için odakta/molada ileri bir
+    /// an yazılır; `nil` ise `SocialCalc.presenceStaleAfterMs` kuralı geçerlidir.
+    public var expiresAt: Date?
 
     public init(
         state: PresenceState, sessionStartedAt: Date?, stateSince: Date?,
-        todayFocusMs: Double, updatedAt: Date
+        todayFocusMs: Double, updatedAt: Date, expiresAt: Date? = nil
     ) {
         self.state = state
         self.sessionStartedAt = sessionStartedAt
         self.stateSince = stateSince
         self.todayFocusMs = todayFocusMs
         self.updatedAt = updatedAt
+        self.expiresAt = expiresAt
     }
 }
 

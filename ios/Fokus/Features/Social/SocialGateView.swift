@@ -8,8 +8,7 @@ import SwiftUI
 private let logger = Logger(subsystem: "com.musabustun.fokus", category: "social")
 
 /// Girişsiz kullanıcıya Sosyal'in ne olduğunu anlatır ve "Apple ile Giriş" ister. Fokus'un geri
-/// kalanı girişsiz çalışır; Sosyal ise bir hesap gerektirir. Gerçek eşleşme CloudKit ile gelene kadar
-/// "önizleme" ile sahte arkadaşlar ve odalar gezilebilir (web `MockAuthService` davranışı).
+/// kalanı girişsiz çalışır; Sosyal ise bir hesap gerektirir.
 struct SocialGateView: View {
     let social: any SocialService
 
@@ -17,13 +16,12 @@ struct SocialGateView: View {
     @Environment(\.syncService) private var syncService
     @Environment(\.colorScheme) private var colorScheme
     @State private var errorMessage: String?
-    @State private var isStartingPreview = false
 
     private static let points: [(icon: String, text: String)] = [
         ("timer", "Arkadaşlarının şu an odakta mı, molada mı olduğunu gör."),
         ("person.2", "Paralel odak odalarında aynı anda çalışın."),
-        ("lock.shield", "Yalnızca kullanıcı adın ve çalışma süren paylaşılır; ders, test ve kitapların cihazında kalır."),
-        ("eye.slash", "İstediğin an kendini gizleyebilirsin."),
+        ("lock.shield", "Yalnızca kabul ettiğin kişiler kullanıcı adını ve çalışma süreni görür; ders, test ve kitapların cihazında kalır."),
+        ("eye.slash", "Kimse seni arayıp bulamaz; istediğin an kendini gizleyebilirsin."),
     ]
 
     var body: some View {
@@ -33,7 +31,7 @@ struct SocialGateView: View {
                     .fokusTextStyle(.title1)
                     .foregroundStyle(.fkLabel)
                     .accessibilityAddTraits(.isHeader)
-                Text("Sosyal özellikler Apple ile Giriş ve iCloud gerektirir; arkadaşlarını bulabilmek için bir hesaba ihtiyaç var. Fokus'un geri kalanı girişsiz de tam çalışır.")
+                Text("Sosyal, Apple ile Giriş ve bu cihazda açık bir iCloud hesabı gerektirir. Fokus'un geri kalanı girişsiz de tam çalışır.")
                     .fokusTextStyle(.callout)
                     .foregroundStyle(.fkSecondaryLabel)
             }
@@ -50,17 +48,6 @@ struct SocialGateView: View {
                 .frame(height: 52)
                 .clipShape(Capsule())
                 .accessibilityIdentifier("social.gate.signIn")
-                Button(action: startPreview) {
-                    Text("Önizlemeyi gez")
-                }
-                .buttonStyle(.fokusSecondary)
-                .disabled(isStartingPreview)
-                .accessibilityHint("Gerçek hesap olmadan örnek arkadaşlar ve odalarla Sosyal'i dener.")
-                .accessibilityIdentifier("social.gate.preview")
-                Text("Önizlemede arkadaşlar ve odalar örnektir. Gerçek eşleşme iCloud (CloudKit) ile gelecek.")
-                    .fokusTextStyle(.footnote)
-                    .foregroundStyle(.fkSecondaryLabel)
-                    .frame(maxWidth: .infinity, alignment: .leading)
             }
             LineSection {
                 ForEach(Self.points, id: \.text) { point in
@@ -97,15 +84,6 @@ struct SocialGateView: View {
             }
         case let .failure(error):
             errorMessage = error.userMessage
-        }
-    }
-
-    private func startPreview() {
-        isStartingPreview = true
-        Task {
-            await social.startPreviewSession()
-            await social.refresh()
-            isStartingPreview = false
         }
     }
 }

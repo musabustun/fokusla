@@ -4,8 +4,7 @@ import SwiftData
 import SwiftUI
 
 /// Sosyal modülü: giriş kapısı → kullanıcı adı → arkadaşlar ve paralel odak odaları.
-/// Gerçek ağ YOKTUR: `MockSocialService` sabit sahte bir dünya sunar; gerçek eşleşme CloudKit ile
-/// gelecek (docs/social-cloudkit.md). Sahibi: social modülü.
+/// Eşleşme yalnızca CloudKit iledir (docs/social-cloudkit.md). Sahibi: social modülü.
 struct SocialScreen: View {
     @Environment(\.socialService) private var social
     @Query(
@@ -29,6 +28,7 @@ struct SocialScreen: View {
             .padding(.vertical, FokusSpacing.lg)
         }
         .background(.fkBackground)
+        .refreshable { await social?.refresh() }
         .accessibilityIdentifier("screen.social")
         // İlk açılışta ve Apple bağı değişince (giriş/çıkış) oturumu yeniden oku.
         .task(id: profiles.first?.appleUserId) { await social?.refresh() }
@@ -53,6 +53,8 @@ private struct SocialContent: View {
             SocialGateView(social: social)
         case .needsUsername:
             SocialUsernameSetupView(social: social)
+        case .iCloudUnavailable, .unreachable:
+            SocialUnavailableView(social: social)
         case .ready:
             if let profile = snapshot.profile {
                 SocialHomeView(social: social, snapshot: snapshot, profile: profile)

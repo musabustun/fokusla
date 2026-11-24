@@ -25,7 +25,12 @@ struct SocialHomeView: View {
         TimelineView(.periodic(from: .now, by: 1)) { context in
             let now = context.date
             let own = SocialOwnPresence.make(sessions: sessions, segments: segments, now: now)
-            Group {
+            VStack(alignment: .leading, spacing: FokusSpacing.lg) {
+                if snapshot.isOffline {
+                    Text("Bağlantı yok; son bilinen durum gösteriliyor.")
+                        .fokusTextStyle(.footnote).foregroundStyle(.fkSecondaryLabel)
+                        .accessibilityIdentifier("social.offline")
+                }
                 if availableWidth >= Self.twoColumnMinWidth {
                     HStack(alignment: .top, spacing: FokusSpacing.xxl) {
                         VStack(alignment: .leading, spacing: FokusSpacing.xxl) { primary(now: now) }
@@ -45,7 +50,7 @@ struct SocialHomeView: View {
     }
 
     @ViewBuilder private func primary(now: Date) -> some View {
-        SocialRequestsSection(social: social, requests: snapshot.requests)
+        SocialRequestsSection(social: social, requests: snapshot.requests, invites: snapshot.pendingInvites)
         SocialFriendsSection(social: social, friends: snapshot.friends, now: now) { addFriend = true }
         SocialProfileSection(social: social, profile: profile)
     }

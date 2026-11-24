@@ -14,6 +14,8 @@ struct FokusApp: App {
         FokusFonts.registerAll()
         environment = AppEnvironment.make()
         ImmersiveUITestSupport.resetStoredPageIfNeeded()
+        // Kendi odak durumum, hangi ekranda olursan ol (Live Activity/saatten bitirme dahil) arkadaşlara yayınlanır.
+        SocialPresenceBroadcaster.shared.start(service: environment.socialService, container: environment.container)
         // Apple Watch ile odak kayıt eşlemesi (WatchConnectivity). Saatten gelen değişiklik uygulama arka
         // plandayken de işlenir: Live Activity güncellenir (yeni etkinlik yalnızca uygulama öndeyken başlar).
         let link = FocusLinkCoordinator.shared
@@ -44,7 +46,9 @@ struct FokusApp: App {
                 // `initial: true`: soğuk açılışta da (faz değişimi olmadan) Spotify kayıtlı token ile sessizce bağlansın.
                 .onChange(of: scenePhase, initial: true) { _, phase in
                     switch phase {
-                    case .active: environment.musicRegistry.sceneDidBecomeActive()
+                    case .active:
+                        environment.musicRegistry.sceneDidBecomeActive()
+                        SocialPresenceBroadcaster.shared.sceneDidBecomeActive()
                     case .inactive, .background: environment.musicRegistry.sceneWillResignActive()
                     @unknown default: break
                     }

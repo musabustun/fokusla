@@ -63,26 +63,41 @@ struct AppEnvironment {
             notificationService: isUITest ? MockNotificationService() : SystemNotificationService(),
             focusSound: FocusSoundPlayer(),
             musicRegistry: MusicProviderRegistry(providers: FocusMusicProviders.make()),
-            socialService: makeSocialService(container: container, isUITest: isUITest, defaults: defaults)
+            socialService: makeSocialService(container: container, isUITest: isUITest, arguments: arguments, defaults: defaults)
         )
     }
 
-    /// Sosyal şimdilik sahte (`MockSocialService`): ağ yok; gerçek eşleşme CloudKit ile gelecek
-    /// (docs/social-cloudkit.md). Oturum, profildeki Apple kimliğinden ya da cihazdaki önizleme oturumundan gelir.
-    /// UI testlerinde bellek içi depo, gecikmesiz çağrılar ve zamanlayıcısız (deterministik) simülasyon.
+    /// Sosyal: gerçek servis + CloudKit (docs/social-cloudkit.md). Oturum, profildeki Apple kimliğinden gelir.
+    /// UI testlerinde aynı servis bellek içi sahte sunucuyla, örnek kişilerle çalışır (ağ yok).
     private static func makeSocialService(
-        container: ModelContainer, isUITest: Bool, defaults: UserDefaults
+        container: ModelContainer, isUITest: Bool, arguments: [String], defaults: UserDefaults
     ) -> any SocialService {
         let sessionProvider: @MainActor () async -> String? = {
             (try? ProfileRepository(context: container.mainContext).current())?.appleUserId
         }
+        #if DEBUG
         if isUITest {
-            return MockSocialService(
-                sessionProvider: sessionProvider, storage: InMemorySocialStorage(),
-                delayMs: 0, tickMs: 0, responseDelayMs: 600)
+            let isSignedIn = arguments.contains(socialSignedInLaunchArgument)
+            let world = SocialDemoWorld(sessionProvider: {
+                if isSignedIn { return "ui-test" }
+                return await sessionProvider()
+            })
+            world.start()
+            socialDemoWorld = world
+            return world.service
         }
-        return MockSocialService(sessionProvider: sessionProvider, storage: UserDefaultsSocialStorage(defaults: defaults))
+        #endif
+        let identifier = Bundle.main.object(forInfoDictionaryKey: "FokusICloudContainer") as? String
+        return CloudSocialService(
+            sessionProvider: sessionProvider,
+            cloud: CloudKitSocialCloud(containerIdentifier: identifier ?? ""), defaults: defaults)
     }
+
+    #if DEBUG
+    /// UI testleri gerçek Apple girişi yapamaz: bu argümanla Sosyal oturumu açık sayılır.
+    static let socialSignedInLaunchArgument = "-FokusUITestSocialSignedIn"
+    private static var socialDemoWorld: SocialDemoWorld?
+    #endif
 
     private static func buildContainer() -> (ModelContainer, Bool) {
         let identifier = Bundle.main.object(forInfoDictionaryKey: "FokusICloudContainer") as? String

@@ -1,8 +1,8 @@
 # Fokus — Gizlilik Politikası
 
-Son güncelleme: 24 Kasım 2026 · Sürüm: 1.0.1
+Son güncelleme: 24 Kasım 2026 · Sürüm: 1.0.2
 
-Fokus, YKS'ye hazırlanan öğrenciler için ücretsiz, reklamsız ve açık kaynaklı (MIT) bir çalışma takip uygulamasıdır. Kısaca: **Fokus senden hiçbir veri toplamaz.** Geliştirici olarak verilerine erişemeyiz, onları sunucuya göndermeyiz, satmayız ve paylaşmayız.
+Fokus, YKS'ye hazırlanan öğrenciler için ücretsiz, reklamsız ve açık kaynaklı (MIT) bir çalışma takip uygulamasıdır. Kısaca: çalışma verilerin **senindir**; onlara erişemeyiz, satmayız, reklam ya da izleme için kullanmayız. Cihazından dışarı yalnızca senin açtığın özellikler (iCloud eşitleme, Sosyal, Spotify, iMessage) için aşağıda yazanlar çıkar.
 
 ## Hangi veriler var ve nerede duruyor?
 
@@ -14,13 +14,23 @@ Cihazında iCloud'a giriş yapılmışsa ve Ayarlar'da eşitleme kapalı değils
 
 ## Apple ile Giriş (isteğe bağlı)
 
-Giriş zorunlu değildir; "Şimdilik atla" ile uygulama girişsiz tam çalışır. Apple ile Giriş yaparsan Apple'ın verdiği hesap tanımlayıcısı (ve paylaşmayı seçersen adın) yalnızca cihazında saklanır; Apple ID'nin iptal edilip edilmediğini denetlemek için kullanılır. Hiçbir sunucuya gönderilmez.
+Giriş zorunlu değildir; "Şimdilik atla" ile uygulama girişsiz tam çalışır. Apple ile Giriş yaparsan Apple'ın verdiği hesap tanımlayıcısı (ve paylaşmayı seçersen adın) yalnızca cihazında saklanır; Apple ID'nin iptal edilip edilmediğini denetlemek için kullanılır. Hiçbir sunucuya gönderilmez. (Sosyal'i kullanırsan aşağıdaki bölüm geçerlidir.)
+
+## Sosyal (isteğe bağlı)
+
+Sosyal'i kullanmazsan bu bölümdeki hiçbir şey gerçekleşmez. Kullanmak için Apple ile Giriş ve cihazında iCloud gerekir; eşleşme yalnızca Apple'ın CloudKit'i üzerinden yapılır, bizim bir sunucumuz yoktur.
+
+- **Kim ne görür:** Yalnızca kabul ettiğin arkadaşların ve girdiğin odadaki kişiler kullanıcı adını, odakta/molada olup olmadığını, oturum süreni, bugünkü toplam çalışma süreni ve (ev sahibiysen) açık odanı görür. Ders, konu, test, kitap ve görevlerin, gerçek adın ve e-postan Fokus tarafından **asla** paylaşılmaz.
+- **Nerede durur:** Arkadaşlık ve oda bilgileri, daveti açan kişinin kendi iCloud alanında durur ve yalnızca katılanlarla paylaşılır; geliştirici erişemez.
+- **Kullanıcı adı:** Kimse adları arayamaz ya da listeleyemez. Uygulamanın ortak CloudKit alanında kullanıcı adının yalnızca özeti (hash), bir şifreleme anahtarı, rastgele bir posta kutusu numarası ve Apple'ın uygulamaya özel hesap tanımlayıcısı tutulur; amaç yalnızca sana istek ulaştırabilmektir. İsteklerin içeriği uçtan uca şifrelidir; yalnız alıcı açabilir.
+- **iCloud adın:** Davet bağlantısını açan kişiye iOS'un kendi davet ekranı, daveti oluşturan kişinin iCloud adını gösterebilir. Bağlantını yalnızca tanıdıklarınla paylaş.
+- **Denetim sende:** "Sosyalde görün"ü kapatınca durumun paylaşılmaz ve adına istek gelmez. Arkadaşlıktan çıkabilir, birini engelleyebilir, odadan ayrılabilirsin. "Sosyal profilimi sil" kullanıcı adını, isteklerini, arkadaşlıklarını ve odanı kalıcı olarak siler.
 
 ## Spotify (isteğe bağlı)
 
 Odak ekranında istersen Spotify'ı bağlayıp çalan müziği denetleyebilirsin. Bu özellik çalmayı cihazındaki Spotify uygulaması üzerinden denetler ve yalnızca çalma kontrolü (oynat/duraklat/sonraki, çalan parçanın adı) için kullanılır. Fokus Spotify hesabının profil bilgilerini, çalma geçmişini ya da kütüphaneni almaz ve saklamaz.
 
-İlk bağlanışta Spotify uygulamasına geçilir ve Spotify kendi izin ekranını gösterir (yalnızca "uygulamadan çalmayı denetleme" izni istenir; şifren Fokus'a gelmez). Her saat yeniden izin istememek için Spotify'ın verdiği erişim ve yenileme anahtarları **yalnızca cihazının Keychain'inde** saklanır (iCloud'a ve yedeğe girmez). Fokus bu anahtarları yalnızca Spotify'ın hesap sunucusuna (`accounts.spotify.com`) göndererek yeniler; bu, Fokus'un kendi yaptığı tek ağ isteğidir ve Spotify'ı bağlamadıysan hiç yapılmaz. Bizim bir sunucumuz yoktur. "Bağlantıyı kes" anahtarları cihazdan siler; Spotify'daki uygulama erişimini Spotify hesap ayarlarından kaldırabilirsin. Spotify'ın kendi veri işlemesi [Spotify gizlilik politikasına](https://www.spotify.com/tr/legal/privacy-policy/) tabidir. Bağlantıyı istediğin an Spotify'dan veya Fokus'tan kesebilirsin.
+İlk bağlanışta Spotify uygulamasına geçilir ve Spotify kendi izin ekranını gösterir (yalnızca "uygulamadan çalmayı denetleme" izni istenir; şifren Fokus'a gelmez). Her saat yeniden izin istememek için Spotify'ın verdiği erişim ve yenileme anahtarları **yalnızca cihazının Keychain'inde** saklanır (iCloud'a ve yedeğe girmez). Fokus bu anahtarları yalnızca Spotify'ın hesap sunucusuna (`accounts.spotify.com`) göndererek yeniler; iCloud dışında Fokus'un kendi yaptığı tek ağ isteği budur ve Spotify'ı bağlamadıysan hiç yapılmaz. Bizim bir sunucumuz yoktur. "Bağlantıyı kes" anahtarları cihazdan siler; Spotify'daki uygulama erişimini Spotify hesap ayarlarından kaldırabilirsin. Spotify'ın kendi veri işlemesi [Spotify gizlilik politikasına](https://www.spotify.com/tr/legal/privacy-policy/) tabidir. Bağlantıyı istediğin an Spotify'dan veya Fokus'tan kesebilirsin.
 
 ## iMessage uygulaması (isteğe bağlı)
 
@@ -45,11 +55,11 @@ Widget'lar ve Live Activity (Dynamic Island) aynı cihazdaki uygulama verisini g
 ## Verilerini yönetme
 
 - **Dışa aktar:** Ayarlar → Veri → "Verileri dışa aktar" ile tüm verini JSON dosyası olarak alabilirsin. Dosya yalnızca cihazında oluşturulur; nereye paylaşacağını sen seçersin.
-- **Sil:** Ayarlar → Veri → "Tüm verileri sil" ile uygulamadaki tüm verini silebilirsin (iCloud eşitleme açıksa silme senin diğer cihazlarına da yansır). Uygulamayı kaldırmak yerel verileri siler.
+- **Sil:** Ayarlar → Veri → "Tüm verileri sil" ile uygulamadaki tüm verini (Sosyal profilin dahil) silebilirsin (iCloud eşitleme açıksa silme senin diğer cihazlarına da yansır). Uygulamayı kaldırmak yerel verileri siler.
 
 ## Çocuklar
 
-Fokus kişisel veri toplamadığı için çocuklardan veri toplamaz. Hesap oluşturmak zorunlu değildir.
+Hesap oluşturmak zorunlu değildir; Sosyal'i kullanmayan hiç kimseden veri alınmaz. Sosyal'de arama, keşfet ya da mesajlaşma yoktur; kimse kabul etmediğin sürece seni göremez. Kullanıcı adında gerçek adını ya da okulunu kullanma.
 
 ## Değişiklikler
 

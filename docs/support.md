@@ -2,6 +2,8 @@
 
 Fokus ücretsiz ve açık kaynaklı bir YKS çalışma takip uygulamasıdır. Bir sorunun, önerin ya da sorun varsa buradan ulaşabilirsin.
 
+Destek sayfası: [fokus.musabustun.dev/destek](https://fokus.musabustun.dev/destek/) (bu sayfanın web hâli; kaynak `web/site/`).
+
 ## Sorun bildirme ve öneri
 
 [GitHub Issues](https://github.com/musabustun/fokusla/issues) üzerinden yeni bir kayıt aç. Mümkünse şunları yaz:

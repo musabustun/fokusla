@@ -122,7 +122,8 @@ extension SpotifyMusicProvider {
             pkce: SpotifyPKCEAuthorization(
                 clientID: clientID,
                 tokenService: URLSessionSpotifyTokenService(clientID: clientID, redirectURL: redirectURL),
-                webAuthenticator: SpotifyWebAuthSession()))
+                webAuthenticator: SpotifyWebAuthSession(),
+                appAuthorizer: SpotifySessionAuthorizer(clientID: clientID)))
     }
 }
 

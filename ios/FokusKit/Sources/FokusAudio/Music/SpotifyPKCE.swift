@@ -137,3 +137,23 @@ public enum SpotifyWebAuthResult: Equatable, Sendable {
 public protocol SpotifyWebAuthenticating: AnyObject {
     func authenticate(url: URL, callbackScheme: String) async -> SpotifyWebAuthResult
 }
+
+/// Spotify UYGULAMASINDA verilen iznin sonucu (SDK `SPTSessionManager`, PKCE; kod değişimini SDK yapar).
+public enum SpotifyAppAuthResult: Equatable, Sendable {
+    case granted(SpotifyTokenGrant)
+    /// Kullanıcı reddetti ya da dönüş bağlantısı gelmeden Fokus'a döndü.
+    case cancelled
+    case failed
+}
+
+/// Spotify uygulamasına geçerek izin (şifre sorulmaz; Spotify'daki oturum kullanılır) ve yenileme anahtarı.
+/// Gerçeği uygulama hedefinde (`SPTSessionManager`); testlerde sahte.
+@MainActor
+public protocol SpotifyAppAuthorizing: AnyObject {
+    /// Spotify'a geçer, izin + kod değişimi bitince döner.
+    func authorize() async -> SpotifyAppAuthResult
+    /// Spotify'dan dönen bağlantıyı SDK'ya iletir; tanınırsa `true` (kod değişimi başladı).
+    func handleOpenURL(_ url: URL) -> Bool
+    /// Dönüş bağlantısı gelmediyse süren izni `.cancelled` ile bitirir (kod değişimi sürüyorsa dokunmaz).
+    func cancelPendingAuthorization()
+}

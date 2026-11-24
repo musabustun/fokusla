@@ -154,9 +154,11 @@ hesabında hiçbir şey otomatik oluşturulmaz; hepsini sen yaparsın):
    Code with PKCE" akışı yalnızca Client ID ile çalışır; token swap sunucumuz yok) ve ASLA koda/repoya/uygulamaya
    konmaz.
    Ardından `xcodegen generate` ve yeniden derle.
-6. Cihazda Spotify uygulaması yüklü ve giriş yapılmış olmalı. İlk "Spotify'a bağlan"da uygulama içinde
-   Spotify'ın izin sayfası (sistemin güvenli web oturumu, `ASWebAuthenticationSession`) açılır; onaydan sonra
-   Fokus'a dönülür. Spotify o an çalışmıyorsa App Remote bağlanamaz; o zaman Spotify bir kez açılıp uyandırılır. Çalmayı denetlemek çoğunlukla **Premium** gerektirir (Premium yoksa Spotify
+6. Cihazda Spotify uygulaması yüklü ve giriş yapılmış olmalı. İlk "Spotify'a bağlan"da **Spotify uygulamasına
+   geçilir** (SDK `SPTSessionManager`, PKCE; şifre sorulmaz, Spotify'daki oturum kullanılır); onaydan sonra Fokus'a
+   dönülür ve Spotify kaldığı parçayı çalmaya başlar (`playURI = ""`), böylece App Remote hemen bağlanır. Dönüş
+   bağlantısı gelmeden Fokus'a dönülürse 2 sn sonra izin iptal sayılır. (Uygulama içi web sayfası,
+   `ASWebAuthenticationSession`, yalnızca uygulama yetkilendiricisi verilmediğinde yedektir.) Çalmayı denetlemek çoğunlukla **Premium** gerektirir (Premium yoksa Spotify
    komutu reddeder; uygulama bunu Türkçe bir mesajla gösterir).
 
 **Bağlantı kalıcılığı.** İlk bağlanışta PKCE ile (Client Secret YOK) erişim anahtarı (~1 saat) ve **yenileme

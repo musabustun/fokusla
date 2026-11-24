@@ -6,8 +6,8 @@ import OSLog
 /// `SpotifyRemoteControlling` arkasındadır (testlerde sahtelenir).
 ///
 /// Kalıcılık ilkeleri:
-/// - İlk bağlanışta (Client ID varsa) Spotify'ın "Authorization Code with PKCE" akışı uygulama içi web sayfasında
-///   bir kez yapılır; erişim + YENİLEME anahtarı Keychain'de (`SpotifyTokenStoring`) saklanır. Uygulama yeniden
+/// - İlk bağlanışta (Client ID varsa) Spotify'ın "Authorization Code with PKCE" akışı Spotify UYGULAMASINDA
+///   (SDK `SPTSessionManager`; şifre sorulmaz) bir kez yapılır; erişim + YENİLEME anahtarı Keychain'de (`SpotifyTokenStoring`) saklanır. Uygulama yeniden
 ///   başlayınca kayıt varsa kullanıcı "bağlı kalmak istiyor" sayılır.
 /// - Öne gelince erişim anahtarı geçerliyse sessizce bağlanılır; süresi dolmuşsa yenileme anahtarıyla
 ///   (`accounts.spotify.com/api/token`, yalnızca `client_id`) sessizce yenilenip bağlanılır. Kullanıcı Spotify'da
@@ -64,8 +64,12 @@ public final class SpotifyMusicProvider: MusicProvider {
     @ObservationIgnored private var graceWork: SpotifyScheduledWork?
     @ObservationIgnored private var artworkImageID: String?
     @ObservationIgnored private var artworkData: Data?
-    /// Uygulama içi web yetkilendirmesi (ve kod → anahtar değişimi) sürüyor.
+    /// Uygulama içi web ya da Spotify uygulamasında yetkilendirme (ve kod → anahtar değişimi) sürüyor.
     @ObservationIgnored private var isWebAuthorizing = false
+    /// İzin Spotify uygulamasında isteniyor (`isWebAuthorizing` ile birlikte).
+    @ObservationIgnored private var isAppAuthorizing = false
+    /// Spotify'dan dönüş bağlantısı geldi (kod değişimi sürüyor; bekleme süresi izni iptal etmez).
+    @ObservationIgnored private var hasAppCallback = false
     /// Yenileme isteği sürüyor (arka plana geçişte de korunur: aynı anahtarla ikinci istek atılmasın).
     @ObservationIgnored private var isRefreshing = false
     /// Kullanıcı bağlantıyı kesince artar; eski ağ işlerinin sonucu yok sayılır.
@@ -158,6 +162,11 @@ public final class SpotifyMusicProvider: MusicProvider {
     public func handleOpenURL(_ url: URL) -> Bool {
         guard SpotifyAuthCallback.matches(url, redirect: Self.redirectURL) else { return false }
         guard let remote else { return true }
+        if isAppAuthorizing, let appAuthorizer = pkce?.appAuthorizer, appAuthorizer.handleOpenURL(url) {
+            hasAppCallback = true
+            graceWork?.cancel()
+            return true
+        }
         // PKCE dönüşünü `ASWebAuthenticationSession` yakalar; buraya düşen kodlu bağlantı yok sayılır.
         let rawParameters = SpotifyAuthCallback.parameters(from: url)
         guard !isWebAuthorizing, rawParameters["code"] == nil || rawParameters["access_token"] != nil else {
@@ -189,7 +198,10 @@ public final class SpotifyMusicProvider: MusicProvider {
         refreshAvailability()
         guard availability == .available, let remote else { return }
         // Web yetkilendirme sayfası açılıp kapanırken sahne etkin/etkisiz olur; sonuç oturumdan gelir.
-        guard !isWebAuthorizing else { return }
+        guard !isWebAuthorizing else {
+            if isAppAuthorizing, !hasAppCallback { scheduleAppAuthorizationGrace() }
+            return
+        }
         if awaitingAuthorization {
             scheduleAuthorizationGrace()
             return
@@ -257,6 +269,8 @@ public final class SpotifyMusicProvider: MusicProvider {
         authTask?.cancel()
         authTask = nil
         isWebAuthorizing = false
+        isAppAuthorizing = false
+        hasAppCallback = false
         isRefreshing = false
     }
 
@@ -277,10 +291,13 @@ public final class SpotifyMusicProvider: MusicProvider {
         }
     }
 
-    /// Yeni izin: PKCE yapılandırılmışsa uygulama içi web sayfası (yenileme anahtarı verir), değilse
+    /// Yeni izin: PKCE yapılandırılmışsa Spotify uygulamasında (yoksa uygulama içi web sayfasında; ikisi de
+    /// yenileme anahtarı verir), değilse
     /// App Remote yetkilendirmesi (yalnızca 1 saatlik anahtar).
     private func startAuthorization(_ remote: any SpotifyRemoteControlling) {
-        if pkce != nil {
+        if let appAuthorizer = pkce?.appAuthorizer {
+            startAppAuthorization(appAuthorizer)
+        } else if pkce != nil {
             startWebAuthorization()
         } else {
             startAppRemoteAuthorization(remote)
@@ -392,6 +409,50 @@ public final class SpotifyMusicProvider: MusicProvider {
     }
 
     // MARK: - PKCE (kalıcı bağlantı)
+
+    /// Spotify uygulamasına geçip izin ister (PKCE, şifresiz); SDK kodu anahtarlara çevirir. Spotify ayrıca
+    /// uyanır ve kaldığı parçayı çalar, böylece App Remote bağlantısı hemen kurulur.
+    private func startAppAuthorization(_ authorizer: any SpotifyAppAuthorizing) {
+        let generation = authGeneration
+        isWebAuthorizing = true
+        isAppAuthorizing = true
+        hasAppCallback = false
+        connectionState = .connecting
+        authTask = Task { [weak self] in
+            let result = await authorizer.authorize()
+            guard let self, self.authGeneration == generation else { return }
+            self.completeAppAuthorization(result)
+        }
+    }
+
+    private func completeAppAuthorization(_ result: SpotifyAppAuthResult) {
+        isWebAuthorizing = false
+        isAppAuthorizing = false
+        hasAppCallback = false
+        authTask = nil
+        graceWork?.cancel()
+        guard wantsConnection, let remote else { return }
+        switch result {
+        case .granted(let grant):
+            storeToken(SpotifyTokenRecord(grant: grant, issuedAt: now(), previousRefreshToken: nil))
+            startSilentConnect(remote)
+        case .cancelled:
+            failTerminal(.authorizationDenied)
+        case .failed:
+            logger.error("Spotify uygulamasında izin alınamadı.")
+            failTerminal(.unknown)
+        }
+    }
+
+    /// Spotify'dan dönüş bağlantısı gelmeden Fokus'a dönüldüyse kısa bir beklemeden sonra izin iptal sayılır.
+    private func scheduleAppAuthorizationGrace() {
+        graceWork?.cancel()
+        graceWork = scheduler.schedule(after: Self.authorizationGrace) { [weak self] in
+            guard let self, self.isAppAuthorizing, !self.hasAppCallback else { return }
+            self.logger.info("Spotify'dan dönüş bağlantısı gelmedi; izin iptal sayıldı.")
+            self.pkce?.appAuthorizer?.cancelPendingAuthorization()
+        }
+    }
 
     /// Uygulama içi web sayfasında Spotify izni (PKCE); dönüşteki kod anahtarlara çevrilir ve bağlanılır.
     private func startWebAuthorization() {
@@ -633,6 +694,8 @@ public struct SpotifyPKCEAuthorization {
     public var clientID: String
     public var tokenService: any SpotifyTokenServicing
     public var webAuthenticator: any SpotifyWebAuthenticating
+    /// Varsa izin Spotify uygulamasında alınır (şifresiz; web sayfası yalnızca bu yoksa kullanılır).
+    public var appAuthorizer: (any SpotifyAppAuthorizing)?
     public var makePKCE: () -> SpotifyPKCE
     public var makeState: () -> String
 
@@ -640,12 +703,14 @@ public struct SpotifyPKCEAuthorization {
         clientID: String,
         tokenService: any SpotifyTokenServicing,
         webAuthenticator: any SpotifyWebAuthenticating,
+        appAuthorizer: (any SpotifyAppAuthorizing)? = nil,
         makePKCE: @escaping () -> SpotifyPKCE = { SpotifyPKCE.generate() },
         makeState: @escaping () -> String = { SpotifyPKCE.makeState() }
     ) {
         self.clientID = clientID
         self.tokenService = tokenService
         self.webAuthenticator = webAuthenticator
+        self.appAuthorizer = appAuthorizer
         self.makePKCE = makePKCE
         self.makeState = makeState
     }

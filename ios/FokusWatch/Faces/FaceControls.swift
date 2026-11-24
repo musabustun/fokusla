@@ -2,38 +2,29 @@ import FokusDesign
 import FokusDomain
 import SwiftUI
 
-/// Her kadranın altındaki kontroller: ana eylem Mola/Devam (kehribar hap), yanında Bitir (onaylı).
-/// Always On'da (bilek indirildi) gizlenir; kadran kısık kalır.
+/// Kadranın üstünde (dokununca) beliren kontroller: ana eylem Mola/Devam (kehribar hap), yanında Bitir.
+/// Görünürlük ve Bitir onayı `RunningView`'dadır (kontroller gizlenince onay penceresi kapanmasın).
 struct FaceControls: View {
-    @Environment(WatchModel.self) private var model
-    @Environment(\.isLuminanceReduced) private var isLuminanceReduced
     let isFocus: Bool
-    @State private var confirmFinish = false
+    let onTogglePause: () -> Void
+    let onFinish: () -> Void
 
     var body: some View {
         HStack(spacing: 6) {
-            Button {
-                model.togglePause()
-            } label: {
+            Button(action: onTogglePause) {
                 Label(isFocus ? "Mola" : "Devam", systemImage: isFocus ? "pause.fill" : "play.fill")
             }
             .buttonStyle(WatchPrimaryButtonStyle())
             .accessibilityIdentifier("watch.togglePause")
 
-            Button {
-                confirmFinish = true
-            } label: {
+            Button(action: onFinish) {
                 Image(systemName: "stop.fill").accessibilityLabel("Bitir")
             }
             .buttonStyle(WatchRoundButtonStyle())
             .accessibilityIdentifier("watch.finish")
         }
-        .opacity(isLuminanceReduced ? 0 : 1)
-        .allowsHitTesting(!isLuminanceReduced)
-        .confirmationDialog("Oturum bitirilsin mi?", isPresented: $confirmFinish) {
-            Button("Bitir", role: .destructive) { model.finish() }
-            Button("Vazgeç", role: .cancel) {}
-        }
+        .padding(4)
+        .background(Capsule().fill(.fkBackground.opacity(0.85)))
     }
 }
 

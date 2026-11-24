@@ -68,6 +68,36 @@ struct WatchFaceCalcTests {
         #expect(WatchFaceCalc.ringProgress(state(.focus, since: -15 * 60), now: now) == 0.25)
         #expect(WatchFaceCalc.ringProgress(state(.focus, since: -15 * 60, dayStart: -60, goal: 0), now: now) == 0.25)
     }
+
+    struct MinuteCase: Sendable, CustomTestStringConvertible {
+        let elapsed: TimeInterval
+        let text: String
+        var testDescription: String { "\(elapsed) sn → \(text)" }
+    }
+
+    @Test(
+        "Always On dakikalık metin: tam dakikaya yuvarlanmaz (aşağı), saat varsa iki haneli dakika",
+        arguments: [
+            MinuteCase(elapsed: -5, text: "0 dk"),
+            MinuteCase(elapsed: 0, text: "0 dk"),
+            MinuteCase(elapsed: 59, text: "0 dk"),
+            MinuteCase(elapsed: 60, text: "1 dk"),
+            MinuteCase(elapsed: 23 * 60 + 59, text: "23 dk"),
+            MinuteCase(elapsed: 3599, text: "59 dk"),
+            MinuteCase(elapsed: 3600, text: "1 sa 00 dk"),
+            MinuteCase(elapsed: 3600 + 5 * 60 + 30, text: "1 sa 05 dk"),
+            MinuteCase(elapsed: 10 * 3600 + 42 * 60, text: "10 sa 42 dk"),
+        ])
+    func minuteText(_ testCase: MinuteCase) {
+        #expect(WatchFaceCalc.minuteText(elapsed: testCase.elapsed) == testCase.text)
+    }
+
+    @Test("Always On bugünkü toplam: hedef kapalıysa yok; molada durur")
+    func dayMinuteText() {
+        #expect(WatchFaceCalc.dayMinuteText(state(.focus, since: -60), now: now) == nil)
+        #expect(WatchFaceCalc.dayMinuteText(state(.focus, since: -60, dayStart: -3 * 3600 - 120), now: now) == "3 sa 02 dk")
+        #expect(WatchFaceCalc.dayMinuteText(state(.break, since: -600, dayStart: -1800), now: now) == "20 dk")
+    }
 }
 
 @Suite("FocusLink tercihleri")

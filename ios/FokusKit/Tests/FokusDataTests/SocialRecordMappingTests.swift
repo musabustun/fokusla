@@ -65,22 +65,22 @@ struct SocialRecordMappingTests {
     @Test("alan bilgisi gidiş-dönüş; tür bölge önekiyle uyuşmalı")
     func info() {
         let friend = SocialSpaceInfo(
-            kind: .friend, hostPersonId: "p1", toUsername: "mert", mailId: "m1", createdAt: now)
+            kind: .friend, toUsername: "mert", mailId: "m1", createdAt: now)
         #expect(Mapping.info(Mapping.record(friend, in: zone)) == friend)
-        let room = SocialSpaceInfo(kind: .room, name: "Sabah", hostPersonId: "p1", createdAt: now)
+        let room = SocialSpaceInfo(kind: .room, name: "Sabah", createdAt: now)
         #expect(Mapping.info(Mapping.record(room, in: roomZone)) == room)
         #expect(Mapping.info(Mapping.record(room, in: zone)) == nil)
     }
 
     @Test("alan: bilgi kaydı yoksa yok sayılır")
     func space() {
-        let info = SocialSpaceInfo(kind: .friend, hostPersonId: "p1", createdAt: now)
+        let info = SocialSpaceInfo(kind: .friend, createdAt: now)
         let records = [Mapping.record(info, in: zone), Mapping.record(fullCard, in: zone)]
-        let space = Mapping.space(zoneID: zone, isMine: false, records: records)
+        let space = Mapping.space(zoneID: zone, isMine: false, records: records, currentUserId: "_ben")
         #expect(space?.id == SocialSpaceID(name: "friend-1", ownerName: "_sahip", isMine: false))
         #expect(space?.cards == [fullCard])
         #expect(space?.inviteURL == nil)
-        #expect(Mapping.space(zoneID: zone, isMine: false, records: [Mapping.record(fullCard, in: zone)]) == nil)
+        #expect(Mapping.space(zoneID: zone, isMine: false, records: [Mapping.record(fullCard, in: zone)], currentUserId: "_ben") == nil)
         #expect(Mapping.isSocialZone(zone))
         #expect(!Mapping.isSocialZone(CKRecordZone.ID(zoneName: "com.apple.coredata.cloudkit.zone")))
     }

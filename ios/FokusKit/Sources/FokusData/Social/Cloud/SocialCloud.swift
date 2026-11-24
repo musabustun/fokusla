@@ -23,7 +23,10 @@ public enum SocialCloudError: Error, Sendable, Hashable {
 
 /// Cihazlarım arasında ortak, yalnız bana ait sosyal kimlik (private veritabanı).
 public struct SocialIdentity: Sendable, Hashable, Codable {
+    /// Boşsa henüz kullanıcı adı alınmamış.
     public var username: String
+    /// Adıma kaydedilmiş olabilecek ama kullanmadığım adlar (yarım kalan alma, bırakılacak eski ad).
+    public var reservedUsernames: [String]
     /// Kartlarda görünen rastgele kimlik; iCloud/Apple kimliğiyle ilişkisi yoktur.
     public var personId: String
     public var mailbox: String
@@ -31,14 +34,15 @@ public struct SocialIdentity: Sendable, Hashable, Codable {
     public var isDiscoverable: Bool
     /// Yanıtladığım (kabul/ret) mektuplar: mektubu yalnız göndereni silebilir.
     public var handledMailIds: [String]
-    /// Engellenen kişiler: `personId` ve iCloud kayıt adları.
+    /// Engellenen kişilerin (sunucunun yazdığı) iCloud kayıt adları.
     public var blockedIds: [String]
 
     public init(
-        username: String, personId: String, mailbox: String, privateKey: Data, isDiscoverable: Bool = true,
-        handledMailIds: [String] = [], blockedIds: [String] = []
+        username: String, reservedUsernames: [String] = [], personId: String, mailbox: String, privateKey: Data,
+        isDiscoverable: Bool = true, handledMailIds: [String] = [], blockedIds: [String] = []
     ) {
         self.username = username
+        self.reservedUsernames = reservedUsernames
         self.personId = personId
         self.mailbox = mailbox
         self.privateKey = privateKey
@@ -104,19 +108,17 @@ public struct SocialSpaceInfo: Sendable, Hashable {
     public var kind: SocialSpaceKind
     /// Oda adı (arkadaşlıkta boş).
     public var name: String
-    public var hostPersonId: String
     /// Kullanıcı adıyla gönderilen istekte alıcının adı.
     public var toUsername: String?
     public var mailId: String?
     public var createdAt: Date
 
     public init(
-        kind: SocialSpaceKind, name: String = "", hostPersonId: String, toUsername: String? = nil,
+        kind: SocialSpaceKind, name: String = "", toUsername: String? = nil,
         mailId: String? = nil, createdAt: Date
     ) {
         self.kind = kind
         self.name = name
-        self.hostPersonId = hostPersonId
         self.toUsername = toUsername
         self.mailId = mailId
         self.createdAt = createdAt
@@ -148,7 +150,8 @@ public struct SocialCard: Sendable, Hashable {
     public var joinedAt: Date
     public var leftAt: Date?
     public var room: SocialCardRoom?
-    /// Sunucunun yazdığı oluşturan (yazarken yok sayılır); kendi kartımda `nil` olabilir.
+    /// Sunucunun yazdığı, kartı oluşturan VE son yazan kişi (başkasının üstüne yazdığı kart hiç gelmez).
+    /// Yazarken yok sayılır; henüz yazılmamış kendi kartımda `nil`.
     public var creatorId: String?
 
     public init(
@@ -180,7 +183,6 @@ public struct SocialSpace: Sendable, Hashable {
         self.inviteURL = inviteURL
     }
 
-    func card(of personId: String) -> SocialCard? { cards.first { $0.personId == personId } }
     func activeCards() -> [SocialCard] { cards.filter { $0.leftAt == nil } }
 }
 
@@ -214,4 +216,6 @@ public protocol SocialCloud: Sendable {
     func acceptInvite(_ invite: SocialInvite) async throws -> SocialSpace
     /// Benimse siler; bana paylaşılmışsa paylaşımdan ayrılır. Yoksa hata vermez.
     func removeSpace(_ id: SocialSpaceID) async throws
+    /// İçeriği okunamayanlar dahil tüm sosyal alanları siler / tümünden ayrılır.
+    func removeAllSpaces() async throws
 }

@@ -44,7 +44,7 @@ private struct SocialRoomLobby: View {
                     Button("Oda oluştur") { sheet = .create }
                         .buttonStyle(.fokusSecondary)
                         .accessibilityIdentifier("social.room.create")
-                    Button("Kodla katıl") { sheet = .join }
+                    Button("Bağlantıyla katıl") { sheet = .join }
                         .buttonStyle(.fokusPlain)
                         .accessibilityIdentifier("social.room.join")
                 }
@@ -103,10 +103,8 @@ private struct SocialRoomLobby: View {
         errorMessage = nil
         Task {
             defer { joiningId = nil }
-            do { try await social.joinRoom(.room(id: roomId)) } catch let error as SocialError {
-                errorMessage = error.userMessage
-            } catch {
-                errorMessage = "Bir şeyler ters gitti. Lütfen tekrar dene."
+            do { try await social.joinRoom(.room(id: roomId)) } catch {
+                errorMessage = SocialError.message(for: error)
             }
         }
     }
@@ -120,6 +118,7 @@ private struct SocialRoomView: View {
 
     @Environment(AppNavigation.self) private var navigation: AppNavigation?
     @State private var isLeaving = false
+    @State private var isSharing = false
     @State private var errorMessage: String?
 
     private var memberStates: [(member: RoomMember, presence: SocialPresence?, state: PresenceState, sessionMs: Double)] {
@@ -183,33 +182,17 @@ private struct SocialRoomView: View {
                 }
             }
         }
+        .sheet(isPresented: $isSharing) {
+            if let url = room.inviteURL { SocialRoomShareSheet(name: room.name, url: url) }
+        }
         .socialContainer("social.room")
     }
 
-    private var inviteRow: some View {
-        VStack(spacing: 0) {
-            Divider().overlay(.fkSeparator)
-            HStack(spacing: FokusSpacing.xs) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Oda davet kodu").fokusTextStyle(.eyebrow).foregroundStyle(.fkSecondaryLabel)
-                    Text(room.inviteCode)
-                        .fokusTextStyle(.numeralSM).tracking(2).foregroundStyle(.fkLabel)
-                        .accessibilityLabel("Oda davet kodu \(room.inviteCode.map(String.init).joined(separator: " "))")
-                        .accessibilityIdentifier("social.room.inviteCode")
-                }
-                Spacer(minLength: FokusSpacing.sm)
-                SocialCopyButton(
-                    text: room.inviteCode, accessibilityLabel: "Oda davet kodunu kopyala",
-                    identifier: "social.room.copyCode")
-                ShareLink(item: SocialFormat.roomInviteMessage(code: room.inviteCode, name: room.name)) {
-                    Image(systemName: "square.and.arrow.up")
-                        .frame(width: fokusMinTapTarget, height: fokusMinTapTarget)
-                }
-                .accessibilityLabel("Oda davet kodunu paylaş")
-                .accessibilityIdentifier("social.room.shareCode")
-            }
-            .padding(.vertical, FokusSpacing.xs)
-            Divider().overlay(.fkSeparator)
+    @ViewBuilder private var inviteRow: some View {
+        if room.inviteURL != nil {
+            Button("Davet et") { isSharing = true }
+                .buttonStyle(.fokusSecondary)
+                .accessibilityIdentifier("social.room.share")
         }
     }
 
@@ -264,6 +247,7 @@ private struct SocialRoomView: View {
         Task {
             await social.leaveRoom()
             isLeaving = false
+            if social.snapshot.room?.id == room.id { errorMessage = SocialError(.network).userMessage }
         }
     }
 }

@@ -169,6 +169,7 @@ struct SocialSheetScaffold<Content: View>: View {
     let title: String
     let description: String?
     let identifier: String
+    var cancelTitle: String = "Vazgeç"
     @ViewBuilder let content: Content
 
     @Environment(\.dismiss) private var dismiss
@@ -191,19 +192,12 @@ struct SocialSheetScaffold<Content: View>: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Vazgeç") { dismiss() }.accessibilityIdentifier("\(identifier).cancel")
+                    Button(cancelTitle) { dismiss() }.accessibilityIdentifier("\(identifier).cancel")
                 }
             }
         }
         .presentationDetents([.medium, .large])
         .socialContainer(identifier)
-    }
-}
-
-extension SocialFormat {
-    /// Oda davet metni (paylaşma sayfası).
-    static func roomInviteMessage(code: String, name: String) -> String {
-        "Fokus'ta “\(name)” odasına katıl: davet kodu \(code)"
     }
 }
 

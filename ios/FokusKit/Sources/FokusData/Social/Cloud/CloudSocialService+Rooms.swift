@@ -14,8 +14,7 @@ extension CloudSocialService {
             guard let card = self.makeCard(joinedAt: createdAt, kind: .room) else { throw SocialError(.noProfile) }
             let space = try await self.cloud.createSpace(
                 name: "room-\(Self.newId())",
-                info: SocialSpaceInfo(
-                    kind: .room, name: trimmed, hostPersonId: identity.personId, createdAt: createdAt),
+                info: SocialSpaceInfo(kind: .room, name: trimmed, createdAt: createdAt),
                 card: card)
             self.spaces.append(space)
             await self.announceRoomChange()
@@ -52,7 +51,7 @@ extension CloudSocialService {
     }
 
     func joinRoom(_ space: SocialSpace, _ identity: SocialIdentity) async throws -> SocialInviteOutcome {
-        let mine = space.card(of: identity.personId)
+        let mine = world(identity).myCard(in: space)
         if mine == nil || mine?.leftAt != nil {
             if space.activeCards().count >= Self.maxRoomMembers {
                 try await cloud.removeSpace(space.id)

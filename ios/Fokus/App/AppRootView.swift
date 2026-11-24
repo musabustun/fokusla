@@ -23,7 +23,7 @@ struct AppRootView: View {
     var body: some View {
         Group {
             if isOnboarded {
-                AppShell().transition(.opacity)
+                AppShell().transition(.opacity).socialInviteHost()
             } else {
                 OnboardingView().transition(.opacity)
             }
@@ -32,7 +32,6 @@ struct AppRootView: View {
         .background(.fkBackground)
         .task(id: profile?.appleUserId) { await validateAppleCredential() }
         .modifier(ReminderCoordinator())
-        .publishesSocialPresence()
     }
 
     /// Apple kimliği iptal edilmiş/bulunamıyorsa bağı kaldırır; veri silinmez.

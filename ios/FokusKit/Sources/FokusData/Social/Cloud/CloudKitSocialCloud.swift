@@ -12,7 +12,7 @@ public actor CloudKitSocialCloud: SocialCloud {
         var records: [CKRecord.ID: CKRecord] = [:]
     }
 
-    private static let mailQueryLimit = 50
+    private static let mailQueryLimit = 200
     private static let acceptRetryCount = 4
 
     private let containerIdentifier: String
@@ -159,13 +159,16 @@ public actor CloudKitSocialCloud: SocialCloud {
 
     public func createSpace(name: String, info: SocialSpaceInfo, card: SocialCard) async throws -> SocialSpace {
         let zoneID = CKRecordZone.ID(zoneName: name)
+        let userId = try await requireUserId()
         return try await mapped {
             _ = try await privateDB.save(CKRecordZone(zoneID: zoneID))
             do {
                 let share = makeShare(zoneID: zoneID, info: info)
                 let records = [Mapping.record(info, in: zoneID), Mapping.record(card, in: zoneID)]
                 let saved = try await save(records + [share], in: privateDB, atomically: true)
-                guard let space = Mapping.space(zoneID: zoneID, isMine: true, records: saved), space.inviteURL != nil else {
+                guard let space = Mapping.space(zoneID: zoneID, isMine: true, records: saved, currentUserId: userId),
+                      space.inviteURL != nil
+                else {
                     throw SocialCloudError.other("share")
                 }
                 return space
@@ -202,13 +205,15 @@ public actor CloudKitSocialCloud: SocialCloud {
     }
 
     private func spaces(in database: CKDatabase, isMine: Bool) async throws -> [SocialSpace] {
+        let userId = try await requireUserId()
         let zoneIDs = try await database.allRecordZones().map(\.zoneID).filter(Mapping.isSocialZone)
         let scope = database.databaseScope
         caches[scope] = (caches[scope] ?? [:]).filter { zoneIDs.contains($0.key) }
         try await fetchChanges(zoneIDs, in: database)
         return zoneIDs.compactMap { zoneID in
             guard let cache = caches[scope]?[zoneID] else { return nil }
-            return Mapping.space(zoneID: zoneID, isMine: isMine, records: Array(cache.records.values))
+            return Mapping.space(
+                zoneID: zoneID, isMine: isMine, records: Array(cache.records.values), currentUserId: userId)
         }
     }
 
@@ -229,7 +234,8 @@ public actor CloudKitSocialCloud: SocialCloud {
                 var cache = caches[scope]?[zoneID] ?? ZoneCache()
                 for record in change.changed { cache.records[record.recordID] = record }
                 for recordID in change.deleted { cache.records[recordID] = nil }
-                cache.token = change.token ?? cache.token
+                // Kaydı okunamayan bölge bir sonraki seferde aynı yerden yeniden çekilir.
+                if !change.hasFailure { cache.token = change.token ?? cache.token }
                 caches[scope, default: [:]][zoneID] = cache
             }
         }
@@ -269,8 +275,11 @@ public actor CloudKitSocialCloud: SocialCloud {
         }
     }
 
-    /// Kabulden hemen sonra bölge paylaşılan veritabanında birkaç saniye gecikebilir.
+    /// Kabulden hemen sonra bölge paylaşılan veritabanında birkaç saniye gecikebilir. Fokus alanı olmayan bir
+    /// paylaşımdan hemen ayrılınır.
     private func loadAccepted(_ zoneID: CKRecordZone.ID) async throws -> SocialSpace {
+        let userId = try await requireUserId()
+        var records: [CKRecord] = []
         for attempt in 0..<Self.acceptRetryCount {
             if attempt > 0 { try await Task.sleep(for: .seconds(attempt)) }
             do {
@@ -278,24 +287,46 @@ public actor CloudKitSocialCloud: SocialCloud {
             } catch where Mapping.error(error) == .notFound {
                 continue
             }
-            let records = caches[.shared]?[zoneID].map { Array($0.records.values) } ?? []
-            if let space = Mapping.space(zoneID: zoneID, isMine: false, records: records) { return space }
+            records = caches[.shared]?[zoneID].map { Array($0.records.values) } ?? []
+            if let space = Mapping.space(zoneID: zoneID, isMine: false, records: records, currentUserId: userId) {
+                return space
+            }
         }
-        throw SocialCloudError.network
+        guard !records.isEmpty else { throw SocialCloudError.network }
+        try await leave(zoneID)
+        throw SocialCloudError.notFound
     }
 
     public func removeSpace(_ id: SocialSpaceID) async throws {
         let zoneID = zoneID(id)
+        if id.isMine { try await deleteOwnZone(zoneID) } else { try await leave(zoneID) }
+    }
+
+    public func removeAllSpaces() async throws {
+        let (mine, shared) = try await mapped {
+            (try await privateDB.allRecordZones(), try await sharedDB.allRecordZones())
+        }
+        for zoneID in mine.map(\.zoneID) where Mapping.isSocialZone(zoneID) { try await deleteOwnZone(zoneID) }
+        for zoneID in shared.map(\.zoneID) where Mapping.isSocialZone(zoneID) { try await leave(zoneID) }
+    }
+
+    private func deleteOwnZone(_ zoneID: CKRecordZone.ID) async throws {
+        try await ignoringMissing { _ = try await privateDB.deleteRecordZone(withID: zoneID) }
+        caches[.private]?[zoneID] = nil
+    }
+
+    /// Katılımcı paylaşım kaydını silince yalnız kendisi ayrılır; sunucu izin vermezse paylaşılan bölge silinir
+    /// (katılımcı için aynı anlama gelir).
+    private func leave(_ zoneID: CKRecordZone.ID) async throws {
+        let shareID = CKRecord.ID(recordName: CKRecordNameZoneWideShare, zoneID: zoneID)
         try await ignoringMissing {
-            if id.isMine {
-                _ = try await privateDB.deleteRecordZone(withID: zoneID)
-            } else {
-                // Katılımcı paylaşım kaydını silince yalnız kendisi ayrılır.
-                let shareID = CKRecord.ID(recordName: CKRecordNameZoneWideShare, zoneID: zoneID)
+            do {
                 _ = try await sharedDB.deleteRecord(withID: shareID)
+            } catch where Mapping.error(error) == .permission {
+                _ = try await sharedDB.deleteRecordZone(withID: zoneID)
             }
         }
-        caches[id.isMine ? .private : .shared]?[zoneID] = nil
+        caches[.shared]?[zoneID] = nil
     }
 
     private func zoneID(_ id: SocialSpaceID) -> CKRecordZone.ID {
@@ -336,6 +367,7 @@ private final class ZoneChanges: @unchecked Sendable {
         var changed: [CKRecord] = []
         var deleted: [CKRecord.ID] = []
         var token: CKServerChangeToken?
+        var hasFailure = false
     }
 
     struct Result: Sendable {
@@ -362,8 +394,12 @@ private final class ZoneChanges: @unchecked Sendable {
             recordZoneIDs: zoneIDs, configurationsByRecordZoneID: configurations)
         operation.qualityOfService = .userInitiated
         operation.recordWasChangedBlock = { recordID, result in
-            guard let record = try? result.get() else { return }
-            box.update { $0.result.zones[recordID.zoneID, default: Zone()].changed.append(record) }
+            box.update { box in
+                switch result {
+                case let .success(record): box.result.zones[recordID.zoneID, default: Zone()].changed.append(record)
+                case .failure: box.result.zones[recordID.zoneID, default: Zone()].hasFailure = true
+                }
+            }
         }
         operation.recordWithIDWasDeletedBlock = { recordID, _ in
             box.update { $0.result.zones[recordID.zoneID, default: Zone()].deleted.append(recordID) }

@@ -8,6 +8,8 @@ public actor InMemorySocialServer {
         var ownerId: String
         var info: SocialSpaceInfo
         var cards: [String: SocialCard]
+        /// Oluşturanından başkasının üstüne yazdığı kartlar (CloudKit köprüsü bunları yok sayar).
+        var tampered: Set<String> = []
         var participants: Set<String>
         var url: URL
     }
@@ -147,9 +149,14 @@ public actor InMemorySocialServer {
         try checkWrite(user)
         for (id, card) in cards {
             guard let space = spaces[id.name], space.ownerId == user || space.participants.contains(user) else { continue }
-            var mine = card
-            mine.creatorId = user
-            spaces[id.name]?.cards[card.personId] = mine
+            var next = card
+            next.creatorId = space.cards[card.personId]?.creatorId ?? user
+            spaces[id.name]?.cards[card.personId] = next
+            if next.creatorId == user {
+                spaces[id.name]?.tampered.remove(card.personId)
+            } else {
+                spaces[id.name]?.tampered.insert(card.personId)
+            }
         }
     }
 
@@ -173,13 +180,19 @@ public actor InMemorySocialServer {
         }
     }
 
+    func removeAllSpaces(_ user: String) throws {
+        for name in spaces.keys { try removeSpace(name, user) }
+    }
+
     private func view(_ name: String, _ user: String) throws -> SocialSpace {
         guard let space = spaces[name] else { throw SocialCloudError.notFound }
         let isMine = space.ownerId == user
         let showsURL = space.info.kind == .room || (isMine && space.participants.isEmpty)
         return SocialSpace(
             id: SocialSpaceID(name: name, ownerName: space.ownerId, isMine: isMine), info: space.info,
-            cards: space.cards.values.sorted { $0.personId < $1.personId }, inviteURL: showsURL ? space.url : nil)
+            cards: space.cards.values.filter { !space.tampered.contains($0.personId) }
+                .sorted { $0.personId < $1.personId },
+            inviteURL: showsURL ? space.url : nil)
     }
 }
 
@@ -227,4 +240,5 @@ public struct InMemorySocialCloud: SocialCloud {
         return try await server.accept(url, userId)
     }
     public func removeSpace(_ id: SocialSpaceID) async throws { try await server.removeSpace(id.name, userId) }
+    public func removeAllSpaces() async throws { try await server.removeAllSpaces(userId) }
 }

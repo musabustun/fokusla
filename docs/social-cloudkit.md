@@ -30,8 +30,8 @@ Arkadaş başına ayrı bölge olduğu için arkadaşlarım birbirini göremez.
 
 | Kayıt | Veritabanı | recordName | Alanlar |
 | --- | --- | --- | --- |
-| `SocialIdentity` | Private, `social-identity` bölgesi | `identity` | `payload` (JSON baytları: kullanıcı adı, `personId`, posta kutusu, özel anahtar, gizlilik bayrağı, işlenmiş/engelli kimlikler) |
-| `SocialSpaceInfo` | Private/Shared, `friend-*` / `room-*` | `info` | `kind`, `name`, `hostPersonId`, `toUsername`, `mailId`, `createdAt` |
+| `SocialIdentity` | Private, `social-identity` bölgesi | `identity` | `payload` (JSON baytları: kullanıcı adı, bırakılacak adlar, `personId`, posta kutusu, özel anahtar, gizlilik bayrağı, işlenmiş/engelli kimlikler) |
+| `SocialSpaceInfo` | Private/Shared, `friend-*` / `room-*` | `info` | `kind`, `name`, `toUsername`, `mailId`, `createdAt` |
 | `SocialCard` | aynı bölge | `card-<personId>` | `personId`, `username`, `state`, `sessionStartedAt`, `stateSince`, `todayFocusMs`, `presenceUpdatedAt`, `expiresAt`, `joinedAt`, `leftAt`, `roomId`, `roomName`, `roomURL`, `roomMemberCount`, `roomFocusingCount` |
 | `SocialClaim` | Public | `u1-<SHA256(kullanıcı adı)>` | `publicKey`, `mailbox`, `acceptsRequests` |
 | `SocialMail` | Public | UUID | `mailbox` (QUERYABLE), `sealed` (şifreli baytlar) |
@@ -45,8 +45,19 @@ sorgulanır; içeriği şifrelidir. Güvenlik rolleri: okuma ve oluşturma `_icl
 Şema Development'ta **elle/dosyayla** kurulmalıdır: CloudKit'in ilk kayıtta kendiliğinden açtığı alanlar
 varsayılan olarak sorgulanabilir gelir ve bu garantiyi bozar.
 
-**Sahtecilik:** Mektubu yazan (`creatorUserRecordID`, sunucu belirler) ile iddia edilen kullanıcı adının
-`SocialClaim` sahibi aynı değilse mektup yok sayılır.
+**Sahtecilik** (kimlikler sunucunun yazdığı `creatorUserRecordID`/`lastModifiedUserRecordID`'den alınır):
+
+- Mektubu ya da kartı yazan, üzerindeki kullanıcı adının `SocialClaim` sahibi değilse yok sayılır. İstekten gelen
+  davette mektubu yazan, daveti açan ve kartı yazan aynı kişi olmalıdır.
+- Paylaşılan bölgede herkes her kaydı yazabilir: başkasının üstüne yazdığı kart geçersizdir (sahibi sonraki yenilemede
+  geri yazar); alan bilgisi yalnız bölge sahibinden kabul edilir.
+- Arkadaş kimliği ve engel listesi `personId` değil iCloud kayıt adıdır; `personId` taklit edilerek başkası engelletilemez.
+
+**Bilinen artık riskler:** Bir kullanıcı adını bilen biri (uygulamanın kendi kodu dışında CloudKit'e erişebilirse) o posta
+kutusundaki mektupların göndericilerinin opak kimliklerini görebilir, içeriğini göremez; kutuya çöp mektup yazabilir
+(istemci kişi başına tek mektup sayar, en çok 200 okur). Sosyal profil silinirken başkasının bölgesinde kalan, durumsuz
+"ayrıldı" kartı, o kişi uygulamayı bir sonraki açışında silinir. Ad değiştirince eski adla gönderilmiş bekleyen istekler
+alıcıda görünmez olur (30 gün sonra silinir).
 
 ## 4. Katmanlar
 
@@ -80,9 +91,12 @@ CloudKit tipleri FokusData dışına sızmaz; tek istisna sistemin verdiği `CKS
 - **Kabul:** karşı taraf kartını yazar. Gönderen bir sonraki yenilemede mektubunu siler.
 - **Arkadaşlıktan çıkma:** sahip bölgeyi siler; katılımcı kartına `leftAt` yazıp paylaşımdan ayrılır, sahip
   bir sonraki yenilemede bölgeyi siler.
-- **Engelleme:** arkadaşlık silinir, `creatorUserRecordID` ve `personId` engel listesine girer; istekleri görünmez.
+- **Engelleme:** arkadaşlık silinir, kişinin iCloud kayıt adı engel listesine girer; istekleri görünmez.
 - **Çift davet:** iki taraf aynı anda davet ettiyse adı küçük olan bölge kalır, diğeri silinir.
-- **Sosyal profili silme:** kullanıcı adı, mektuplar, bölgeler ve kimlik silinir (App Store 5.1.1(v)).
+- **Gizlenme:** durum her alandan silinir; ağ hatasında yarım kalırsa sonraki yenileme/kalp atışı tamamlar.
+- **Oda:** bağlantı herkese açıktır; odadakiler arkadaş olmasa da birbirinin adını ve durumunu görür (ekranda söylenir).
+  20 kişi sınırı istemcidedir.
+- **Sosyal profili silme:** kullanıcı adı, mektuplar, bölgeler ve kimlik silinir (App Store 5.1.1(v)); Apple çıkışı gerekmez.
   Ayarlar'daki "Hesabı sil" ve "Tüm verileri sil" de bunu çağırır.
 
 ## 7. Gizlilik

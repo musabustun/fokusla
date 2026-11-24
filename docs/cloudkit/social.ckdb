@@ -1,0 +1,91 @@
+DEFINE SCHEMA
+
+// Sosyal kayıt tipleri (docs/social-cloudkit.md). Mevcut CD_* tiplerine EKLENİR; onları değiştirmez.
+// Bu dosyayı tek başına içe aktarma: önce Development şemasını dışa aktar, bu tipleri o dosyanın sonuna
+// ekle, birleşik dosyayı içe aktar. SocialClaim'de hiçbir alan QUERYABLE OLMAMALI (kullanıcılar listelenemesin).
+
+    RECORD TYPE SocialIdentity (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE,
+        payload         BYTES,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_creator"
+    );
+
+    RECORD TYPE SocialSpaceInfo (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE,
+        kind            STRING,
+        name            STRING,
+        toUsername      STRING,
+        mailId          STRING,
+        createdAt       TIMESTAMP,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_creator"
+    );
+
+    RECORD TYPE SocialCard (
+        "___createTime"   TIMESTAMP,
+        "___createdBy"    REFERENCE,
+        "___etag"         STRING,
+        "___modTime"      TIMESTAMP,
+        "___modifiedBy"   REFERENCE,
+        "___recordID"     REFERENCE,
+        personId          STRING,
+        username          STRING,
+        state             STRING,
+        sessionStartedAt  TIMESTAMP,
+        stateSince        TIMESTAMP,
+        todayFocusMs      DOUBLE,
+        presenceUpdatedAt TIMESTAMP,
+        expiresAt         TIMESTAMP,
+        joinedAt          TIMESTAMP,
+        leftAt            TIMESTAMP,
+        roomId            STRING,
+        roomName          STRING,
+        roomURL           STRING,
+        roomMemberCount   INT64,
+        roomFocusingCount INT64,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_creator"
+    );
+
+    RECORD TYPE SocialClaim (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE,
+        publicKey       BYTES,
+        mailbox         STRING,
+        acceptsRequests INT64,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_icloud"
+    );
+
+    RECORD TYPE SocialMail (
+        "___createTime" TIMESTAMP,
+        "___createdBy"  REFERENCE,
+        "___etag"       STRING,
+        "___modTime"    TIMESTAMP,
+        "___modifiedBy" REFERENCE,
+        "___recordID"   REFERENCE,
+        mailbox         STRING QUERYABLE,
+        sealed          BYTES,
+        GRANT WRITE TO "_creator",
+        GRANT CREATE TO "_icloud",
+        GRANT READ TO "_icloud"
+    );

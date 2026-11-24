@@ -10,7 +10,10 @@ import OSLog
 public final class CloudSocialService: SocialService {
     public static let maxRoomMembers = 20
     public static let maxPendingInvites = 20
-    static let maxIncomingMails = 50
+    static let profileFlagKey = "fokus.social.hasProfile"
+    /// Adı doğrulanan/doğrulanamayan kişi için kullanıcı adı kaydı bu süre boyunca yeniden sorulmaz.
+    private static let trustedNameLifetime: TimeInterval = 3600
+    private static let untrustedNameLifetime: TimeInterval = 120
 
     public private(set) var snapshot: SocialSnapshot = .empty(.loading)
 
@@ -21,11 +24,19 @@ public final class CloudSocialService: SocialService {
     @ObservationIgnored private let sessionProvider: @MainActor () async -> String?
     @ObservationIgnored private let scheduler: any SocialScheduler
     @ObservationIgnored private let pollMs: Int
+    @ObservationIgnored private let defaults: UserDefaults?
+
+    private struct NameOwner {
+        let ownerId: String?
+        let checkedAt: Date
+    }
 
     @ObservationIgnored var userId: String?
     @ObservationIgnored var identity: SocialIdentity?
     @ObservationIgnored var spaces: [SocialSpace] = []
     @ObservationIgnored var incoming: [IncomingMail] = []
+    @ObservationIgnored var rejectedMailIds: Set<String> = []
+    @ObservationIgnored private var nameOwners: [String: NameOwner] = [:]
     /// Kullanıcının son odak durumu; yeni kartlara da yazılır.
     @ObservationIgnored var ownPresence: SocialPresence?
     /// Son başarılı yayının içeriği (değişmeyen çevrimdışı durum yeniden yazılmaz).
@@ -45,7 +56,8 @@ public final class CloudSocialService: SocialService {
         scheduler: any SocialScheduler = TaskSocialScheduler(),
         now: @escaping @MainActor () -> Date = { Date() },
         calendar: Calendar = .current,
-        pollMs: Int = 20_000
+        pollMs: Int = 20_000,
+        defaults: UserDefaults? = nil
     ) {
         self.sessionProvider = sessionProvider
         self.cloud = cloud
@@ -53,7 +65,10 @@ public final class CloudSocialService: SocialService {
         self.now = now
         self.calendar = calendar
         self.pollMs = pollMs
+        self.defaults = defaults
     }
+
+    public var mayHaveProfile: Bool { defaults?.bool(forKey: Self.profileFlagKey) ?? (snapshot.status == .ready) }
 
     // MARK: - Görünürlük
 
@@ -89,8 +104,10 @@ public final class CloudSocialService: SocialService {
         case let .invalid(problem): return .invalid(problem)
         case let .valid(username):
             // Ağ hatasında "uygun" denir; kesin karar `claimUsername`'dedir (orada hata gösterilir).
-            let claim = try? await cloud.claim(forKey: SocialDirectory.claimKey(forUsername: username))
-            return claim.map { $0.ownerId == userId ? .ok(username) : .taken } ?? .ok(username)
+            guard case let .available(userId) = try? await cloud.account(),
+                  let claim = try? await cloud.claim(forKey: SocialDirectory.claimKey(forUsername: username))
+            else { return .ok(username) }
+            return claim.ownerId == userId ? .ok(username) : .taken
         }
     }
 
@@ -101,17 +118,17 @@ public final class CloudSocialService: SocialService {
             guard SocialContentFilter.isAcceptable(username) else { throw SocialError(.inappropriateText) }
             let userId = try await self.requireAccount()
             let existing = try await self.cloud.loadIdentity()
-            var next = existing ?? SocialIdentity(
-                username: username, personId: Self.newId(), mailbox: Self.newId(),
+            // Kimliğim yoksa (ör. iCloud verisi silinmiş) eski alanlar artık kullanılamaz.
+            if existing == nil { try await self.cloud.removeAllSpaces() }
+            let base = existing ?? SocialIdentity(
+                username: "", personId: Self.newId(), mailbox: Self.newId(),
                 privateKey: SocialMailCrypto.generatePrivateKey())
-            let previous = existing?.username
-            next.username = username
-            try await self.writeClaim(for: next, userId: userId)
-            try await self.cloud.saveIdentity(next)
-            if let previous, previous != username { await self.releaseClaim(previous) }
+            let next = try await self.take(username, base: base, userId: userId)
             self.identity = next
             await self.reload()
+            // Arkadaşlar yeni adı gördükten sonra eskisi bırakılır; ağ hatasında sonraki yenileme tamamlar.
             try? await self.publishCards(force: true)
+            await self.releaseReservedNames()
             return SocialProfile(
                 userId: next.personId, username: username, inviteCode: "", isDiscoverable: next.isDiscoverable)
         }
@@ -125,6 +142,8 @@ public final class CloudSocialService: SocialService {
             try await self.writeClaim(for: next, userId: userId)
             try await self.cloud.saveIdentity(next)
             self.identity = next
+            // Başka cihazımın katıldığı alanlar da kapsansın. Yazılamazsa `reload`/yayın yeniden dener.
+            self.spaces = try await self.cloud.spaces()
             try await self.publishCards(force: true)
             self.rebuild()
         }
@@ -132,14 +151,21 @@ public final class CloudSocialService: SocialService {
 
     public func deleteAccount() async throws {
         try await exclusiveThrowing {
-            _ = try await self.requireAccount()
-            guard let identity = try await self.cloud.loadIdentity() else { return }
-            self.identity = identity
-            for space in try await self.cloud.spaces() { try await self.discard(space) }
-            try await self.cloud.deleteClaim(key: SocialDirectory.claimKey(forUsername: identity.username))
+            guard case let .available(userId) = try await self.cloud.account() else { throw SocialError(.iCloudUnavailable) }
+            let identity = try await self.cloud.loadIdentity()
+            if let identity {
+                self.adopt(userId)
+                self.identity = identity
+                for space in try await self.cloud.spaces() { try await self.discard(space) }
+            }
+            try await self.cloud.removeAllSpaces()
+            for name in identity.map({ [$0.username] + $0.reservedUsernames }) ?? [] where !name.isEmpty {
+                try await self.deleteClaim(name)
+            }
             try await self.cloud.deleteIdentity()
             self.resetCaches()
-            self.snapshot = .empty(.needsUsername)
+            self.defaults?.removeObject(forKey: Self.profileFlagKey)
+            self.snapshot = .empty(self.snapshot.status == .signedOut ? .signedOut : .needsUsername)
         }
     }
 
@@ -148,17 +174,32 @@ public final class CloudSocialService: SocialService {
     public func publishPresence(_ presence: SocialPresence) async throws {
         try await exclusiveThrowing {
             self.ownPresence = presence
-            guard self.snapshot.status == .ready, self.identity?.isDiscoverable == true else { return }
-            try await self.publishCards(force: false)
+            guard self.snapshot.status == .ready, let identity = self.identity else { return }
+            try await self.requireAccount()
+            if identity.isDiscoverable {
+                try await self.publishCards(force: false)
+            } else if self.hasVisibleCard(identity) {
+                try await self.publishCards(force: true)
+            }
+        }
+    }
+
+    /// Gizliyken hâlâ durum/oda taşıyan kartım var mı? (Gizlenme yarım kalmış.)
+    private func hasVisibleCard(_ identity: SocialIdentity) -> Bool {
+        let world = world(identity)
+        return spaces.contains { space in
+            guard let mine = world.myCard(in: space), mine.leftAt == nil else { return false }
+            return mine.presence != nil || mine.room != nil
         }
     }
 
     /// Kendi kartımı bulunduğum her alana yazar. İçeriği değişmemiş çevrimdışı kart atlanır (kota).
     func publishCards(force: Bool) async throws {
         guard let identity else { return }
+        let world = world(identity)
         var cards: [SocialSpaceID: SocialCard] = [:]
         for space in spaces {
-            guard let current = space.card(of: identity.personId), current.leftAt == nil else { continue }
+            guard let current = world.myCard(in: space), current.leftAt == nil else { continue }
             guard let card = makeCard(joinedAt: current.joinedAt, kind: space.info.kind), force || needsPublish(card, in: space.id) else { continue }
             cards[space.id] = card
         }
@@ -201,18 +242,21 @@ public final class CloudSocialService: SocialService {
                 snapshot = .empty(.iCloudUnavailable)
                 return
             }
-            if self.userId != userId { resetCaches() }
-            self.userId = userId
-            guard let identity = try await cloud.loadIdentity() else {
+            adopt(userId)
+            guard let identity = try await cloud.loadIdentity(), !identity.username.isEmpty else {
                 resetCaches()
-                self.userId = userId
+                adopt(userId)
                 snapshot = .empty(.needsUsername)
                 return
             }
             self.identity = identity
+            defaults?.set(true, forKey: Self.profileFlagKey)
             spaces = try await cloud.spaces()
+            try await verifyNames()
             incoming = try await loadIncoming(identity)
             try await reconcile(identity)
+            if !identity.isDiscoverable, hasVisibleCard(identity) { try await publishCards(force: true) }
+            await releaseReservedNames()
             rebuild()
         } catch {
             logger.error("Sosyal yenilenemedi: \(String(describing: error), privacy: .public)")
@@ -231,8 +275,25 @@ public final class CloudSocialService: SocialService {
         }
     }
 
+    /// Alanlardaki kişilerin kullanıcı adı kayıtlarını (önbellekli) sorar.
+    func verifyNames() async throws {
+        let names = Set(spaces.flatMap(\.cards).filter { $0.leftAt == nil && $0.personId != identity?.personId }.map(\.username))
+        for name in names { _ = try await nameOwner(name) }
+    }
+
+    func nameOwner(_ username: String) async throws -> String? {
+        if let known = nameOwners[username] {
+            let lifetime = known.ownerId == nil ? Self.untrustedNameLifetime : Self.trustedNameLifetime
+            if now().timeIntervalSince(known.checkedAt) < lifetime { return known.ownerId }
+        }
+        let claim = try await cloud.claim(forKey: SocialDirectory.claimKey(forUsername: username))
+        nameOwners[username] = NameOwner(ownerId: claim?.ownerId, checkedAt: now())
+        return claim?.ownerId
+    }
+
     func world(_ identity: SocialIdentity) -> SocialWorld {
-        SocialWorld(identity: identity, spaces: spaces, incoming: incoming, now: now(), calendar: calendar)
+        SocialWorld(
+            identity: identity, userId: userId ?? "", nameOwners: nameOwners.compactMapValues(\.ownerId), spaces: spaces, incoming: incoming, now: now(), calendar: calendar)
     }
 
     func rebuild() {
@@ -245,7 +306,15 @@ public final class CloudSocialService: SocialService {
         identity = nil
         spaces = []
         incoming = []
+        rejectedMailIds = []
+        nameOwners = [:]
         lastPublished = [:]
+    }
+
+    /// iCloud hesabı değiştiyse önceki hesabın önbelleği bırakılır.
+    private func adopt(_ userId: String) {
+        if let current = self.userId, current != userId { resetCaches() }
+        self.userId = userId
     }
 
     /// Yarım kalan işleri toparlar: ayrılanları temizler, eksik kartı yazar, teslim edilen mektubu siler.
@@ -274,7 +343,7 @@ public final class CloudSocialService: SocialService {
     func discard(_ space: SocialSpace) async throws {
         if space.id.isMine {
             if let mailId = space.info.mailId { try await cloud.deleteMail(id: mailId) }
-        } else if let mine = identity.flatMap({ space.card(of: $0.personId) }), mine.leftAt == nil {
+        } else if let mine = identity.flatMap({ world($0).myCard(in: space) }), mine.leftAt == nil {
             var left = mine
             left.leftAt = now()
             left.presence = nil
@@ -294,14 +363,18 @@ public final class CloudSocialService: SocialService {
     func requireAccount() async throws -> String {
         guard await sessionProvider() != nil else { throw SocialError(.notSignedIn) }
         guard case let .available(userId) = try await cloud.account() else { throw SocialError(.iCloudUnavailable) }
-        self.userId = userId
+        if let current = self.userId, current != userId {
+            await reload()
+        } else {
+            adopt(userId)
+        }
         return userId
     }
 
     /// Güncel kimlik (diğer cihazımın yazdıkları dahil).
     func requireIdentity() async throws -> SocialIdentity {
         try await requireAccount()
-        guard let identity = try await cloud.loadIdentity() else { throw SocialError(.noProfile) }
+        guard let identity = try await cloud.loadIdentity(), !identity.username.isEmpty else { throw SocialError(.noProfile) }
         self.identity = identity
         return identity
     }
@@ -325,12 +398,44 @@ public final class CloudSocialService: SocialService {
         }
     }
 
-    private func releaseClaim(_ username: String) async {
+    /// Adı alır. Önce "alınıyor" diye yazılır: yarıda kesilirse kayıt sahipsiz kalmaz, sonra bırakılır.
+    private func take(_ username: String, base: SocialIdentity, userId: String) async throws -> SocialIdentity {
+        var next = base
+        if base.username != username {
+            next.reservedUsernames = (base.reservedUsernames + [username]).uniqued()
+            try await cloud.saveIdentity(next)
+        }
+        let previous = next.username
+        next.username = username
         do {
-            try await cloud.deleteClaim(key: SocialDirectory.claimKey(forUsername: username))
+            try await writeClaim(for: next, userId: userId)
+        } catch let error as SocialError {
+            try await cloud.saveIdentity(base)
+            throw error
+        }
+        next.reservedUsernames.removeAll { $0 == username }
+        if !previous.isEmpty, previous != username { next.reservedUsernames.append(previous) }
+        try await cloud.saveIdentity(next)
+        return next
+    }
+
+    /// Kullanmadığım adları bırakır; başarısız olan bir sonraki yenilemede yeniden denenir.
+    private func releaseReservedNames() async {
+        guard var next = identity, !next.reservedUsernames.isEmpty else { return }
+        do {
+            for name in next.reservedUsernames where name != next.username { try await deleteClaim(name) }
+            next.reservedUsernames = []
+            try await saveIdentity(next)
         } catch {
             logger.error("Eski kullanıcı adı bırakılamadı: \(String(describing: error), privacy: .public)")
         }
+    }
+
+    /// Başkasına ait kayda dokunulamaz; o durumda bırakılacak bir şey yoktur.
+    private func deleteClaim(_ username: String) async throws {
+        do {
+            try await cloud.deleteClaim(key: SocialDirectory.claimKey(forUsername: username))
+        } catch SocialCloudError.permission {}
     }
 
     // MARK: - Sıraya alma ve hata çevirisi
@@ -386,8 +491,15 @@ extension SocialSpace {
     func replacing(_ card: SocialCard) -> SocialSpace {
         var copy = self
         var next = card
-        next.creatorId = copy.card(of: card.personId)?.creatorId
+        next.creatorId = copy.cards.first { $0.personId == card.personId }?.creatorId
         copy.cards = copy.cards.filter { $0.personId != card.personId } + [next]
         return copy
+    }
+}
+
+extension Array where Element: Hashable {
+    func uniqued() -> [Element] {
+        var seen = Set<Element>()
+        return filter { seen.insert($0).inserted }
     }
 }

@@ -316,8 +316,10 @@ public protocol SocialService: AnyObject {
     func blockFriend(userId: String) async throws
     /// Gelen isteği reddeder ve göndereni engeller. Hata: requestNotFound.
     func blockRequest(id: String) async throws
-    /// Sosyal profilini, arkadaşlıkları ve kullanıcı adını kalıcı olarak siler.
+    /// Sosyal profilini, arkadaşlıkları ve kullanıcı adını kalıcı olarak siler (Apple girişi gerekmez).
     func deleteAccount() async throws
+    /// Bu cihazda sosyal profil kullanılmış mı? (Silme başarısız olursa kullanıcı uyarılmalı mı?)
+    var mayHaveProfile: Bool { get }
 }
 
 /// Davet bağlantısı bilmeyen servisler (`MockSocialService`) için varsayılanlar.
@@ -332,4 +334,5 @@ extension SocialService {
     public func blockFriend(userId: String) async throws { try await removeFriend(userId: userId) }
     public func blockRequest(id: String) async throws { try await respondToRequest(id: id, accept: false) }
     public func deleteAccount() async throws { throw SocialError(.unknown) }
+    public var mayHaveProfile: Bool { snapshot.status == .ready }
 }

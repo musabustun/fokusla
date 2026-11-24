@@ -238,6 +238,23 @@ Saf mantık FokusDomain'dedir ve test edilir: `FocusActivityCalc`, `WidgetCalc`,
    (uzantı CloudKit'siz açtığı depoya yazar; uygulama öne gelince değişiklik CloudKit'e akar — gerçek cihazda
    doğrulanmalı), Live Activity düğmeleri, Odak filtresi.
 
+## Sosyal (CloudKit)
+
+Tasarım: [docs/social-cloudkit.md](../docs/social-cloudkit.md). `CloudSocialService` kuralları, `CloudKitSocialCloud` taşımayı
+yapar; UI testleri aynı servisi bellek içi sunucuyla (`SocialDemoWorld`) çalıştırır (`-FokusUITestSocialSignedIn` = oturum açık
+sayılır). Davet bağlantısı sistemden `FokusSceneDelegate`'e gelir (`CKSharingSupported`). İmzasız simülatörde CloudKit yoktur
+(ekran "iCloud'a giriş yap" der).
+
+### Hesapta yapılacaklar (kullanıcı onayıyla; kod hesapta HİÇBİR ŞEY kaydetmez)
+
+1. CloudKit Console → `iCloud.com.musabustun.fokus` → Development → **Export Schema**; dışa aktarılan dosyanın sonuna
+   [docs/cloudkit/social.ckdb](../docs/cloudkit/social.ckdb) içindeki beş kayıt tipini ekle; **Import Schema**. Tipleri uygulamayı
+   çalıştırarak kendiliğinden oluşturma: CloudKit alanları sorgulanabilir açar ve kullanıcı adı dizini listelenebilir olur.
+2. `SocialClaim`'de hiç index olmadığını, `SocialMail`'de yalnızca `mailbox` QUERYABLE olduğunu doğrula.
+3. İki iCloud hesabı/iki cihazla uçtan uca dene (docs/social-cloudkit.md 8).
+4. **Deploy Schema Changes…** → Production. TestFlight/App Store Production'ı kullanır; deploy'dan önce Sosyal orada çalışmaz.
+5. App Store Connect gizlilik etiketini güncelle ([appstore/privacy.md](../appstore/privacy.md)).
+
 ## Apple Watch uygulaması
 
 Kapsam (1.0.1): **Odak başlat / Mola / Devam / Bitir**, telefonda başlatılan oturumu canlı izleme ve yönetme, sürerken

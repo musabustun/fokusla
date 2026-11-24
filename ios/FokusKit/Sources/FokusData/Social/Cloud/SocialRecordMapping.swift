@@ -52,7 +52,7 @@ enum SocialRecordMapping {
     }
 
     /// Kayıt adı ile `personId` uyuşmazsa ya da ad geçersizse kart yok sayılır (içerik başkasından gelir).
-    static func card(_ record: CKRecord) -> SocialCard? {
+    static func card(_ record: CKRecord, currentUserId: String = "") -> SocialCard? {
         guard record.recordType == RecordType.card, let personId = record["personId"] as? String,
               record.recordID.recordName == cardPrefix + personId,
               let rawName = record["username"] as? String,
@@ -61,7 +61,8 @@ enum SocialRecordMapping {
         return SocialCard(
             personId: personId, username: username, presence: presence(record),
             joinedAt: date(record, "joinedAt") ?? record.creationDate ?? noDate, leftAt: date(record, "leftAt"),
-            room: room(record), creatorId: record.creatorUserRecordID?.recordName)
+            room: room(record),
+            creatorId: record.creatorUserRecordID.map { userId($0.recordName, currentUserId: currentUserId) })
     }
 
     private static func presence(_ record: CKRecord) -> SocialPresence? {
@@ -102,7 +103,6 @@ enum SocialRecordMapping {
             recordType: RecordType.info, recordID: CKRecord.ID(recordName: infoRecordName, zoneID: zoneID))
         record["kind"] = info.kind.rawValue
         record["name"] = info.name
-        record["hostPersonId"] = info.hostPersonId
         record["toUsername"] = info.toUsername ?? ""
         record["mailId"] = info.mailId ?? ""
         record["createdAt"] = info.createdAt
@@ -113,11 +113,10 @@ enum SocialRecordMapping {
         guard record.recordType == RecordType.info,
               let kind = (record["kind"] as? String).flatMap(SocialSpaceKind.init(rawValue:)),
               // Bölge adının öneki ile tür aynı olmalı (bir oda arkadaşlık gibi gösterilemez).
-              record.recordID.zoneID.zoneName.hasPrefix(kind.rawValue + "-"),
-              let host = record["hostPersonId"] as? String
+              record.recordID.zoneID.zoneName.hasPrefix(kind.rawValue + "-")
         else { return nil }
         return SocialSpaceInfo(
-            kind: kind, name: kind == .room ? roomName(record["name"] as? String) : "", hostPersonId: host,
+            kind: kind, name: kind == .room ? roomName(record["name"] as? String) : "",
             toUsername: nonEmpty(record["toUsername"]), mailId: nonEmpty(record["mailId"]),
             createdAt: date(record, "createdAt") ?? record.creationDate ?? noDate)
     }
@@ -129,13 +128,26 @@ enum SocialRecordMapping {
 
     // MARK: Alan
 
+    /// Bölgede herkes her kaydı yazabilir; bu yüzden yalnız oluşturanının son yazdığı kayıtlar geçerlidir ve alan
+    /// bilgisi yalnız bölge sahibinden kabul edilir.
+    static func isAuthentic(_ record: CKRecord, currentUserId: String) -> Bool {
+        let creator = record.creatorUserRecordID.map { userId($0.recordName, currentUserId: currentUserId) }
+        let editor = record.lastModifiedUserRecordID.map { userId($0.recordName, currentUserId: currentUserId) }
+        guard record.recordType == RecordType.info else { return creator == editor }
+        let owner = userId(record.recordID.zoneID.ownerName, currentUserId: currentUserId)
+        return creator == editor && (creator == nil || creator == owner)
+    }
+
     /// `records`: bölgenin tüm kayıtları (paylaşım kaydı dahil).
-    static func space(zoneID: CKRecordZone.ID, isMine: Bool, records: [CKRecord]) -> SocialSpace? {
-        guard let info = records.lazy.compactMap(info).first else { return nil }
+    static func space(
+        zoneID: CKRecordZone.ID, isMine: Bool, records: [CKRecord], currentUserId: String
+    ) -> SocialSpace? {
+        let authentic = records.filter { isAuthentic($0, currentUserId: currentUserId) }
+        guard let info = authentic.lazy.compactMap(info).first else { return nil }
         let share = records.lazy.compactMap { $0 as? CKShare }.first
         return SocialSpace(
             id: SocialSpaceID(name: zoneID.zoneName, ownerName: zoneID.ownerName, isMine: isMine), info: info,
-            cards: records.compactMap(card).sorted { $0.personId < $1.personId },
+            cards: authentic.compactMap { card($0, currentUserId: currentUserId) }.sorted { $0.personId < $1.personId },
             inviteURL: share.flatMap { inviteURL($0, kind: info.kind, isMine: isMine) })
     }
 

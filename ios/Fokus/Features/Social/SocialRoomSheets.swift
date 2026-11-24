@@ -21,20 +21,30 @@ struct SocialCreateRoomSheet: View {
     }
 }
 
-/// Davet koduyla bir odaya katıl.
+/// Bağlantıyla bir odaya katıl.
 struct SocialJoinRoomSheet: View {
     let social: any SocialService
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        SocialSheetScaffold(title: "Bağlantıyla katıl", description: nil, identifier: "social.joinRoom") {
+            SocialPasteInviteForm(social: social) { dismiss() }
+        }
+    }
+}
+
+/// Oda davetini paylaş: bağlantısı olan herkes katılabilir.
+struct SocialRoomShareSheet: View {
+    let name: String
+    let url: URL
 
     var body: some View {
         SocialSheetScaffold(
-            title: "Kodla katıl", description: "Odanın 6 karakterlik davet kodunu gir.",
-            identifier: "social.joinRoom"
+            title: "Odaya davet et",
+            description: "Bağlantısı olan herkes katılabilir (en çok 20 kişi). Odadakiler birbirini kullanıcı adı ve odak durumuyla görür. Açan kişi iOS'un davet ekranında iCloud adını görebilir.",
+            identifier: "social.roomShare", cancelTitle: "Kapat"
         ) {
-            SocialSingleFieldForm(
-                label: "Oda davet kodu", initialValue: "", submitLabel: "Katıl", placeholder: "K7M2QX",
-                capitalization: .characters, fieldIdentifier: "social.joinCode.field",
-                submitIdentifier: "social.joinCode.submit"
-            ) { code in try await social.joinRoom(.inviteCode(code)) }
+            SocialShareBlock(url: url, message: "Fokus'ta “\(name)” odasına katıl", identifier: "social.room.invite")
         }
     }
 }
@@ -99,10 +109,8 @@ private struct SocialSingleFieldForm<Result>: View {
             do {
                 _ = try await onSubmit(value)
                 dismiss()
-            } catch let error as SocialError {
-                errorMessage = error.userMessage
             } catch {
-                errorMessage = "Bir şeyler ters gitti. Lütfen tekrar dene."
+                errorMessage = SocialError.message(for: error)
             }
         }
     }

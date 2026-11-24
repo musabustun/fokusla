@@ -34,3 +34,9 @@ Gizlilik politikası: [privacy.md](privacy.md).
 ## Katkı
 
 Kaynak kod MIT lisanslıdır: [github.com/musabustun/fokusla](https://github.com/musabustun/fokusla). Katkı rehberi: CONTRIBUTING.md.
+
+## Sosyal: rahatsız edici bir davranış
+
+- **Engelle:** İsteğin ya da arkadaşın yanındaki "…" menüsünden "Engelle". Arkadaşlık silinir, yeni istekleri sana ulaşmaz.
+- **Gizlen:** Sosyal → Profil → "Sosyalde görün"ü kapat: durumun paylaşılmaz, adına istek gelmez.
+- **Bildir:** Uygunsuz bir kullanıcı adı ya da oda adı için GitHub üzerinden [bize yaz](https://github.com/musabustun/fokusla/issues). Herkese açık bir yere kişisel bilgi (gerçek ad, okul, ekran görüntüsündeki adlar) ekleme; yalnızca ne olduğunu ve yaklaşık zamanını anlat.

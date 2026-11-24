@@ -60,10 +60,8 @@ struct SocialUsernameForm: View {
                 do {
                     try await social.claimUsername(username)
                     onDone?()
-                } catch let error as SocialError {
-                    serverError = error.userMessage
                 } catch {
-                    serverError = "Bir şeyler ters gitti. Lütfen tekrar dene."
+                    serverError = SocialError.message(for: error)
                 }
             case let .invalid(problem):
                 serverError = problem.message
@@ -84,7 +82,7 @@ struct SocialUsernameSetupView: View {
                 .fokusTextStyle(.title1)
                 .foregroundStyle(.fkLabel)
                 .accessibilityAddTraits(.isHeader)
-            Text("Arkadaşların seni yalnızca bu adla görür. Adın, e-postan ve çalışma içeriğin paylaşılmaz.")
+            Text("Kimse seni arayıp bulamaz; yalnızca tam adını bilen istek gönderebilir. Kabul ettiğin kişiler seni bu adla görür.")
                 .fokusTextStyle(.callout)
                 .foregroundStyle(.fkSecondaryLabel)
             SocialUsernameForm(social: social, submitLabel: "Devam")

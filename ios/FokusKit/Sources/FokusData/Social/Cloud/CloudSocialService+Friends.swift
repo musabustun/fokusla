@@ -46,7 +46,7 @@ extension CloudSocialService {
             do {
                 guard let url = space.inviteURL else { throw SocialError(.unknown) }
                 let payload = SocialMailPayload(
-                    v: SocialMailPayload.currentVersion, username: identity.username, personId: identity.personId, url: url)
+                    v: SocialMailPayload.currentVersion, username: identity.username, url: url)
                 let sealed = try SocialMailCrypto.seal(
                     JSONEncoder().encode(payload), publicKey: claim.publicKey, mailbox: claim.mailbox)
                 try await self.cloud.sendMail(id: mailId, mailbox: claim.mailbox, sealed: sealed)
@@ -82,8 +82,7 @@ extension CloudSocialService {
         let space = try await cloud.createSpace(
             name: "friend-\(Self.newId())",
             info: SocialSpaceInfo(
-                kind: .friend, hostPersonId: identity.personId, toUsername: toUsername, mailId: mailId,
-                createdAt: createdAt),
+                kind: .friend, toUsername: toUsername, mailId: mailId, createdAt: createdAt),
             card: card)
         spaces.append(space)
         return space
@@ -97,7 +96,7 @@ extension CloudSocialService {
             let mail = try self.incomingMail(id, identity)
             if accept {
                 do {
-                    _ = try await self.join(SocialInvite(url: mail.url), identity)
+                    _ = try await self.join(SocialInvite(url: mail.url), identity, from: mail)
                 } catch let error as SocialError where error.code == .inviteInvalid {
                     // Gönderen geri çekmiş: istek listeden düşer.
                     try await self.markHandled([mail.id])
@@ -114,7 +113,7 @@ extension CloudSocialService {
         try await exclusiveThrowing {
             let identity = try await self.requireIdentity()
             let mail = try self.incomingMail(id, identity)
-            try await self.markHandled([mail.id], blocking: [mail.senderId, mail.personId])
+            try await self.markHandled([mail.id], blocking: [mail.senderId])
             self.rebuild()
         }
     }
@@ -143,8 +142,10 @@ extension CloudSocialService {
         }
     }
 
-    /// Daveti kabul eder, kartımı yazar ve yeniden yükler.
-    func join(_ invite: SocialInvite, _ identity: SocialIdentity) async throws -> SocialInviteOutcome {
+    /// Daveti kabul eder, kartımı yazar ve yeniden yükler. `mail`: davet bir istekten geldiyse göndereniyle eşleşmeli.
+    func join(
+        _ invite: SocialInvite, _ identity: SocialIdentity, from mail: IncomingMail? = nil
+    ) async throws -> SocialInviteOutcome {
         let space: SocialSpace
         do {
             space = try await cloud.acceptInvite(invite)
@@ -152,28 +153,36 @@ extension CloudSocialService {
             throw SocialError(.inviteInvalid)
         }
         switch space.info.kind {
-        case .friend: return try await joinFriend(space, identity)
-        case .room: return try await joinRoom(space, identity)
+        case .friend:
+            return try await joinFriend(space, identity, from: mail)
+        case .room:
+            guard mail == nil else {
+                try await cloud.removeSpace(space.id)
+                throw SocialError(.inviteInvalid)
+            }
+            return try await joinRoom(space, identity)
         }
     }
 
-    private func joinFriend(_ space: SocialSpace, _ identity: SocialIdentity) async throws -> SocialInviteOutcome {
-        guard let peer = space.activeCards().first(where: { $0.personId != identity.personId }) else {
+    private func joinFriend(
+        _ space: SocialSpace, _ identity: SocialIdentity, from mail: IncomingMail?
+    ) async throws -> SocialInviteOutcome {
+        // Karttaki adın gerçek sahibi daveti açan kişi olmalı; istekten geldiyse isteği gönderen de o olmalı.
+        guard let peer = world(identity).peer(in: space), peer.leftAt == nil, let peerId = peer.creatorId,
+              peerId == space.id.ownerName, try await nameOwner(peer.username) == peerId,
+              mail.map({ $0.senderId == peerId && $0.username == peer.username }) ?? true
+        else {
             try await cloud.removeSpace(space.id)
             throw SocialError(.inviteInvalid)
         }
-        let isKnown = world(identity).friendships.contains {
-            $0.peer.personId == peer.personId && $0.space.id != space.id
-        }
-        if isKnown {
+        if world(identity).friendships.contains(where: { $0.userId == peerId && $0.space.id != space.id }) {
             try await cloud.removeSpace(space.id)
             throw SocialError(.alreadyFriends)
         }
         // Daveti bilerek kabul etmek engeli kaldırır.
-        let blocked = [peer.personId, peer.creatorId].compactMap { $0 }
-        if identity.blockedIds.contains(where: blocked.contains) {
+        if identity.blockedIds.contains(peerId) {
             var next = identity
-            next.blockedIds.removeAll(where: blocked.contains)
+            next.blockedIds.removeAll { $0 == peerId }
             try await saveIdentity(next)
         }
         guard let card = makeCard(joinedAt: now(), kind: .friend) else { throw SocialError(.noProfile) }
@@ -196,15 +205,14 @@ extension CloudSocialService {
         try await exclusiveThrowing {
             let identity = try await self.requireIdentity()
             let friendship = try self.friendship(userId, identity)
-            let ids = [friendship.peer.personId, friendship.peer.creatorId].compactMap { $0 }
-            try await self.markHandled([], blocking: ids)
+            try await self.markHandled([], blocking: [friendship.userId])
             try await self.discard(friendship.space)
             self.rebuild()
         }
     }
 
     private func friendship(_ userId: String, _ identity: SocialIdentity) throws -> SocialWorld.Friendship {
-        guard let match = world(identity).friendships.first(where: { $0.peer.personId == userId }) else {
+        guard let match = world(identity).friendships.first(where: { $0.userId == userId }) else {
             throw SocialError(.friendNotFound)
         }
         return match
@@ -212,39 +220,33 @@ extension CloudSocialService {
 
     // MARK: - Gelen mektuplar
 
-    /// Mektupları açar; bozuk olanlar ve göndereni iddia ettiği adın sahibi olmayanlar yok sayılır.
+    /// Mektupları açar; bozuk olanlar ve göndereni iddia ettiği adın sahibi olmayanlar yok sayılır. Kişi başına
+    /// yalnız en yeni mektup sayılır.
     func loadIncoming(_ identity: SocialIdentity) async throws -> [IncomingMail] {
         let known = Dictionary(incoming.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        var senders = Set<String>()
         var result: [IncomingMail] = []
-        for mail in try await cloud.mail(in: identity.mailbox).prefix(Self.maxIncomingMails) {
-            if let cached = known[mail.id], cached.senderId == mail.senderId {
-                result.append(cached)
-            } else if let opened = try await open(mail, identity) {
-                result.append(opened)
+        let mails = try await cloud.mail(in: identity.mailbox).sorted { $0.createdAt > $1.createdAt }
+        for mail in mails where !rejectedMailIds.contains(mail.id) && !identity.blockedIds.contains(mail.senderId) {
+            let opened: IncomingMail?
+            if let cached = known[mail.id] { opened = cached } else { opened = try await open(mail, identity) }
+            guard let opened else {
+                rejectedMailIds.insert(mail.id)
+                continue
             }
+            if senders.insert(mail.senderId).inserted { result.append(opened) }
         }
         return result
     }
 
     private func open(_ mail: SocialMail, _ identity: SocialIdentity) async throws -> IncomingMail? {
-        guard !identity.blockedIds.contains(mail.senderId),
-              let data = try? SocialMailCrypto.open(mail.sealed, privateKey: identity.privateKey, mailbox: identity.mailbox),
+        guard let data = try? SocialMailCrypto.open(mail.sealed, privateKey: identity.privateKey, mailbox: identity.mailbox),
               let payload = try? JSONDecoder().decode(SocialMailPayload.self, from: data),
               payload.v == SocialMailPayload.currentVersion,
               case let .valid(username) = SocialCalc.validateUsername(payload.username),
-              SocialInvite.isShareURL(payload.url),
-              let claim = try await cloud.claim(forKey: SocialDirectory.claimKey(forUsername: username)),
-              claim.ownerId == mail.senderId
+              SocialInvite.isShareURL(payload.url), try await nameOwner(username) == mail.senderId
         else { return nil }
         return IncomingMail(
-            id: mail.id, senderId: mail.senderId, username: username, personId: payload.personId, url: payload.url,
-            createdAt: mail.createdAt)
-    }
-}
-
-extension Array where Element: Hashable {
-    fileprivate func uniqued() -> [Element] {
-        var seen = Set<Element>()
-        return filter { seen.insert($0).inserted }
+            id: mail.id, senderId: mail.senderId, username: username, url: payload.url, createdAt: mail.createdAt)
     }
 }

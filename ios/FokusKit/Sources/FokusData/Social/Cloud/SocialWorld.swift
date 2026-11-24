@@ -6,7 +6,6 @@ struct IncomingMail: Sendable, Hashable {
     let id: String
     let senderId: String
     let username: String
-    let personId: String
     let url: URL
     let createdAt: Date
 }
@@ -17,7 +16,6 @@ struct SocialMailPayload: Codable, Sendable {
 
     var v: Int
     var username: String
-    var personId: String
     var url: URL
 }
 
@@ -28,6 +26,10 @@ struct SocialWorld {
     static let friendRoomLifetime: TimeInterval = 12 * 3600
 
     let identity: SocialIdentity
+    /// Benim iCloud kayıt adım.
+    let userId: String
+    /// Doğrulanmış kullanıcı adı → sahibinin iCloud kayıt adı.
+    let nameOwners: [String: String]
     let spaces: [SocialSpace]
     let incoming: [IncomingMail]
     let now: Date
@@ -37,15 +39,30 @@ struct SocialWorld {
         let space: SocialSpace
         let mine: SocialCard
         let peer: SocialCard
+        let userId: String
     }
 
     private func isBlocked(_ card: SocialCard) -> Bool {
-        identity.blockedIds.contains(card.personId)
-            || card.creatorId.map(identity.blockedIds.contains) == true
+        card.creatorId.map(identity.blockedIds.contains) == true
     }
 
-    private func peer(in space: SocialSpace) -> SocialCard? {
-        space.cards.first { $0.personId != identity.personId }
+    /// Kartı yazan, kartta görünen kullanıcı adının gerçek sahibi mi? (Başkasının adıyla kart yazılamaz.)
+    func isTrusted(_ card: SocialCard) -> Bool {
+        guard let creatorId = card.creatorId else { return false }
+        return nameOwners[card.username] == creatorId
+    }
+
+    /// Bu alandaki kendi kartım. Kimliğimle yazılmış ama benim yazmadığım kart sayılmaz.
+    func myCard(in space: SocialSpace) -> SocialCard? {
+        space.cards.first { $0.personId == identity.personId && ($0.creatorId == nil || $0.creatorId == userId) }
+    }
+
+    private func isMine(_ card: SocialCard) -> Bool {
+        card.personId == identity.personId || card.creatorId == userId
+    }
+
+    func peer(in space: SocialSpace) -> SocialCard? {
+        space.cards.first { !isMine($0) }
     }
 
     private var friendSpaces: [SocialSpace] { spaces.filter { $0.info.kind == .friend } }
@@ -54,7 +71,7 @@ struct SocialWorld {
     var friendships: [Friendship] {
         var byPeer: [String: Friendship] = [:]
         for friendship in allFriendships {
-            let key = friendship.peer.personId
+            let key = friendship.userId
             if let current = byPeer[key], current.space.id.name <= friendship.space.id.name { continue }
             byPeer[key] = friendship
         }
@@ -63,10 +80,10 @@ struct SocialWorld {
 
     private var allFriendships: [Friendship] {
         friendSpaces.compactMap { space in
-            guard let mine = space.card(of: identity.personId), mine.leftAt == nil,
-                  let peer = peer(in: space), peer.leftAt == nil, !isBlocked(peer)
+            guard let mine = myCard(in: space), mine.leftAt == nil, let peer = peer(in: space), peer.leftAt == nil,
+                  let peerId = peer.creatorId, !isBlocked(peer), isTrusted(peer)
             else { return nil }
-            return Friendship(space: space, mine: mine, peer: peer)
+            return Friendship(space: space, mine: mine, peer: peer, userId: peerId)
         }
     }
 
@@ -84,21 +101,27 @@ struct SocialWorld {
     var obsoleteSpaces: [SocialSpace] {
         let canonical = Set(friendships.map(\.space.id))
         return spaces.filter { space in
-            let mine = space.card(of: identity.personId)
+            let mine = myCard(in: space)
             if mine?.leftAt != nil { return true }
             guard space.info.kind == .friend else { return false }
             guard let peer = peer(in: space) else { return space.id.isMine && isExpired(space) }
             if peer.leftAt != nil || isBlocked(peer) { return true }
-            // Fazla alanı yalnız sahibi siler; aksi halde iki taraf birbirinin alanını silebilirdi.
-            return mine != nil && space.id.isMine && !canonical.contains(space.id)
+            // Fazla alanı yalnız sahibi siler; aksi halde iki taraf birbirinin alanını silebilirdi. Adı henüz
+            // doğrulanamayan kişinin alanı fazla sayılmaz.
+            return mine != nil && space.id.isMine && isTrusted(peer) && !canonical.contains(space.id)
         }
     }
 
-    /// Paylaşım kabul edilmiş ama kartım yazılamamış alanlar (ör. arada ağ kesildi).
+    /// Kartım eksik alanlar: kabulden sonra yazılamamış (ör. ağ kesildi) ya da bir üye üstüne yazmış.
     var spacesMissingMyCard: [SocialSpace] {
-        friendSpaces.filter { space in
-            guard !space.id.isMine, space.card(of: identity.personId) == nil, let peer = peer(in: space) else { return false }
-            return peer.leftAt == nil && !isBlocked(peer)
+        spaces.filter { space in
+            guard myCard(in: space) == nil else { return false }
+            if space.id.isMine { return true }
+            guard let peer = peer(in: space) else { return false }
+            switch space.info.kind {
+            case .friend: return peer.leftAt == nil && !isBlocked(peer)
+            case .room: return currentRoom == nil
+            }
         }
     }
 
@@ -110,17 +133,17 @@ struct SocialWorld {
     var currentRoom: SocialSpace? {
         spaces.filter { $0.info.kind == .room }
             .compactMap { space -> (SocialSpace, Date)? in
-                guard let mine = space.card(of: identity.personId), mine.leftAt == nil else { return nil }
+                guard let mine = myCard(in: space), mine.leftAt == nil else { return nil }
                 return (space, mine.joinedAt)
             }
             .max { $0.1 < $1.1 }?.0
     }
 
     var visibleIncoming: [IncomingMail] {
-        let friends = Set(friendships.map(\.peer.personId))
+        let friends = Set(friendships.map(\.userId))
         return incoming.filter {
             !identity.handledMailIds.contains($0.id) && !identity.blockedIds.contains($0.senderId)
-                && !identity.blockedIds.contains($0.personId) && !friends.contains($0.personId)
+                && !friends.contains($0.senderId)
         }
     }
 
@@ -130,15 +153,23 @@ struct SocialWorld {
 
     /// Odamı (ev sahibiysem) arkadaşlarıma duyuran bilgi.
     func roomAnnouncement(ownPresence: SocialPresence?) -> SocialCardRoom? {
-        guard let room = currentRoom, room.info.hostPersonId == identity.personId, let url = room.inviteURL else { return nil }
-        let members = room.activeCards()
+        guard let room = currentRoom, room.id.isMine, let url = room.inviteURL else { return nil }
+        let members = members(of: room)
         let focusing = members.filter { card in
-            let presence = card.personId == identity.personId ? ownPresence : shownPresence(card)
+            let presence = isMine(card) ? ownPresence : shownPresence(card)
             return SocialCalc.effectivePresenceState(presence, now: now) == .focusing
         }
         return SocialCardRoom(
             id: room.id.name, name: room.info.name, url: url, memberCount: members.count,
             focusingCount: focusing.count)
+    }
+
+    /// Odada görünen kartlar: kendim ve adı doğrulanmış, ayrılmamış, engellenmemiş üyeler.
+    private func members(of room: SocialSpace) -> [SocialCard] {
+        let mine = myCard(in: room)
+        return room.activeCards().filter { card in
+            isMine(card) ? card == mine : isTrusted(card) && !isBlocked(card)
+        }
     }
 
     // MARK: - Anlık görüntü
@@ -157,7 +188,7 @@ struct SocialWorld {
         friendships
             .map {
                 SocialFriend(
-                    userId: $0.peer.personId, username: $0.peer.username, presence: shownPresence($0.peer),
+                    userId: $0.userId, username: $0.peer.username, presence: shownPresence($0.peer),
                     friendsSince: max($0.mine.joinedAt, $0.peer.joinedAt))
             }
             .sorted { $0.username.compare($1.username, locale: Locale(identifier: "tr_TR")) == .orderedAscending }
@@ -166,7 +197,7 @@ struct SocialWorld {
     private var requests: [FriendRequest] {
         let received = visibleIncoming.map {
             FriendRequest(
-                id: $0.id, direction: .incoming, user: SocialUser(userId: $0.personId, username: $0.username),
+                id: $0.id, direction: .incoming, user: SocialUser(userId: $0.senderId, username: $0.username),
                 createdAt: $0.createdAt)
         }
         let sent = pendingSpaces.compactMap { space -> FriendRequest? in
@@ -189,12 +220,12 @@ struct SocialWorld {
 
     private var room: SocialRoom? {
         guard let space = currentRoom else { return nil }
-        let host = space.info.hostPersonId
-        let members = space.activeCards()
+        let host = space.id.isMine ? userId : space.id.ownerName
+        let members = members(of: space)
             .map { card in
-                RoomMember(
-                    userId: card.personId, username: card.username, isSelf: card.personId == identity.personId,
-                    isHost: card.personId == host, presence: shownPresence(card), joinedAt: card.joinedAt)
+                let memberId = card.creatorId ?? userId
+                return RoomMember(
+                    userId: memberId, username: card.username, isSelf: isMine(card), isHost: memberId == host, presence: shownPresence(card), joinedAt: card.joinedAt)
             }
             .sorted { ($0.isHost ? 0 : 1, $0.joinedAt, $0.userId) < ($1.isHost ? 0 : 1, $1.joinedAt, $1.userId) }
         return SocialRoom(
@@ -212,7 +243,7 @@ struct SocialWorld {
                 else { return nil }
                 return RoomSummary(
                     id: room.id, name: room.name,
-                    host: SocialUser(userId: friendship.peer.personId, username: friendship.peer.username),
+                    host: SocialUser(userId: friendship.userId, username: friendship.peer.username),
                     memberCount: room.memberCount, focusingCount: room.focusingCount)
             }
             .sorted { $0.name.compare($1.name, locale: Locale(identifier: "tr_TR")) == .orderedAscending }

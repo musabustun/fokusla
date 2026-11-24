@@ -370,7 +370,7 @@ struct CloudSocialFriendTests {
         let attacker = InMemorySocialCloud(userId: "kotu", server: world.server)
         let claim = try #require(try await attacker.claim(forKey: SocialDirectory.claimKey(forUsername: "elif")))
         let payload = SocialMailPayload(
-            v: 1, username: "mert", personId: "x", url: URL(string: "https://www.icloud.com/share/x")!)
+            v: 1, username: "mert", url: URL(string: "https://www.icloud.com/share/x")!)
         let sealed = try SocialMailCrypto.seal(
             JSONEncoder().encode(payload), publicKey: claim.publicKey, mailbox: claim.mailbox)
         try await attacker.sendMail(id: "sahte", mailbox: claim.mailbox, sealed: sealed)
@@ -680,26 +680,9 @@ enum InMemoryJoin {
 }
 
 /// Yalnız mektup göndermesi başarısız olan bulut.
-private struct FailingMailCloud: SocialCloud {
+private struct FailingMailCloud: ForwardingSocialCloud {
     let base: InMemorySocialCloud
 
-    func account() async throws -> SocialCloudAccount { try await base.account() }
-    func loadIdentity() async throws -> SocialIdentity? { try await base.loadIdentity() }
-    func saveIdentity(_ identity: SocialIdentity) async throws { try await base.saveIdentity(identity) }
-    func deleteIdentity() async throws { try await base.deleteIdentity() }
-    func claim(forKey key: String) async throws -> SocialClaim? { try await base.claim(forKey: key) }
-    func createClaim(_ claim: SocialClaim) async throws { try await base.createClaim(claim) }
-    func updateClaim(_ claim: SocialClaim) async throws { try await base.updateClaim(claim) }
-    func deleteClaim(key: String) async throws { try await base.deleteClaim(key: key) }
+    func target() async -> InMemorySocialCloud { base }
     func sendMail(id: String, mailbox: String, sealed: Data) async throws { throw SocialCloudError.network }
-    func mail(in mailbox: String) async throws -> [SocialMail] { try await base.mail(in: mailbox) }
-    func deleteMail(id: String) async throws { try await base.deleteMail(id: id) }
-    func createSpace(name: String, info: SocialSpaceInfo, card: SocialCard) async throws -> SocialSpace {
-        try await base.createSpace(name: name, info: info, card: card)
-    }
-    func spaces() async throws -> [SocialSpace] { try await base.spaces() }
-    func updateInfo(_ info: SocialSpaceInfo, in space: SocialSpaceID) async throws { try await base.updateInfo(info, in: space) }
-    func saveCards(_ cards: [SocialSpaceID: SocialCard]) async throws { try await base.saveCards(cards) }
-    func acceptInvite(_ invite: SocialInvite) async throws -> SocialSpace { try await base.acceptInvite(invite) }
-    func removeSpace(_ id: SocialSpaceID) async throws { try await base.removeSpace(id) }
 }

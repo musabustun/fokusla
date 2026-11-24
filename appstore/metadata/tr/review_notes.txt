@@ -8,7 +8,7 @@ NO ACCOUNT NEEDED. Sign-in is optional. On first launch: tap "Başla" (Get start
 How to try the main features:
 - Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; swipe sideways to switch pages; tap the screen for controls, "küçült" to minimize; long-press the screen to open the customize panel for clock style, color and background). On a device, a Live Activity shows while a session runs.
 - Focus sounds are generated on the device (no network).
-- Apple Watch app: start, break ("Mola"), resume ("Devam") and finish a focus session; swipe between three timer faces; syncs with the iPhone via WatchConnectivity. Background mode "mindfulness" (WKExtendedRuntimeSession) runs only during a focus session, to keep the timer on screen (dimmed in Always On) when the wrist is lowered. No HealthKit/workout session.
+- Apple Watch app: start, break ("Mola"), resume ("Devam") and finish a focus session (tap for buttons); swipe between three timer faces; syncs with the iPhone via WatchConnectivity. Background mode "mindfulness" (WKExtendedRuntimeSession) runs only during a focus session, to keep the timer on screen (dimmed in Always On) when the wrist is lowered. No HealthKit/workout session.
 - iMessage app (Messages extension): open the app drawer in any conversation and pick Fokus. "Bugün" shares a card with today's study time; "Oda" prepares a study-room invitation. Nothing is sent until the user taps Send; no server, no account.
 - Analysis tab: add a test result (correct / wrong / blank); net = correct - wrong/4.
 - Books: add a book and mark progress (the optional barcode scan uses the on-device camera; no image is stored or sent). Tasks: add a task.

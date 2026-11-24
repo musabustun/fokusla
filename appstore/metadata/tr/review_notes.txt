@@ -1,18 +1,20 @@
 [English]
-Thanks for reviewing Fokus, a free, ad-free study tracker for Turkish students preparing for the national university entrance exam (YKS). The UI is Turkish.
+Thanks for reviewing Fokus, a study tracker for Turkish students preparing for the national university entrance exam (YKS). The UI is Turkish.
+
+Resubmission: the screenshots/search-result images and promotional text that mentioned price were replaced, and the Support URL now points to a working page.
 
 NO ACCOUNT NEEDED. Sign-in is optional. On first launch: tap "Başla" (Get started) -> choose any exam field (e.g. SAY) and tap "Devam" -> keep the default theme and tap "Devam" -> tap "Şimdilik atla" (Skip for now). The app is then fully usable without any login. "Sign in with Apple" is optional and only stores the account identifier on the device (to detect a revoked Apple ID).
 
 How to try the main features:
-- Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; swipe sideways to switch pages; tap the screen for controls, "küçült" to minimize; long-press the screen to open the customize panel for clock style, color and background). Pause/resume/finish are available. On a device, a Live Activity appears while a session runs.
-- Focus sounds are generated on the device (no downloads, no network).
-- Apple Watch app: start, break ("Mola"), resume ("Devam") and finish a focus session; tap the screen to show the buttons, swipe between three timer faces; syncs with the iPhone via WatchConnectivity. Background mode "mindfulness" (WKExtendedRuntimeSession) runs only during a focus session, to keep the timer on screen (dimmed in Always On) when the wrist is lowered; it ends with the session. No HealthKit/workout session.
+- Focus tab: tap the start button to begin a focus session (a full-screen, StandBy-style view opens; swipe sideways to switch pages; tap the screen for controls, "küçült" to minimize; long-press the screen to open the customize panel for clock style, color and background). On a device, a Live Activity shows while a session runs.
+- Focus sounds are generated on the device (no network).
+- Apple Watch app: start, break ("Mola"), resume ("Devam") and finish a focus session; swipe between three timer faces; syncs with the iPhone via WatchConnectivity. Background mode "mindfulness" (WKExtendedRuntimeSession) runs only during a focus session, to keep the timer on screen (dimmed in Always On) when the wrist is lowered. No HealthKit/workout session.
 - iMessage app (Messages extension): open the app drawer in any conversation and pick Fokus. "Bugün" shares a card with today's study time; "Oda" prepares a study-room invitation. Nothing is sent until the user taps Send; no server, no account.
 - Analysis tab: add a test result (correct / wrong / blank); net = correct - wrong/4.
-- Books: add a book and mark progress (the optional barcode scan uses the camera on the device; no image is stored or sent). Tasks: add a task.
+- Books: add a book and mark progress (the optional barcode scan uses the on-device camera; no image is stored or sent). Tasks: add a task.
 - Settings: daily goal, reminders (local notifications, optional), themes, export (JSON) and "delete all data".
 
-Spotify is OPTIONAL. It uses Spotify's iOS App Remote only to control playback in the user's Spotify app; Fokus receives no profile data. The first connect switches to the Spotify app for consent once (OAuth PKCE, scope app-remote-control, no client secret); tokens stay in the device Keychain. Our Spotify developer app is in Spotify's Development mode, so the review device's Spotify account may not connect; then Fokus shows a plain "Spotify'da aç" (Open in Spotify) link.
+Spotify is OPTIONAL. It uses Spotify's iOS App Remote only to control playback in the user's Spotify app; Fokus receives no profile data. The first connect switches to the Spotify app for consent once (OAuth PKCE, scope app-remote-control, no client secret); tokens stay in the device Keychain. Our Spotify app is in Development mode, so the reviewer's Spotify account may not connect; Fokus then shows a plain "Spotify'da aç" (Open in Spotify) link.
 
 Privacy: the app collects no data. No analytics, tracking, ads or server of ours. The app's only own network call is the Spotify token exchange/refresh at accounts.spotify.com, after the user connects Spotify. Data lives on the device (SwiftData). If the user is signed in to iCloud and sync is enabled in Settings, data syncs only through the user's own private CloudKit database (iCloud.com.musabustun.fokus), which the developer cannot access. Notifications are local only. No in-app purchases, no subscriptions.
 
@@ -25,4 +27,4 @@ Fokus'u incelediğiniz için teşekkürler. Hesap gerekmez; giriş isteğe bağl
 
 Spotify isteğe bağlıdır (Development mode; bağlanamazsa "Spotify'da aç" görünür).
 
-Veri toplanmaz; analitik, izleme, reklam yok. Veriler cihazda ve (eşitleme açıksa) kullanıcının kendi özel CloudKit veritabanındadır. Bildirimler yereldir; bizim barındırdığımız hesap veya içerik yoktur. Saatteki "mindfulness" modu yalnızca odak sürerken sayacı ekranda tutar.
+Veri toplanmaz; analitik, izleme, reklam yok. Veriler cihazda ve (eşitleme açıksa) kullanıcının kendi özel CloudKit veritabanındadır. Bildirimler yereldir. Saatteki "mindfulness" modu yalnızca odak sürerken sayacı ekranda tutar.
